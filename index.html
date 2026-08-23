@@ -184,22 +184,30 @@
     color:#fff;
   }
 
-  .slide-eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.85; margin-bottom:auto; display:flex; align-items:center; gap:8px;}
+  .slide-eyebrow{font-family:var(--font-mono); font-size:22px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.85; margin-bottom:auto; display:flex; align-items:center; gap:8px;}
   .type-cover .slide-eyebrow{color:rgba(255,255,255,0.9);}
   .type-content .slide-eyebrow{color:var(--orange-deep);}
   .type-cta .slide-eyebrow{color:var(--amber);}
   .slide-eyebrow::before{content:''; width:16px; height:1px; background:currentColor; display:inline-block;}
 
   .slide-title{font-family:var(--font-display); font-weight:700; line-height:1.12; letter-spacing:-0.01em; margin-top:auto;}
+  .type-cover .slide-title{font-size:88px;}
+  .type-content .slide-title{font-size:56px; margin-top:24px;}
+  .type-cta .slide-title{font-size:64px;}
+
+  .type-cover .slide-subtitle{color:rgba(255,255,255,0.88);}
+  .slide-subtitle{font-size:32px; margin-top:22px; line-height:1.5;}
+  .type-content .slide-body{color:#4a4136;}
+  .type-cta .slide-body{color:rgba(255,255,255,0.78);}
+  .slide-body{font-size:34px; line-height:1.6; margin-top:26px; white-space:pre-line;}
+
+  /* prévisualisation compacte à l'écran (canvas réduit) : on réduit les tailles ci-dessus */
+  .slide-viewport .slide-eyebrow{font-size:12px;}
   .slide-viewport .type-cover .slide-title{font-size:34px;}
   .slide-viewport .type-content .slide-title{font-size:23px; margin-top:14px;}
   .slide-viewport .type-cta .slide-title{font-size:26px;}
-
-  .type-cover .slide-subtitle{color:rgba(255,255,255,0.88);}
-  .slide-subtitle{font-size:14px; margin-top:14px; line-height:1.5;}
-  .type-content .slide-body{color:#4a4136;}
-  .type-cta .slide-body{color:rgba(255,255,255,0.78);}
-  .slide-body{font-size:14.5px; line-height:1.6; margin-top:16px; white-space:pre-line;}
+  .slide-viewport .slide-subtitle{font-size:14px; margin-top:14px;}
+  .slide-viewport .slide-body{font-size:14.5px; margin-top:16px;}
 
   .slide-footer{margin-top:auto; padding-top:16px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid rgba(0,0,0,0.08);}
   .type-cover .slide-footer, .type-cta .slide-footer{border-top:1px solid rgba(255,255,255,0.15);}
