@@ -846,12 +846,23 @@ function addContentSlide(){
   showToast("Slide ajoutée");
 }
 
+const EXPORT_SCALE = 2;
+const EXPORT_WIDTH = 1080;
+const EXPORT_HEIGHT = 1350;
+
 async function renderSlideCanvas(index){
   const stage = document.getElementById('export-stage');
-  stage.innerHTML = `<div style="width:1080px;height:1350px;">${slideMarkup(slides[index], index)}</div>`;
+  stage.innerHTML = `<div style="width:${EXPORT_WIDTH}px;height:${EXPORT_HEIGHT}px;">${slideMarkup(slides[index], index)}</div>`;
   const target = stage.firstElementChild;
   fitAllEditableText(target);
-  const canvas = await html2canvas(target, {scale:1, backgroundColor:null, useCORS:true});
+  const canvas = await html2canvas(target, {
+    scale: EXPORT_SCALE,
+    width: EXPORT_WIDTH,
+    height: EXPORT_HEIGHT,
+    backgroundColor:null,
+    useCORS:true,
+    logging:false,
+  });
   stage.innerHTML = '';
   return canvas;
 }
@@ -891,11 +902,14 @@ async function exportAsPDF(){
   try{
     const jsPDF = window.jspdf?.jsPDF;
     if(!jsPDF) throw new Error('Le module PDF n’est pas encore chargé.');
-    const pdf = new jsPDF({unit:'px', format:[1080,1350], orientation:'portrait', compress:true});
+    // Format 4:5 en points : 540 × 675 pt, avec une image source 2× (2160 × 2700 px).
+    const pdfWidth = 540;
+    const pdfHeight = 675;
+    const pdf = new jsPDF({unit:'pt', format:[pdfWidth,pdfHeight], orientation:'portrait', compress:false});
     for(let i=0;i<slides.length;i++){
       const canvas = await renderSlideCanvas(i);
-      if(i > 0) pdf.addPage([1080,1350], 'portrait');
-      pdf.addImage(canvas.toDataURL('image/jpeg',0.92), 'JPEG', 0, 0, 1080, 1350);
+      if(i > 0) pdf.addPage([pdfWidth,pdfHeight], 'portrait');
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdfWidth, pdfHeight);
     }
     pdf.save('carrousel-studio.pdf');
     showToast('PDF téléchargé ✓');
