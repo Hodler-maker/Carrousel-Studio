@@ -449,8 +449,14 @@ Contraintes :
     }
 
     let raw = (data.content || []).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    if(data.error_hint){ throw new Error(data.error_hint); }
     raw = raw.replace(/```json/g,'').replace(/```/g,'').trim();
-    const parsed = JSON.parse(raw);
+    let parsed;
+    try{
+      parsed = JSON.parse(raw);
+    }catch(parseErr){
+      throw new Error("La réponse générée était incomplète ou mal formée. Réessaie, ou réduis le nombre de slides / la longueur du texte source.");
+    }
 
     slides = [];
     slides.push({type:'cover', title: parsed.cover.title, subtitle: parsed.cover.subtitle});
