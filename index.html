@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="favicon.png">
 <meta name="theme-color" content="#ff7a2f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Lato:wght@400;700;900&family=Manrope:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700&family=Raleway:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Merriweather:wght@400;700;900&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#f5efe4;
@@ -25,8 +25,9 @@
     --text-dim:#7c7060;
     --text-faint:#ada08c;
     --radius:20px;
-    --font-display:'Space Grotesk', sans-serif;
+    --font-display:'Inter', sans-serif;
     --font-body:'Inter', sans-serif;
+    --font-slide:'Inter', sans-serif;
     --font-mono:'JetBrains Mono', monospace;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
@@ -179,6 +180,8 @@
     font-family:var(--font-body);
   }
 
+  .slide-inner{font-family:var(--font-slide);}
+
   /* slide type backgrounds - inspired by the orange/amber studio reference */
   .type-cover{
     background:
@@ -264,7 +267,7 @@
   .type-cta .slide-eyebrow{color:var(--amber);}
   .slide-eyebrow::before{content:''; width:16px; height:1px; background:currentColor; display:inline-block;}
 
-  .slide-title{font-family:var(--font-display); font-weight:700; line-height:1.12; letter-spacing:-0.01em; margin-top:auto;}
+  .slide-title{font-family:var(--font-slide); font-weight:700; line-height:1.12; letter-spacing:-0.01em; margin-top:auto;}
   .slide-viewport .type-cover .slide-title{font-size:34px;}
   .slide-viewport .type-content .slide-title{font-size:23px; margin-top:14px;}
   .slide-viewport .type-cta .slide-title{font-size:26px;}
@@ -395,6 +398,23 @@
         <option value="signal">Signal — violet</option>
       </select>
 
+      <label for="font-family">Police des slides</label>
+      <select id="font-family" onchange="updateFont(this.value)">
+        <option value="inter">Inter — moderne</option>
+        <option value="roboto">Roboto — universelle</option>
+        <option value="open-sans">Open Sans — très lisible</option>
+        <option value="montserrat">Montserrat — impact</option>
+        <option value="poppins">Poppins — géométrique</option>
+        <option value="lato">Lato — chaleureuse</option>
+        <option value="manrope">Manrope — contemporaine</option>
+        <option value="rubik">Rubik — arrondie</option>
+        <option value="raleway">Raleway — élégante</option>
+        <option value="playfair-display">Playfair Display — éditoriale</option>
+        <option value="merriweather">Merriweather — serif lisible</option>
+        <option value="source-sans-3">Source Sans 3 — sobre</option>
+      </select>
+      <p class="field-hint">La police s’applique à l’aperçu et aux exports PNG/PDF.</p>
+
       <button class="btn-generate" id="generate-btn" onclick="generateCarousel()">Générer le carrousel</button>
       <div class="error-box" id="error-box"></div>
 
@@ -452,9 +472,24 @@ let slides = [];
 let currentIndex = 0;
 let currentHandle = '';
 let currentTemplate = 'sunset';
+let currentFont = 'inter';
 let draggedIndex = null;
 
 const AVAILABLE_TEMPLATES = ['sunset', 'editorial', 'midnight', 'signal'];
+const AVAILABLE_FONTS = {
+  inter: { label:'Inter', family:"'Inter', sans-serif" },
+  roboto: { label:'Roboto', family:"'Roboto', sans-serif" },
+  'open-sans': { label:'Open Sans', family:"'Open Sans', sans-serif" },
+  montserrat: { label:'Montserrat', family:"'Montserrat', sans-serif" },
+  poppins: { label:'Poppins', family:"'Poppins', sans-serif" },
+  lato: { label:'Lato', family:"'Lato', sans-serif" },
+  manrope: { label:'Manrope', family:"'Manrope', sans-serif" },
+  rubik: { label:'Rubik', family:"'Rubik', sans-serif" },
+  raleway: { label:'Raleway', family:"'Raleway', sans-serif" },
+  'playfair-display': { label:'Playfair Display', family:"'Playfair Display', serif" },
+  merriweather: { label:'Merriweather', family:"'Merriweather', serif" },
+  'source-sans-3': { label:'Source Sans 3', family:"'Source Sans 3', sans-serif" },
+};
 
 function normalizeHandle(value){
   const handle = String(value || '').trim().replace(/\s+/g, ' ');
@@ -469,6 +504,12 @@ function updateHandle(value){
 
 function updateTemplate(value){
   currentTemplate = AVAILABLE_TEMPLATES.includes(value) ? value : 'sunset';
+  if(slides.length) renderCarousel();
+}
+
+function updateFont(value){
+  currentFont = AVAILABLE_FONTS[value] ? value : 'inter';
+  document.documentElement.style.setProperty('--font-slide', AVAILABLE_FONTS[currentFont].family);
   if(slides.length) renderCarousel();
 }
 
@@ -851,6 +892,7 @@ const EXPORT_WIDTH = 1080;
 const EXPORT_HEIGHT = 1350;
 
 async function renderSlideCanvas(index){
+  if(document.fonts?.ready) await document.fonts.ready;
   const stage = document.getElementById('export-stage');
   stage.innerHTML = `<div style="width:${EXPORT_WIDTH}px;height:${EXPORT_HEIGHT}px;">${slideMarkup(slides[index], index)}</div>`;
   const target = stage.firstElementChild;
