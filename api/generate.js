@@ -6,7 +6,7 @@
 // Vercel, ajoute la variable d'environnement GEMINI_API_KEY dans les
 // paramètres du projet (Settings > Environment Variables), puis déploie.
 
-const GEMINI_MODEL = 'gemini-3.6-flash';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 
 // Limiteur basique en mémoire (best-effort, se réinitialise à chaque cold start).
 // Protège contre un usage abusif qui ferait exploser ta facture API.
@@ -67,7 +67,7 @@ export default async function handler(req, res) {
           contents: [{ role: 'user', parts: [{ text: userText }] }],
           generationConfig: {
             temperature: 0.9,
-            maxOutputTokens: 2000,
+            maxOutputTokens: 4096,
           },
         }),
       }
@@ -80,7 +80,16 @@ export default async function handler(req, res) {
       return;
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+    const candidate = data.candidates?.[0];
+    const text = candidate?.content?.parts?.map(p => p.text || '').join('') || '';
+
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+      res.status(200).json({
+        content: [{ type: 'text', text: '' }],
+        error_hint: 'Réponse tronquée (trop de tokens) — réessaie avec un texte source plus court ou moins de slides.',
+      });
+      return;
+    }
 
     // On normalise la réponse au même format que celui attendu par le site
     // (structure "content" façon Anthropic), pour ne rien changer côté client.
