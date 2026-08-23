@@ -6,7 +6,7 @@
 // Vercel, ajoute la variable d'environnement GEMINI_API_KEY dans les
 // paramètres du projet (Settings > Environment Variables), puis déploie.
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-3.6-flash';
 
 // Limiteur basique en mémoire (best-effort, se réinitialise à chaque cold start).
 // Protège contre un usage abusif qui ferait exploser ta facture API.
