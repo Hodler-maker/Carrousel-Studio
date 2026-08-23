@@ -345,9 +345,9 @@
             <div class="dot-track" id="dot-track"></div>
           </div>
           <div style="display:flex; gap:8px;">
-            <button class="toolbar-btn" onclick="exportCurrentSlide()">Exporter cette slide</button>
-            <button class="toolbar-btn download-btn" onclick="exportAllSlides()">
-              <span class="download-icon">⬇</span> Télécharger le carrousel
+            <button class="toolbar-btn" onclick="exportAllSlides()">Slides en PNG</button>
+            <button class="toolbar-btn download-btn" onclick="exportAsPDF()" id="pdf-btn">
+              <span class="download-icon">⬇</span> Télécharger en PDF (LinkedIn)
             </button>
           </div>
         </div>
@@ -372,6 +372,7 @@
 <div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-text"></span></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 let slides = [];
 let currentIndex = 0;
@@ -653,16 +654,21 @@ function addContentSlide(){
   showToast("Slide ajoutée");
 }
 
-async function exportSlideAsPNG(index, filenamePrefix){
+async function renderSlideCanvas(index){
   const stage = document.getElementById('export-stage');
   stage.innerHTML = `<div style="width:1080px;height:1350px;">${slideMarkup(slides[index], index)}</div>`;
   const target = stage.firstElementChild;
   const canvas = await html2canvas(target, {scale:1, backgroundColor:null, useCORS:true});
+  stage.innerHTML = '';
+  return canvas;
+}
+
+async function exportSlideAsPNG(index, filenamePrefix){
+  const canvas = await renderSlideCanvas(index);
   const link = document.createElement('a');
   link.download = `${filenamePrefix}-slide-${String(index+1).padStart(2,'0')}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
-  stage.innerHTML = '';
 }
 
 async function exportCurrentSlide(){
@@ -672,12 +678,43 @@ async function exportCurrentSlide(){
 }
 
 async function exportAllSlides(){
-  showToast(`Export de ${slides.length} slides...`);
+  showToast(`Export de ${slides.length} slides en PNG...`);
   for(let i=0;i<slides.length;i++){
     await exportSlideAsPNG(i, 'carrousel');
     await new Promise(r=>setTimeout(r, 250));
   }
   showToast("Toutes les slides ont été exportées ✓");
+}
+
+async function exportAsPDF(){
+  const pdfBtn = document.getElementById('pdf-btn');
+  const originalHTML = pdfBtn.innerHTML;
+  pdfBtn.disabled = true;
+  pdfBtn.style.opacity = '0.7';
+  pdfBtn.innerHTML = '<span class="spinner"></span>Préparation du PDF...';
+  showToast(`Préparation du PDF (${slides.length} slides)...`);
+
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'px', format: [1080, 1350], orientation: 'portrait' });
+
+    for(let i = 0; i < slides.length; i++){
+      const canvas = await renderSlideCanvas(i);
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      if(i > 0) doc.addPage([1080, 1350], 'portrait');
+      doc.addImage(imgData, 'JPEG', 0, 0, 1080, 1350);
+    }
+
+    doc.save('carrousel-linkedin.pdf');
+    showToast("PDF téléchargé ✓ — prêt à uploader sur LinkedIn");
+  }catch(err){
+    console.error(err);
+    showToast("L'export PDF a échoué, réessaie.");
+  }finally{
+    pdfBtn.disabled = false;
+    pdfBtn.style.opacity = '';
+    pdfBtn.innerHTML = originalHTML;
+  }
 }
 </script>
 </body>
