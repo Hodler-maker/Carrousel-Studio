@@ -118,6 +118,18 @@
   .error-box{margin-top:14px; padding:10px 12px; border-radius:10px; background:rgba(220,60,40,0.08); border:1px solid rgba(220,60,40,0.25); color:#b83f28; font-size:12.5px; display:none;}
 
   .hint{margin-top:16px; padding:12px 14px; border-radius:12px; background:rgba(255,181,71,0.14); border:1px solid rgba(255,181,71,0.35); font-size:12px; color:#9a5a12; line-height:1.5;}
+  .support-card{margin-top:16px; padding:16px; border-radius:16px; background:linear-gradient(145deg, rgba(255,255,255,0.72), rgba(255,181,71,0.12)); border:1px solid rgba(255,122,47,0.2); box-shadow:0 12px 28px -20px rgba(120,60,10,0.35);}
+  .support-card h3{font-family:var(--font-display); font-size:14px; font-weight:600; margin-bottom:5px;}
+  .support-card p{font-size:12px; line-height:1.5; color:var(--text-dim); margin-bottom:12px;}
+  .support-address{display:flex; align-items:center; gap:8px; min-width:0; padding:10px 11px; border-radius:11px; background:rgba(255,255,255,0.72); border:1px solid var(--border); margin-bottom:9px;}
+  .support-address code{font-family:var(--font-mono); font-size:10.5px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;}
+  .support-actions{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .support-btn{min-height:44px; border:1px solid var(--border); border-radius:11px; padding:9px 10px; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-family:var(--font-body); font-size:11.5px; font-weight:600; text-decoration:none; cursor:pointer; transition:transform .15s ease, background .2s ease, border-color .2s ease;}
+  .support-btn:hover{transform:translateY(-1px); background:#fff; border-color:rgba(255,122,47,0.4);}
+  .support-btn:active{transform:scale(0.98);}
+  .support-btn.lightning{color:#8b4a1e; background:rgba(255,181,71,0.14);}
+  .support-btn.whatsapp{color:#167c45; background:rgba(37,211,102,0.1);}
+  @media (max-width:420px){.support-actions{grid-template-columns:1fr;}}
 
   /* preview area */
   .preview-wrap{min-height:70vh; display:flex; flex-direction:column;}
@@ -419,6 +431,19 @@
       <div class="error-box" id="error-box"></div>
 
       <div class="hint"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" style="vertical-align:-4px; margin-right:5px;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M8.5 14.5A6 6 0 1 1 16 14c-.8.6-1.2 1.3-1.4 2.2H9.4c-.2-.9-.5-1.2-.9-1.7Z"></path><path d="M12 2v1"></path><path d="m4.9 4.9.7.7"></path><path d="m19.1 4.9-.7.7"></path></svg>Une fois généré, clique directement sur le texte de chaque slide pour le modifier avant export.</div>
+
+      <section class="support-card" aria-labelledby="support-title">
+        <h3 id="support-title">Soutenir Carrousel Studio</h3>
+        <p>Si Carrousel Studio t’aide, tu peux soutenir le projet avec un tip Lightning ou m’offrir un café.</p>
+        <div class="support-address">
+          <code id="lightning-address">ganglyspruce14@walletofsatoshi.com</code>
+          <button class="support-btn lightning" type="button" onclick="copyLightningAddress()" aria-label="Copier l’adresse Lightning" title="Copier l’adresse Lightning"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>Copier</button>
+        </div>
+        <div class="support-actions">
+          <a class="support-btn whatsapp" href="https://wa.me/22891056174?text=Bonjour%20%21%20Je%20souhaite%20soutenir%20Carrousel%20Studio." target="_blank" rel="noopener noreferrer" aria-label="Contacter Carrousel Studio sur WhatsApp"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 11.5a8.5 8.5 0 0 1-12.7 7.4L4 20l1.1-3.1A8.5 8.5 0 1 1 20 11.5Z"></path><path d="M8.8 8.4c.2-.4.5-.4.8-.4h.4c.2 0 .4.1.5.4l.6 1.4c.1.2.1.4-.1.6l-.5.6c.5 1 1.3 1.8 2.3 2.3l.6-.5c.2-.2.4-.2.6-.1l1.4.6c.3.1.4.3.4.5v.4c0 .3 0 .6-.4.8-.4.2-1 .3-1.4.2-2.4-.6-4.9-3.1-5.5-5.5-.1-.5 0-1 .3-1.3Z"></path></svg>WhatsApp</a>
+          <button class="support-btn lightning" type="button" onclick="copyLightningAddress()" aria-label="Copier l’adresse Lightning pour offrir un tip" title="Copier l’adresse Lightning"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"></path></svg>Tip Lightning</button>
+        </div>
+      </section>
     </div>
 
     <!-- RIGHT PREVIEW -->
@@ -527,6 +552,23 @@ function showError(msg){
   if(!msg){ box.style.display='none'; box.textContent=''; return; }
   box.style.display='block';
   box.textContent = msg;
+}
+
+async function copyLightningAddress(){
+  const address = document.getElementById('lightning-address')?.textContent?.trim();
+  if(!address) return;
+  try{
+    await navigator.clipboard.writeText(address);
+    showToast('Adresse Lightning copiée ✓');
+  }catch(err){
+    const selection = window.getSelection();
+    const range = document.createRange();
+    const element = document.getElementById('lightning-address');
+    range.selectNodeContents(element);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    showToast('Adresse sélectionnée — copie-la manuellement');
+  }
 }
 
 async function generateCarousel(){
