@@ -272,6 +272,23 @@
   .slide-inner.theme-signal.type-content .slide-body{color:#51426d;}
   .slide-inner.theme-signal.type-cta .slide-body{color:rgba(255,255,255,0.8);}
 
+  .slide-inner.theme-yellow-black.type-cover{
+    background:radial-gradient(circle at 88% 10%, rgba(255,255,255,0.38), transparent 36%), linear-gradient(145deg, #ffe566 0%, #f4c928 52%, #e5a900 100%); color:#11110f;
+  }
+  .slide-inner.theme-yellow-black.type-content{
+    background:linear-gradient(175deg, #fffdf2 0%, #f6e7a8 100%); color:#11110f;
+  }
+  .slide-inner.theme-yellow-black.type-cta{
+    background:radial-gradient(circle at 82% 12%, rgba(255,222,76,0.28), transparent 42%), linear-gradient(145deg, #171713 0%, #050505 100%); color:#fffdf2;
+  }
+  .slide-inner.theme-yellow-black.type-cover .slide-eyebrow,
+  .slide-inner.theme-yellow-black.type-content .slide-eyebrow{color:#171713;}
+  .slide-inner.theme-yellow-black.type-cta .slide-eyebrow{color:#ffe04b;}
+  .slide-inner.theme-yellow-black.type-content .slide-body{color:#3d3a22;}
+  .slide-inner.theme-yellow-black.type-cta .slide-body{color:rgba(255,253,242,0.82);}
+  .slide-inner.theme-yellow-black.type-cover .slide-footer,
+  .slide-inner.theme-yellow-black.type-content .slide-footer{border-top-color:rgba(17,17,15,0.18);}
+
   /* Hiérarchie typographique pour les images PNG 1080 × 1350 */
   #export-stage .slide-inner{padding:8% 8%;}
   #export-stage .slide-eyebrow{font-size:18px;}
@@ -421,6 +438,7 @@
         <option value="editorial">Editorial — beige</option>
         <option value="midnight">Midnight — bleu nuit</option>
         <option value="signal">Signal — violet</option>
+        <option value="yellow-black">Jaune &amp; Noir — contrasté</option>
       </select>
 
       <label for="font-family">Police des slides</label>
@@ -523,7 +541,7 @@ let currentTemplate = 'sunset';
 let currentFont = 'inter';
 let draggedIndex = null;
 
-const AVAILABLE_TEMPLATES = ['sunset', 'editorial', 'midnight', 'signal'];
+const AVAILABLE_TEMPLATES = ['sunset', 'editorial', 'midnight', 'signal', 'yellow-black'];
 const AVAILABLE_FONTS = {
   inter: { label:'Inter', family:"'Inter', sans-serif" },
   roboto: { label:'Roboto', family:"'Roboto', sans-serif" },
