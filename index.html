@@ -141,7 +141,30 @@
   @keyframes supportQrFloat{0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);}}
   .support-qr img,.support-qr canvas{display:block; width:150px !important; height:150px !important; image-rendering:auto;}
   .support-qr-label{font-size:10.5px; color:var(--text-dim); line-height:1.35; max-width:165px;}
-  @media (max-width:620px){.support-card{margin-top:56px; padding:22px 18px;}.support-layout{grid-template-columns:1fr;}.support-qr-wrap{order:-1;}.support-actions{grid-template-columns:1fr;}}
+  @media (max-width:620px){
+    .support-card{margin-top:56px; padding:22px 18px;}
+    .support-layout{grid-template-columns:1fr;}
+    .support-qr-wrap{order:-1;}
+    .support-actions{grid-template-columns:1fr;}
+    .carousel-stage{padding:0 8px; gap:0;}
+    .carousel-stage .nav-arrow{position:absolute; z-index:4; top:50%; transform:translateY(-50%); box-shadow:0 8px 24px rgba(25,20,13,0.12);}
+    .carousel-stage .nav-arrow:hover{transform:translateY(-50%) scale(1.06);}
+    #prev-btn{left:0;}
+    #next-btn{right:0;}
+    .slide-viewport{width:100%; max-width:420px; margin:0 auto;}
+    .slide-frame{border-radius:22px;}
+    .slide-viewport .type-cover .slide-title{font-size:29px;}
+    .slide-viewport .type-content .slide-title{font-size:20px;}
+    .slide-viewport .type-cta .slide-title{font-size:23px;}
+    .slide-subtitle{font-size:13px; margin-top:10px;}
+    .slide-body{font-size:13px; line-height:1.5; margin-top:12px;}
+    .slide-frame:has(.editable:focus){aspect-ratio:auto; min-height:540px; height:auto;}
+    .slide-frame:has(.editable:focus) .slide-inner{position:relative; inset:auto; min-height:540px; height:auto;}
+    .slide-frame:has(.editable:focus) .slide-inner > div:nth-child(2){overflow:visible;}
+    .slide-frame:has(.editable:focus) .slide-body,
+    .slide-frame:has(.editable:focus) .slide-subtitle{max-height:none; overflow:visible;}
+    .slide-frame:has(.editable:focus) .slide-footer{margin-top:24px;}
+  }
 
   /* preview area */
   .preview-wrap{min-height:70vh; display:flex; flex-direction:column;}
@@ -894,6 +917,7 @@ function renderCarousel(){
   `;
   frame.querySelectorAll('.editable').forEach(el=>{
     el.addEventListener('input', onEditableInput);
+    el.addEventListener('focus', ()=> requestAnimationFrame(()=> fitAllEditableText(frame)));
     el.addEventListener('blur', onEditableBlur);
   });
   fitAllEditableText(frame);
