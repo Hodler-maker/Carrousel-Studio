@@ -465,6 +465,10 @@
       <label for="topic">Titre du carrousel (optionnel)</label>
       <input type="text" id="topic" placeholder="Ex : Le halving expliqué simplement">
 
+      <label for="project-name">Nom du projet (pour les fichiers)</label>
+      <input type="text" id="project-name" maxlength="80" placeholder="Ex : Bitcoin en Afrique" autocomplete="off">
+      <p class="field-hint">Ce nom sera utilisé pour tes fichiers PNG et PDF téléchargés.</p>
+
       <label for="handle">Ton handle (optionnel)</label>
       <input type="text" id="handle" maxlength="32" placeholder="Ex : @tonhandle" autocomplete="off" oninput="updateHandle(this.value)" onblur="this.value=normalizeHandle(this.value); updateHandle(this.value)">
       <p class="field-hint">Il apparaîtra en bas de chaque slide.</p>
@@ -642,6 +646,11 @@ function updateFont(value){
   if(slides.length) renderCarousel();
 }
 
+function projectFilename(){
+  const raw = document.getElementById('project-name')?.value.trim() || document.getElementById('topic')?.value.trim() || 'carrousel-studio';
+  const normalized = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase();
+  return (normalized || 'carrousel-studio').slice(0, 70);
+}
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -1096,21 +1105,21 @@ async function renderSlideCanvas(index){
 async function exportSlideAsPNG(index, filenamePrefix){
   const canvas = await renderSlideCanvas(index);
   const link = document.createElement('a');
-  link.download = `${filenamePrefix}-slide-${String(index+1).padStart(2,'0')}.png`;
+  link.download = `${projectFilename()}-slide-${String(index+1).padStart(2,'0')}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
 
 async function exportCurrentSlide(){
   showToast("Export en cours...");
-  await exportSlideAsPNG(currentIndex, 'carrousel');
+  await exportSlideAsPNG(currentIndex, projectFilename());
   showToast("Slide exportée ✓");
 }
 
 async function exportAllSlides(){
   showToast(`Export de ${slides.length} slides...`);
   for(let i=0;i<slides.length;i++){
-    await exportSlideAsPNG(i, 'carrousel');
+    await exportSlideAsPNG(i, projectFilename());
     await new Promise(r=>setTimeout(r, 250));
   }
   showToast("Toutes les slides ont été exportées ✓");
@@ -1191,7 +1200,7 @@ async function exportAsPDF(){
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'carrousel-studio.pdf';
+    link.download = `${projectFilename()}.pdf`;
     link.click();
     setTimeout(()=>URL.revokeObjectURL(url), 1000);
     showToast(`PDF téléchargé ✓ (${formatFileSize(blob.size)})`);
