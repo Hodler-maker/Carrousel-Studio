@@ -234,6 +234,8 @@
   .slide-image-layer{position:absolute; z-index:3; max-width:70%; max-height:44%; object-fit:contain; border-radius:12px; box-shadow:0 12px 28px rgba(25,20,13,0.16); cursor:move; user-select:none; touch-action:none;}
   .slide-image-layer.selected{outline:2px solid var(--orange); outline-offset:4px; box-shadow:0 0 0 5px rgba(255,122,47,0.22), 0 12px 28px rgba(25,20,13,0.16);}
   .slide-image-layer:focus-visible{outline:3px solid var(--orange); outline-offset:4px;}
+  .slide-image-resize-handle{position:absolute; z-index:4; width:34px; height:34px; padding:0; border:2px solid #fff; border-radius:50%; background:var(--orange); color:#fff; display:grid; place-items:center; font-size:18px; line-height:1; box-shadow:0 4px 12px rgba(25,20,13,0.22); cursor:nwse-resize; touch-action:none;}
+  .slide-image-resize-handle:hover{transform:scale(1.08);}
   .image-edit-hint{font-size:10.5px; color:var(--text-faint); margin-top:5px;}
   .toolbar-btn.download-btn{
     background:linear-gradient(135deg, var(--orange), var(--amber)); border:none; color:#fff; font-weight:600;
@@ -630,6 +632,7 @@ let draggedIndex = null;
 let activeEditable = null;
 let selectedImageIndex = null;
 let imageDragState = null;
+let imageResizeState = null;
 const CAROUSEL_WIDTH = 1080;
 const CAROUSEL_HEIGHT = 1350;
 const MAX_CAROUSEL_IMAGE_BYTES = 3 * 1024 * 1024;
@@ -972,7 +975,16 @@ function imageMarkup(slide, index, includeImageSelection = true){
   const image = slide?.image;
   if(!image?.src) return '';
   const selected = includeImageSelection && selectedImageIndex === index ? ' selected' : '';
-  return `<img class="slide-image-layer${selected}" src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt || 'Image ajoutée à la slide')}" data-image-index="${index}" tabindex="0" role="button" aria-label="Image : ${escapeHtml(image.alt || 'sans description')}" style="${imagePositionStyle(image)}">`;
+  const handle = includeImageSelection && selectedImageIndex === index
+    ? `<button class="slide-image-resize-handle" type="button" aria-label="Redimensionner l’image" title="Redimensionner l’image" style="${imageResizeHandleStyle(image)}">↘</button>`
+    : '';
+  return `<img class="slide-image-layer${selected}" src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt || 'Image ajoutée à la slide')}" data-image-index="${index}" tabindex="0" role="button" aria-label="Image : ${escapeHtml(image.alt || 'sans description')}" style="${imagePositionStyle(image)}">${handle}`;
+}
+
+function imageResizeHandleStyle(image){
+  const right = ((image.x + image.w) / CAROUSEL_WIDTH) * 100;
+  const bottom = ((image.y + image.h) / CAROUSEL_HEIGHT) * 100;
+  return `left:calc(${right}% - 17px);top:calc(${bottom}% - 17px);`;
 }
 
 function fitEditableText(el){
@@ -1019,6 +1031,8 @@ function renderCarousel(){
     image.addEventListener('pointerdown', onCarouselImagePointerDown);
     image.addEventListener('keydown', event => { if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectCarouselImage(); } });
   }
+  const resizeHandle = frame.querySelector('.slide-image-resize-handle');
+  if(resizeHandle) resizeHandle.addEventListener('pointerdown', onCarouselImageResizePointerDown);
   fitAllEditableText(frame);
 
   // dots
@@ -1069,12 +1083,38 @@ function onCarouselImagePointerDown(event){
   event.currentTarget.classList.add('selected');
   const rect = event.currentTarget.closest('.slide-frame').getBoundingClientRect();
   imageDragState = { startX:event.clientX, startY:event.clientY, x:image.x, y:image.y, frameWidth:rect.width, frameHeight:rect.height };
+  imageResizeState = null;
+  event.currentTarget.setPointerCapture?.(event.pointerId);
+}
+
+function onCarouselImageResizePointerDown(event){
+  event.preventDefault();
+  event.stopPropagation();
+  const image = slides[currentIndex]?.image;
+  if(!image) return;
+  selectedImageIndex = currentIndex;
+  const rect = event.currentTarget.closest('.slide-frame').getBoundingClientRect();
+  imageResizeState = { startX:event.clientX, startY:event.clientY, w:image.w, h:image.h, ratio:image.w / Math.max(1, image.h), x:image.x, y:image.y, frameWidth:rect.width, frameHeight:rect.height };
+  imageDragState = null;
   event.currentTarget.setPointerCapture?.(event.pointerId);
 }
 
 function onCarouselImagePointerMove(event){
-  if(!imageDragState || !slides[currentIndex]?.image) return;
-  const image = slides[currentIndex].image;
+  const image = slides[currentIndex]?.image;
+  if(!image) return;
+  if(imageResizeState){
+    const dx = (event.clientX - imageResizeState.startX) / imageResizeState.frameWidth * CAROUSEL_WIDTH;
+    const maxW = Math.min(CAROUSEL_WIDTH * 0.78, CAROUSEL_WIDTH - imageResizeState.x);
+    const maxH = Math.min(CAROUSEL_HEIGHT * 0.62, CAROUSEL_HEIGHT - imageResizeState.y);
+    let w = Math.max(140, Math.min(maxW, imageResizeState.w + dx));
+    let h = w / imageResizeState.ratio;
+    if(h > maxH){ h = maxH; w = h * imageResizeState.ratio; }
+    image.w = Math.max(140, Math.min(maxW, w));
+    image.h = Math.max(100, Math.min(maxH, image.w / imageResizeState.ratio));
+    renderCarousel();
+    return;
+  }
+  if(!imageDragState) return;
   const dx = (event.clientX - imageDragState.startX) / imageDragState.frameWidth * CAROUSEL_WIDTH;
   const dy = (event.clientY - imageDragState.startY) / imageDragState.frameHeight * CAROUSEL_HEIGHT;
   image.x = Math.max(0, Math.min(CAROUSEL_WIDTH - image.w, imageDragState.x + dx));
@@ -1083,11 +1123,13 @@ function onCarouselImagePointerMove(event){
 }
 
 function onCarouselImagePointerUp(){
+  if(imageResizeState){ imageResizeState = null; showToast('Image redimensionnée'); }
   if(imageDragState){ imageDragState = null; showToast('Image déplacée'); }
 }
 
 window.addEventListener('pointermove', onCarouselImagePointerMove);
 window.addEventListener('pointerup', onCarouselImagePointerUp);
+window.addEventListener('pointercancel', onCarouselImagePointerUp);
 
 function onEditableBlur(e){
   const field = e.target.getAttribute('data-field');
@@ -1112,9 +1154,15 @@ async function addCarouselImage(file){
     const image = new Image();
     image.onload = () => {
       const ratio = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 1.5;
-      const w = Math.min(440, CAROUSEL_WIDTH * 0.62);
-      const h = Math.min(420, w / ratio);
-      slide.image = { src, alt: file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ') || 'Image ajoutée', x:(CAROUSEL_WIDTH - w) / 2, y:260, w, h };
+      const maxW = Math.min(440, CAROUSEL_WIDTH * 0.62);
+      let w = maxW;
+      let h = w / ratio;
+      if(h > 460){ h = 460; w = h * ratio; }
+      if(h < 150){ h = 150; w = Math.min(maxW, h * ratio); }
+      if(w > maxW){ w = maxW; h = w / ratio; }
+      const x = Math.max(0, Math.min(CAROUSEL_WIDTH - w, (CAROUSEL_WIDTH - w) / 2));
+      const y = Math.max(140, Math.min(CAROUSEL_HEIGHT - h, 360));
+      slide.image = { src, alt: file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ') || 'Image ajoutée', x, y, w, h };
       selectedImageIndex = currentIndex;
       renderCarousel();
       showToast('Image ajoutée — glisse-la pour la repositionner.');
@@ -1137,9 +1185,20 @@ function navSlide(dir){
   const newIndex = currentIndex + dir;
   if(newIndex < 0 || newIndex >= slides.length) return;
   currentIndex = newIndex;
+  selectedImageIndex = null;
+  activeEditable = null;
+  imageDragState = null;
+  imageResizeState = null;
   renderCarousel();
 }
-function goToSlide(i){ currentIndex = i; renderCarousel(); }
+function goToSlide(i){
+  currentIndex = i;
+  selectedImageIndex = null;
+  activeEditable = null;
+  imageDragState = null;
+  imageResizeState = null;
+  renderCarousel();
+}
 
 function dragStart(e,index){
   if(slides[index]?.type !== 'content'){
@@ -1190,6 +1249,10 @@ function deleteCurrentSlide(){
   }
   slides.splice(currentIndex, 1);
   currentIndex = Math.max(0, Math.min(currentIndex, slides.length - 1));
+  selectedImageIndex = null;
+  activeEditable = null;
+  imageDragState = null;
+  imageResizeState = null;
   renderCarousel();
   showToast("Slide supprimée");
 }
