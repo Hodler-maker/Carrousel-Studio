@@ -226,6 +226,15 @@
   .toolbar-btn.regenerate-btn:hover:not(:disabled){background:rgba(255,122,47,0.15); border-color:rgba(255,122,47,0.5);}
   .toolbar-btn.pdf-btn{color:#8b4a1e; border-color:rgba(139,74,30,0.24); background:rgba(255,181,71,0.1);}
   .toolbar-btn.pdf-btn:hover:not(:disabled){background:rgba(255,181,71,0.2); border-color:rgba(139,74,30,0.42);}
+  .media-tools{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .emoji-palette{display:inline-flex; align-items:center; gap:3px; padding:3px; border:1px solid var(--border); border-radius:10px; background:rgba(255,255,255,0.5);}
+  .emoji-btn{width:34px; height:34px; border:0; border-radius:8px; background:transparent; font-size:18px; line-height:1; cursor:pointer; transition:transform .15s ease, background .15s ease;}
+  .emoji-btn:hover{background:rgba(255,201,40,0.22); transform:translateY(-1px) scale(1.05);}
+  .emoji-btn:active{transform:scale(.95);}
+  .slide-image-layer{position:absolute; z-index:3; max-width:70%; max-height:44%; object-fit:contain; border-radius:12px; box-shadow:0 12px 28px rgba(25,20,13,0.16); cursor:move; user-select:none; touch-action:none;}
+  .slide-image-layer.selected{outline:2px solid var(--orange); outline-offset:4px; box-shadow:0 0 0 5px rgba(255,122,47,0.22), 0 12px 28px rgba(25,20,13,0.16);}
+  .slide-image-layer:focus-visible{outline:3px solid var(--orange); outline-offset:4px;}
+  .image-edit-hint{font-size:10.5px; color:var(--text-faint); margin-top:5px;}
   .toolbar-btn.download-btn{
     background:linear-gradient(135deg, var(--orange), var(--amber)); border:none; color:#fff; font-weight:600;
     box-shadow:0 8px 22px rgba(255,122,47,0.35); transition:transform .15s ease, box-shadow .25s ease;
@@ -537,7 +546,8 @@
       <div class="empty-state" id="empty-state">
         <div class="empty-icon"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"></path><path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z"></path></svg></div>
         <h3>Ton carrousel apparaîtra ici</h3>
-        <p>Colle un texte à gauche et clique sur « Générer le carrousel ». Chaque slide sera éditable et exportable en PNG haute résolution, prête pour LinkedIn.</p>
+              <p>Colle un texte à gauche et clique sur « Générer le carrousel ». Chaque slide sera éditable et exportable en PNG haute résolution, prête pour LinkedIn.</p>
+              <p class="image-edit-hint">Astuce : sélectionne un texte avant de cliquer sur un emoji pour l’insérer ; utilise « ＋ Image » pour ajouter un visuel à la slide active.</p>
       </div>
 
       <div id="carousel-container" style="display:none;">
@@ -551,6 +561,16 @@
             <button class="toolbar-btn danger-btn" id="delete-current-btn" onclick="deleteCurrentSlide()">Supprimer cette slide</button>
             <button class="toolbar-btn" onclick="exportCurrentSlide()">Exporter cette slide</button>
             <button class="toolbar-btn pdf-btn" id="pdf-btn" onclick="exportAsPDF()">Exporter en PDF</button>
+            <div class="media-tools" aria-label="Ajouter des éléments visuels">
+              <button class="toolbar-btn" id="add-image-btn" type="button" title="Ajouter une image à la slide">＋ Image</button>
+              <input id="carousel-image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none">
+              <div class="emoji-palette" aria-label="Ajouter un emoji dans le texte">
+                <button class="emoji-btn" type="button" data-carousel-emoji="✨" aria-label="Ajouter l’emoji étincelles">✨</button>
+                <button class="emoji-btn" type="button" data-carousel-emoji="🚀" aria-label="Ajouter l’emoji fusée">🚀</button>
+                <button class="emoji-btn" type="button" data-carousel-emoji="💡" aria-label="Ajouter l’emoji ampoule">💡</button>
+                <button class="emoji-btn" type="button" data-carousel-emoji="✅" aria-label="Ajouter l’emoji validation">✅</button>
+              </div>
+            </div>
             <button class="toolbar-btn download-btn" onclick="exportAllSlides()">
               <span class="download-icon"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 21h16"></path></svg></span> Télécharger le carrousel
             </button>
@@ -607,6 +627,13 @@ let currentHandle = '';
 let currentTemplate = 'sunset';
 let currentFont = 'inter';
 let draggedIndex = null;
+let activeEditable = null;
+let selectedImageIndex = null;
+let imageDragState = null;
+const CAROUSEL_WIDTH = 1080;
+const CAROUSEL_HEIGHT = 1350;
+const MAX_CAROUSEL_IMAGE_BYTES = 3 * 1024 * 1024;
+const MAX_CAROUSEL_IMAGE_DATA_LENGTH = 4500000;
 
 const AVAILABLE_TEMPLATES = ['sunset', 'editorial', 'midnight', 'signal', 'yellow-black'];
 const AVAILABLE_FONTS = {
@@ -881,7 +908,7 @@ function contentIndexLabel(i){
   return `${String(n).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
 }
 
-function slideMarkup(slide, index){
+function slideMarkup(slide, index, includeImageSelection = true){
   const bgClass = slide.type === 'cover' ? 'type-cover' : (slide.type === 'cta' ? 'type-cta' : 'type-content');
   const themeClass = `theme-${currentTemplate}`;
   const brandMarkup = currentHandle
@@ -923,13 +950,29 @@ function slideMarkup(slide, index){
         <span class="slide-swipe">SWIPE <span class="swipe-arrow"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h15"></path><path d="m14 6 6 6-6 6"></path></svg></span></span>
       </div>`;
   }
-  return `<div class="slide-inner ${bgClass} ${themeClass}">${inner}</div>`;
+  return `<div class="slide-inner ${bgClass} ${themeClass}">${imageMarkup(slide, index, includeImageSelection)}${inner}</div>`;
 }
 
 function escapeHtml(str){
   const d = document.createElement('div');
   d.textContent = str || '';
   return d.innerHTML;
+}
+
+function validCarouselImageData(value){
+  const src = String(value || '');
+  return src.length <= MAX_CAROUSEL_IMAGE_DATA_LENGTH && /^data:image\/(?:png|jpeg|webp|gif);base64,[a-z0-9+/=\s]+$/i.test(src) ? src : '';
+}
+
+function imagePositionStyle(image){
+  return `left:${(image.x / CAROUSEL_WIDTH) * 100}%;top:${(image.y / CAROUSEL_HEIGHT) * 100}%;width:${(image.w / CAROUSEL_WIDTH) * 100}%;height:${(image.h / CAROUSEL_HEIGHT) * 100}%;`;
+}
+
+function imageMarkup(slide, index, includeImageSelection = true){
+  const image = slide?.image;
+  if(!image?.src) return '';
+  const selected = includeImageSelection && selectedImageIndex === index ? ' selected' : '';
+  return `<img class="slide-image-layer${selected}" src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt || 'Image ajoutée à la slide')}" data-image-index="${index}" tabindex="0" role="button" aria-label="Image : ${escapeHtml(image.alt || 'sans description')}" style="${imagePositionStyle(image)}">`;
 }
 
 function fitEditableText(el){
@@ -959,16 +1002,23 @@ function fitAllEditableText(root=document){
 function renderCarousel(){
   const frame = document.getElementById('slide-frame');
   frame.innerHTML = `
-    <div class="slide-controls">
+      <div class="slide-controls">
       ${canDeleteSlide(currentIndex) ? `<button class="mini-btn" onclick="deleteCurrentSlide()" title="Supprimer cette slide" aria-label="Supprimer cette slide"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m7 7 10 10"></path><path d="m17 7-10 10"></path></svg></button>` : ''}
+      ${slides[currentIndex]?.image ? `<button class="mini-btn image-remove-btn" onclick="removeCurrentImage()" title="Supprimer l’image" aria-label="Supprimer l’image">×</button>` : ''}
     </div>
     ${slideMarkup(slides[currentIndex], currentIndex)}
   `;
   frame.querySelectorAll('.editable').forEach(el=>{
     el.addEventListener('input', onEditableInput);
-    el.addEventListener('focus', ()=> requestAnimationFrame(()=> fitAllEditableText(frame)));
+    el.addEventListener('focus', ()=> { activeEditable = el; requestAnimationFrame(()=> fitAllEditableText(frame)); });
+    el.addEventListener('click', ()=> { activeEditable = el; });
     el.addEventListener('blur', onEditableBlur);
   });
+  const image = frame.querySelector('.slide-image-layer');
+  if(image){
+    image.addEventListener('pointerdown', onCarouselImagePointerDown);
+    image.addEventListener('keydown', event => { if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectCarouselImage(); } });
+  }
   fitAllEditableText(frame);
 
   // dots
@@ -994,11 +1044,93 @@ function onEditableInput(e){
   fitEditableText(e.target);
 }
 
+function insertCarouselEmoji(emoji){
+  if(!slides[currentIndex]) return;
+  const target = activeEditable && document.body.contains(activeEditable) ? activeEditable : document.querySelector('#slide-frame .editable');
+  const field = target?.dataset.field || (slides[currentIndex].type === 'cover' ? 'title' : 'body');
+  const index = Number(target?.dataset.index ?? currentIndex);
+  const current = String(slides[index]?.[field] || '').trim();
+  const next = `${current}${current ? ' ' : ''}${emoji}`.trim();
+  if(slides[index]) slides[index][field] = next;
+  if(target){ target.textContent = next; fitEditableText(target); }
+  showToast('Emoji ajouté — tu peux continuer à modifier le texte');
+}
+
+function selectCarouselImage(){
+  selectedImageIndex = currentIndex;
+  renderCarousel();
+}
+
+function onCarouselImagePointerDown(event){
+  event.stopPropagation();
+  const image = slides[currentIndex]?.image;
+  if(!image) return;
+  selectedImageIndex = currentIndex;
+  event.currentTarget.classList.add('selected');
+  const rect = event.currentTarget.closest('.slide-frame').getBoundingClientRect();
+  imageDragState = { startX:event.clientX, startY:event.clientY, x:image.x, y:image.y, frameWidth:rect.width, frameHeight:rect.height };
+  event.currentTarget.setPointerCapture?.(event.pointerId);
+}
+
+function onCarouselImagePointerMove(event){
+  if(!imageDragState || !slides[currentIndex]?.image) return;
+  const image = slides[currentIndex].image;
+  const dx = (event.clientX - imageDragState.startX) / imageDragState.frameWidth * CAROUSEL_WIDTH;
+  const dy = (event.clientY - imageDragState.startY) / imageDragState.frameHeight * CAROUSEL_HEIGHT;
+  image.x = Math.max(0, Math.min(CAROUSEL_WIDTH - image.w, imageDragState.x + dx));
+  image.y = Math.max(0, Math.min(CAROUSEL_HEIGHT - image.h, imageDragState.y + dy));
+  renderCarousel();
+}
+
+function onCarouselImagePointerUp(){
+  if(imageDragState){ imageDragState = null; showToast('Image déplacée'); }
+}
+
+window.addEventListener('pointermove', onCarouselImagePointerMove);
+window.addEventListener('pointerup', onCarouselImagePointerUp);
+
 function onEditableBlur(e){
   const field = e.target.getAttribute('data-field');
   const index = parseInt(e.target.getAttribute('data-index'));
   slides[index][field] = e.target.textContent.trim();
   fitEditableText(e.target);
+}
+
+function readCarouselImage(file){
+  return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result || '')); reader.onerror = () => reject(new Error('Impossible de lire cette image.')); reader.readAsDataURL(file); });
+}
+
+async function addCarouselImage(file){
+  if(!file) return;
+  if(!/^image\/(?:png|jpeg|webp|gif)$/i.test(file.type)){ showToast('Format non pris en charge. Utilise PNG, JPG, WebP ou GIF.'); return; }
+  if(file.size > MAX_CAROUSEL_IMAGE_BYTES){ showToast('Image trop volumineuse. La limite est de 3 Mo.'); return; }
+  const slide = slides[currentIndex];
+  if(!slide) return;
+  try{
+    const src = await readCarouselImage(file);
+    if(!validCarouselImageData(src)){ showToast('Image invalide ou trop volumineuse.'); return; }
+    const image = new Image();
+    image.onload = () => {
+      const ratio = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 1.5;
+      const w = Math.min(440, CAROUSEL_WIDTH * 0.62);
+      const h = Math.min(420, w / ratio);
+      slide.image = { src, alt: file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ') || 'Image ajoutée', x:(CAROUSEL_WIDTH - w) / 2, y:260, w, h };
+      selectedImageIndex = currentIndex;
+      renderCarousel();
+      showToast('Image ajoutée — glisse-la pour la repositionner.');
+    };
+    image.onerror = () => showToast('Impossible de décoder cette image.');
+    image.src = src;
+  }catch(error){ showToast(error.message || 'Import impossible.'); }
+}
+
+function removeCurrentImage(){
+  if(!slides[currentIndex]?.image) return;
+  slides[currentIndex].image = null;
+  selectedImageIndex = null;
+  imageDragState = null;
+  renderCarousel();
+  showToast('Image supprimée');
 }
 
 function navSlide(dir){
@@ -1087,7 +1219,7 @@ const EXPORT_HEIGHT = 1350;
 async function renderSlideCanvas(index){
   if(document.fonts?.ready) await document.fonts.ready;
   const stage = document.getElementById('export-stage');
-  stage.innerHTML = `<div style="width:${EXPORT_WIDTH}px;height:${EXPORT_HEIGHT}px;">${slideMarkup(slides[index], index)}</div>`;
+  stage.innerHTML = `<div style="width:${EXPORT_WIDTH}px;height:${EXPORT_HEIGHT}px;">${slideMarkup(slides[index], index, false)}</div>`;
   const target = stage.firstElementChild;
   fitAllEditableText(target);
   const canvas = await html2canvas(target, {
@@ -1153,7 +1285,11 @@ async function buildPdfVariant(jsPDF, slidesCount, pdfWidth, pdfHeight, imageFor
   return {pdf, bytes, size:bytes.byteLength, imageFormat, quality};
 }
 
-async function exportAsPDF(){
+document.getElementById('add-image-btn')?.addEventListener('click', () => document.getElementById('carousel-image-file')?.click());
+document.getElementById('carousel-image-file')?.addEventListener('change', async event => { const file = event.target.files?.[0]; event.target.value = ''; await addCarouselImage(file); });
+document.querySelectorAll('[data-carousel-emoji]').forEach(button => button.addEventListener('click', () => insertCarouselEmoji(button.dataset.carouselEmoji)));
+
+function exportAsPDF(){
   const button = document.getElementById('pdf-btn');
   const originalText = button ? button.textContent : '';
   if(button){
