@@ -1352,7 +1352,7 @@ document.getElementById('add-image-btn')?.addEventListener('click', () => docume
 document.getElementById('carousel-image-file')?.addEventListener('change', async event => { const file = event.target.files?.[0]; event.target.value = ''; await addCarouselImage(file); });
 document.querySelectorAll('[data-carousel-emoji]').forEach(button => button.addEventListener('click', () => insertCarouselEmoji(button.dataset.carouselEmoji)));
 
-function exportAsPDF(){
+async function exportAsPDF(){
   const button = document.getElementById('pdf-btn');
   const originalText = button ? button.textContent : '';
   if(button){
