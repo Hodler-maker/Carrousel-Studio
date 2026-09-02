@@ -204,13 +204,26 @@
   .preview-wrap{min-height:70vh; display:flex; flex-direction:column;}
   .preview-toolbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;}
   .toolbar-left{display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-width:0;}
-  .dot-track{display:flex; gap:6px; align-items:center; flex-wrap:wrap; max-width:100%;}
-  .slide-chip{display:inline-flex; align-items:center; gap:5px; min-width:48px; min-height:44px; padding:0 11px; border:1px solid var(--border); border-radius:9px; background:var(--glass-strong); color:var(--text-dim); font-family:var(--font-mono); font-size:10px; cursor:grab; transition:transform .16s ease, background .16s ease, border-color .16s ease, opacity .16s ease; user-select:none;}
+  .dot-track{display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; max-width:100%;}
+  .slide-chip{
+    display:flex; flex-direction:column; align-items:center; gap:4px; width:52px; padding:5px;
+    border:1px solid var(--border); border-radius:11px; background:var(--glass-strong); color:var(--text-dim);
+    font-family:var(--font-mono); font-size:9.5px; cursor:grab;
+    transition:transform .16s ease, background .16s ease, border-color .16s ease, opacity .16s ease; user-select:none;
+  }
   .slide-chip:hover{background:#fff; border-color:rgba(255,122,47,0.45); color:var(--text); transform:translateY(-1px);}
   .slide-chip:active,.slide-chip.dragging{cursor:grabbing; opacity:0.55; transform:scale(0.96);}
-  .slide-chip.active{background:linear-gradient(135deg, var(--orange), var(--amber)); border-color:transparent; color:#fff; box-shadow:0 5px 14px rgba(255,122,47,0.28);}
-  .slide-chip.locked{cursor:default; opacity:0.62;}
+  .slide-chip.active{border-color:var(--orange); background:#fff; color:var(--orange-deep); box-shadow:0 5px 14px rgba(255,122,47,0.28);}
+  .slide-chip.active .chip-label{color:var(--orange-deep); font-weight:700;}
+  .slide-chip.locked{cursor:default; opacity:0.68;}
   .slide-chip.locked:hover{transform:none; background:var(--glass-strong); border-color:var(--border); color:var(--text-dim);}
+  .thumb-frame{
+    position:relative; width:44px; height:55px; border-radius:7px; overflow:hidden; flex-shrink:0;
+    background:var(--bg-2); border:1px solid rgba(25,20,13,0.06); pointer-events:none;
+  }
+  .slide-chip.active .thumb-frame{outline:2px solid var(--orange); outline-offset:1px;}
+  .thumb-inner{position:absolute; top:0; left:0; width:420px; height:525px; transform:scale(0.104762); transform-origin:top left; pointer-events:none;}
+  .chip-label{white-space:nowrap; line-height:1;}
   .drag-hint{font-size:10.5px; color:var(--text-faint); white-space:nowrap;}
 
   .toolbar-btn{
@@ -246,6 +259,15 @@
   .menu-item.menu-item-danger{color:#b83f28;}
   .menu-item.menu-item-danger:hover{background:rgba(220,60,40,0.1);}
   .menu-divider{height:1px; background:var(--border); margin:4px 6px;}
+  .history-controls{display:flex; align-items:center; gap:6px;}
+  .toolbar-btn.icon-btn{padding:8px 10px; min-width:44px;}
+  .autosave-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    background:var(--glass-strong); border:1px solid rgba(255,122,47,0.3); border-radius:14px;
+    padding:12px 16px; margin-bottom:18px; font-size:13px; color:var(--text);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); animation:fadeUp .3s ease;
+  }
+  .autosave-banner-actions{display:flex; gap:8px; flex-wrap:wrap;}
   .media-tools{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   .emoji-palette{display:inline-flex; align-items:center; gap:3px; padding:3px; border:1px solid var(--border); border-radius:10px; background:rgba(255,255,255,0.5);}
   .emoji-btn{width:34px; height:34px; border:0; border-radius:8px; background:transparent; font-size:18px; line-height:1; cursor:pointer; transition:transform .15s ease, background .15s ease;}
@@ -455,6 +477,23 @@
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
   .toast-dot{width:7px; height:7px; border-radius:50%; background:var(--amber);}
 
+  .confirm-overlay{
+    position:fixed; inset:0; z-index:80; background:rgba(20,15,8,0.42); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    opacity:0; transition:opacity .15s ease;
+  }
+  .confirm-overlay.show{opacity:1;}
+  .confirm-overlay[hidden]{display:none;}
+  .confirm-modal{
+    background:var(--glass-strong); border:1px solid var(--border); border-radius:18px; padding:22px;
+    max-width:340px; width:100%; box-shadow:0 30px 70px -20px rgba(25,20,13,0.45);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    transform:translateY(8px) scale(0.98); transition:transform .15s ease;
+  }
+  .confirm-overlay.show .confirm-modal{transform:translateY(0) scale(1);}
+  .confirm-modal p{font-size:14px; color:var(--text); line-height:1.5; margin-bottom:18px;}
+  .confirm-actions{display:flex; gap:10px; justify-content:flex-end;}
+
   @media (prefers-reduced-motion: reduce){
     *{animation:none !important; transition:none !important;}
     .support-card{opacity:1; transform:none;}
@@ -500,7 +539,7 @@
       <p class="field-hint">Ce nom sera utilisé pour tes fichiers PNG et PDF téléchargés.</p>
 
       <label for="handle">Ton handle (optionnel)</label>
-      <input type="text" id="handle" maxlength="32" placeholder="Ex : @tonhandle" autocomplete="off" oninput="updateHandle(this.value)" onblur="this.value=normalizeHandle(this.value); updateHandle(this.value)">
+      <input type="text" id="handle" maxlength="32" placeholder="Ex : @tonhandle" autocomplete="off" onfocus="pushHistory()" oninput="updateHandle(this.value)" onblur="this.value=normalizeHandle(this.value); updateHandle(this.value)">
       <p class="field-hint">Il apparaîtra en bas de chaque slide.</p>
 
       <label for="source-text">Ton texte</label>
@@ -578,6 +617,10 @@
             <span class="drag-hint">Glisse une vignette pour réordonner</span>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
+            <div class="history-controls" aria-label="Annuler / Rétablir">
+              <button class="toolbar-btn icon-btn" id="undo-btn" type="button" onclick="undo()" title="Annuler (Ctrl+Z)" aria-label="Annuler la dernière action" disabled><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-15-6.7L3 13"></path></svg></button>
+              <button class="toolbar-btn icon-btn" id="redo-btn" type="button" onclick="redo()" title="Rétablir (Ctrl+Maj+Z)" aria-label="Rétablir la dernière action annulée" disabled><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 15-6.7L21 13"></path></svg></button>
+            </div>
             <div class="menu-dropdown">
               <button class="toolbar-btn menu-trigger" id="actions-menu-btn" type="button" aria-haspopup="true" aria-expanded="false" onclick="toggleActionsMenu()">
                 <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
@@ -648,6 +691,16 @@
 <div id="export-stage"></div>
 <div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-text"></span></div>
 
+<div class="confirm-overlay" id="confirm-overlay" hidden>
+  <div class="confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-message">
+    <p id="confirm-message">Confirmer la suppression ?</p>
+    <div class="confirm-actions">
+      <button class="toolbar-btn" type="button" id="confirm-cancel-btn">Annuler</button>
+      <button class="toolbar-btn danger-btn" type="button" id="confirm-ok-btn">Supprimer</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -662,6 +715,13 @@ let activeEditable = null;
 let selectedImageIndex = null;
 let imageDragState = null;
 let imageResizeState = null;
+let undoStack = [];
+let redoStack = [];
+let isRestoringState = false;
+let autosaveTimer = null;
+let autosaveQuotaWarned = false;
+const MAX_HISTORY = 40;
+const AUTOSAVE_KEY = 'carrousel-studio-autosave-v1';
 const CAROUSEL_WIDTH = 1080;
 const CAROUSEL_HEIGHT = 1350;
 const MAX_CAROUSEL_IMAGE_BYTES = 3 * 1024 * 1024;
@@ -692,18 +752,226 @@ function normalizeHandle(value){
 function updateHandle(value){
   currentHandle = normalizeHandle(value);
   if(slides.length) renderCarousel();
+  scheduleAutosave();
 }
 
 function updateTemplate(value){
+  pushHistory();
   currentTemplate = AVAILABLE_TEMPLATES.includes(value) ? value : 'sunset';
   if(slides.length) renderCarousel();
+  scheduleAutosave();
 }
 
 function updateFont(value){
+  pushHistory();
   currentFont = AVAILABLE_FONTS[value] ? value : 'inter';
   document.documentElement.style.setProperty('--font-slide', AVAILABLE_FONTS[currentFont].family);
   if(slides.length) renderCarousel();
+  scheduleAutosave();
 }
+
+/* ---------- Historique (undo/redo) ---------- */
+
+function snapshotState(){
+  return {
+    slides: JSON.parse(JSON.stringify(slides)),
+    currentIndex,
+    currentHandle,
+    currentTemplate,
+    currentFont,
+  };
+}
+
+function pushHistory(){
+  if(isRestoringState) return;
+  undoStack.push(snapshotState());
+  if(undoStack.length > MAX_HISTORY) undoStack.shift();
+  redoStack = [];
+  updateHistoryButtons();
+}
+
+function applyStateSnapshot(snapshot){
+  isRestoringState = true;
+  slides = JSON.parse(JSON.stringify(snapshot.slides || []));
+  currentIndex = slides.length ? Math.max(0, Math.min(snapshot.currentIndex || 0, slides.length - 1)) : 0;
+  currentHandle = snapshot.currentHandle || '';
+  currentTemplate = AVAILABLE_TEMPLATES.includes(snapshot.currentTemplate) ? snapshot.currentTemplate : 'sunset';
+  currentFont = AVAILABLE_FONTS[snapshot.currentFont] ? snapshot.currentFont : 'inter';
+  selectedImageIndex = null;
+  activeEditable = null;
+  imageDragState = null;
+  imageResizeState = null;
+
+  const handleInput = document.getElementById('handle');
+  if(handleInput) handleInput.value = currentHandle;
+  const templateSelect = document.getElementById('template');
+  if(templateSelect) templateSelect.value = currentTemplate;
+  const fontSelect = document.getElementById('font-family');
+  if(fontSelect) fontSelect.value = currentFont;
+  document.documentElement.style.setProperty('--font-slide', AVAILABLE_FONTS[currentFont].family);
+
+  if(slides.length){
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('carousel-container').style.display = 'block';
+    renderCarousel();
+  } else {
+    document.getElementById('empty-state').style.display = '';
+    document.getElementById('carousel-container').style.display = 'none';
+  }
+  isRestoringState = false;
+  updateHistoryButtons();
+  scheduleAutosave();
+}
+
+function undo(){
+  if(!undoStack.length){ showToast('Rien à annuler.'); return; }
+  redoStack.push(snapshotState());
+  if(redoStack.length > MAX_HISTORY) redoStack.shift();
+  const snapshot = undoStack.pop();
+  applyStateSnapshot(snapshot);
+  showToast('Action annulée');
+}
+
+function redo(){
+  if(!redoStack.length){ showToast('Rien à rétablir.'); return; }
+  undoStack.push(snapshotState());
+  if(undoStack.length > MAX_HISTORY) undoStack.shift();
+  const snapshot = redoStack.pop();
+  applyStateSnapshot(snapshot);
+  showToast('Action rétablie');
+}
+
+function updateHistoryButtons(){
+  const undoBtn = document.getElementById('undo-btn');
+  const redoBtn = document.getElementById('redo-btn');
+  if(undoBtn) undoBtn.disabled = undoStack.length === 0;
+  if(redoBtn) redoBtn.disabled = redoStack.length === 0;
+}
+
+document.addEventListener('keydown', (event) => {
+  const meta = event.ctrlKey || event.metaKey;
+  if(!meta) return;
+  const key = event.key.toLowerCase();
+  if(key !== 'z' && key !== 'y') return;
+  const active = document.activeElement;
+  const isEditingText = active && (active.isContentEditable || active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
+  if(isEditingText) return; // laisse le champ gérer son propre undo natif
+  if(key === 'y' || (key === 'z' && event.shiftKey)){
+    event.preventDefault();
+    redo();
+  } else if(key === 'z'){
+    event.preventDefault();
+    undo();
+  }
+});
+
+/* ---------- Sauvegarde automatique locale ---------- */
+
+function collectSettingsForAutosave(){
+  return {
+    topic: document.getElementById('topic')?.value || '',
+    projectName: document.getElementById('project-name')?.value || '',
+    sourceText: document.getElementById('source-text')?.value || '',
+    slideCount: document.getElementById('slide-count')?.value || 'auto',
+    tone: document.getElementById('tone')?.value || 'educatif',
+  };
+}
+
+function scheduleAutosave(){
+  if(isRestoringState) return;
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(saveAutosave, 700);
+}
+
+function saveAutosave(){
+  try{
+    const payload = {
+      version: 1,
+      savedAt: Date.now(),
+      slides,
+      currentIndex,
+      currentHandle,
+      currentTemplate,
+      currentFont,
+      settings: collectSettingsForAutosave(),
+    };
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+  }catch(err){
+    if(!autosaveQuotaWarned){
+      autosaveQuotaWarned = true;
+      showToast('Sauvegarde locale limitée (espace insuffisant) — pense à exporter régulièrement.');
+    }
+  }
+}
+
+function loadAutosavePayload(){
+  try{
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if(!raw) return null;
+    const payload = JSON.parse(raw);
+    if(!payload || !Array.isArray(payload.slides)) return null;
+    return payload;
+  }catch(err){
+    return null;
+  }
+}
+
+function clearAutosave(){
+  try{ localStorage.removeItem(AUTOSAVE_KEY); }catch(err){}
+}
+
+function dismissAutosaveBanner(){
+  document.getElementById('autosave-banner')?.remove();
+}
+
+function discardAutosave(){
+  clearAutosave();
+  dismissAutosaveBanner();
+}
+
+function restoreFromAutosave(){
+  const payload = loadAutosavePayload();
+  if(!payload){ dismissAutosaveBanner(); return; }
+  pushHistory();
+  applyStateSnapshot({
+    slides: payload.slides,
+    currentIndex: payload.currentIndex || 0,
+    currentHandle: payload.currentHandle || '',
+    currentTemplate: payload.currentTemplate || 'sunset',
+    currentFont: payload.currentFont || 'inter',
+  });
+  const s = payload.settings || {};
+  const topicEl = document.getElementById('topic'); if(topicEl) topicEl.value = s.topic || '';
+  const projectEl = document.getElementById('project-name'); if(projectEl) projectEl.value = s.projectName || '';
+  const sourceEl = document.getElementById('source-text'); if(sourceEl) sourceEl.value = s.sourceText || '';
+  const countEl = document.getElementById('slide-count'); if(countEl) countEl.value = s.slideCount || 'auto';
+  const toneEl = document.getElementById('tone'); if(toneEl) toneEl.value = s.tone || 'educatif';
+  dismissAutosaveBanner();
+  showToast('Session précédente restaurée ✓');
+}
+
+function showAutosaveBannerIfNeeded(){
+  const payload = loadAutosavePayload();
+  if(!payload || !payload.slides || !payload.slides.length) return;
+  if(document.getElementById('autosave-banner')) return;
+  const bar = document.createElement('div');
+  bar.id = 'autosave-banner';
+  bar.className = 'autosave-banner';
+  const when = payload.savedAt ? new Date(payload.savedAt).toLocaleString('fr-FR') : '';
+  bar.innerHTML = `
+    <span>💾 Une session précédente (${payload.slides.length} slides${when ? ', ' + when : ''}) a été retrouvée sur cet appareil.</span>
+    <span class="autosave-banner-actions">
+      <button class="toolbar-btn" type="button" onclick="restoreFromAutosave()">Restaurer</button>
+      <button class="toolbar-btn" type="button" onclick="discardAutosave()">Ignorer</button>
+    </span>`;
+  document.querySelector('.app')?.insertBefore(bar, document.querySelector('.layout'));
+}
+
+showAutosaveBannerIfNeeded();
+document.querySelectorAll('#topic, #project-name, #source-text, #slide-count, #tone').forEach(el => {
+  el.addEventListener('input', scheduleAutosave);
+  el.addEventListener('change', scheduleAutosave);
+});
 
 function projectFilename(){
   const raw = document.getElementById('project-name')?.value.trim() || document.getElementById('topic')?.value.trim() || 'carrousel-studio';
@@ -725,6 +993,41 @@ function showError(msg){
   box.style.display='block';
   box.textContent = msg;
 }
+
+/* ---------- Confirmation avant suppression ---------- */
+
+let pendingConfirmCallback = null;
+
+function showConfirmModal(message, onConfirm){
+  const overlay = document.getElementById('confirm-overlay');
+  const msgEl = document.getElementById('confirm-message');
+  if(!overlay || !msgEl){ onConfirm?.(); return; }
+  msgEl.textContent = message;
+  pendingConfirmCallback = onConfirm;
+  overlay.hidden = false;
+  requestAnimationFrame(()=> overlay.classList.add('show'));
+  requestAnimationFrame(()=> document.getElementById('confirm-cancel-btn')?.focus());
+}
+
+function resolveConfirmModal(confirmed){
+  const overlay = document.getElementById('confirm-overlay');
+  const callback = pendingConfirmCallback;
+  pendingConfirmCallback = null;
+  if(overlay){
+    overlay.classList.remove('show');
+    setTimeout(()=>{ overlay.hidden = true; }, 150);
+  }
+  if(confirmed && callback) callback();
+}
+
+document.getElementById('confirm-ok-btn')?.addEventListener('click', ()=> resolveConfirmModal(true));
+document.getElementById('confirm-cancel-btn')?.addEventListener('click', ()=> resolveConfirmModal(false));
+document.getElementById('confirm-overlay')?.addEventListener('click', (event)=>{
+  if(event.target.id === 'confirm-overlay') resolveConfirmModal(false);
+});
+document.addEventListener('keydown', (event)=>{
+  if(event.key === 'Escape' && pendingConfirmCallback) resolveConfirmModal(false);
+});
 
 const LIGHTNING_ADDRESS = 'ganglyspruce14@walletofsatoshi.com';
 
@@ -848,6 +1151,7 @@ Contraintes :
       throw new Error("La réponse générée n'était pas un JSON valide. Réessaie, ou reformule ton texte.");
     }
 
+    pushHistory();
     slides = [];
     slides.push({type:'cover', title: escapeHtml(parsed.cover.title), subtitle: escapeHtml(parsed.cover.subtitle)});
     (parsed.slides || []).forEach(s => slides.push({type:'content', title: escapeHtml(s.title), body: escapeHtml(s.body)}));
@@ -921,6 +1225,7 @@ Le résultat doit être complémentaire au reste du carrousel, concret, lisible 
     raw = raw.replace(/```json/g,'').replace(/```/g,'').trim();
     const replacement = JSON.parse(raw);
     if(!replacement.title) throw new Error('La réponse de Gemini est incomplète.');
+    pushHistory();
     slides[currentIndex] = slide.type === 'cover'
       ? {...slide, title:escapeHtml(replacement.title), subtitle:escapeHtml(replacement.subtitle || '')}
       : {...slide, title:escapeHtml(replacement.title), body:escapeHtml(replacement.body || '')};
@@ -1079,6 +1384,22 @@ function fitAllEditableText(root=document){
   root.querySelectorAll('.editable').forEach(fitEditableText);
 }
 
+function renderDotTrack(){
+  const track = document.getElementById('dot-track');
+  if(!track) return;
+  track.innerHTML = slides.map((s,i)=>{
+    const locked = s.type !== 'content';
+    const label = s.type === 'cover' ? 'Cover' : (s.type === 'cta' ? 'CTA' : String(slides.filter((slide,j)=>slide.type === 'content' && j <= i).length).padStart(2,'0'));
+    return `<div class="slide-chip ${i===currentIndex?'active ':''}${locked?'locked':''}" role="button" tabindex="0" aria-label="${locked ? label + ' non déplaçable' : 'Déplacer la slide ' + label}" aria-current="${i===currentIndex ? 'true' : 'false'}" draggable="${!locked}" onclick="goToSlide(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goToSlide(${i});}" ondragstart="dragStart(event,${i})" ondragend="dragEnd(event)" ondragover="dragOver(event)" ondrop="dropSlide(event,${i})">
+      <div class="thumb-frame"><div class="thumb-inner">${slideMarkup(s, i, false)}</div></div>
+      <span class="chip-label">${locked ? '◼' : '⋮⋮'} ${label}</span>
+    </div>`;
+  }).join('');
+  // les vignettes sont purement visuelles : on retire tout ce qui pourrait capter le focus/clic
+  track.querySelectorAll('.thumb-inner [contenteditable]').forEach(el => { el.removeAttribute('contenteditable'); });
+  track.querySelectorAll('.thumb-inner img, .thumb-inner button').forEach(el => { el.removeAttribute('tabindex'); });
+}
+
 function renderCarousel(){
   const frame = document.getElementById('slide-frame');
   frame.innerHTML = `
@@ -1090,7 +1411,7 @@ function renderCarousel(){
   `;
   frame.querySelectorAll('.editable').forEach(el=>{
     el.addEventListener('input', onEditableInput);
-    el.addEventListener('focus', ()=> { activeEditable = el; requestAnimationFrame(()=> fitAllEditableText(frame)); });
+    el.addEventListener('focus', ()=> { pushHistory(); activeEditable = el; requestAnimationFrame(()=> fitAllEditableText(frame)); });
     el.addEventListener('click', ()=> { activeEditable = el; });
     el.addEventListener('blur', onEditableBlur);
   });
@@ -1103,13 +1424,8 @@ function renderCarousel(){
   if(resizeHandle) resizeHandle.addEventListener('pointerdown', onCarouselImageResizePointerDown);
   fitAllEditableText(frame);
 
-  // dots
-  const track = document.getElementById('dot-track');
-  track.innerHTML = slides.map((s,i)=>{
-    const locked = s.type !== 'content';
-    const label = s.type === 'cover' ? 'Cover' : (s.type === 'cta' ? 'CTA' : String(slides.filter((slide,j)=>slide.type === 'content' && j <= i).length).padStart(2,'0'));
-    return `<div class="slide-chip ${i===currentIndex?'active ':''}${locked?'locked':''}" role="button" tabindex="0" aria-label="${locked ? label + ' non déplaçable' : 'Déplacer la slide ' + label}" aria-current="${i===currentIndex ? 'true' : 'false'}" draggable="${!locked}" onclick="goToSlide(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goToSlide(${i});}" ondragstart="dragStart(event,${i})" ondragend="dragEnd(event)" ondragover="dragOver(event)" ondrop="dropSlide(event,${i})">${locked ? '◼' : '⋮⋮'} ${label}</div>`;
-  }).join('');
+  // dots avec vignette miniature de chaque slide (sauté pendant un drag/resize d'image pour rester fluide)
+  if(!imageDragState && !imageResizeState) renderDotTrack();
 
   document.getElementById('prev-btn').disabled = currentIndex === 0;
   document.getElementById('next-btn').disabled = currentIndex === slides.length - 1;
@@ -1120,6 +1436,8 @@ function renderCarousel(){
       ? 'Supprimer cette slide'
       : 'La couverture et la conclusion sont conservées';
   }
+  updateHistoryButtons();
+  scheduleAutosave();
 }
 
 function onEditableInput(e){
@@ -1209,6 +1527,7 @@ function onCarouselImagePointerDown(event){
   event.stopPropagation();
   const image = slides[currentIndex]?.image;
   if(!image) return;
+  pushHistory();
   selectedImageIndex = currentIndex;
   event.currentTarget.classList.add('selected');
   const rect = event.currentTarget.closest('.slide-frame').getBoundingClientRect();
@@ -1222,6 +1541,7 @@ function onCarouselImageResizePointerDown(event){
   event.stopPropagation();
   const image = slides[currentIndex]?.image;
   if(!image) return;
+  pushHistory();
   selectedImageIndex = currentIndex;
   const rect = event.currentTarget.closest('.slide-frame').getBoundingClientRect();
   imageResizeState = { startX:event.clientX, startY:event.clientY, w:image.w, h:image.h, ratio:image.w / Math.max(1, image.h), x:image.x, y:image.y, frameWidth:rect.width, frameHeight:rect.height };
@@ -1253,8 +1573,10 @@ function onCarouselImagePointerMove(event){
 }
 
 function onCarouselImagePointerUp(){
+  const wasActive = !!(imageResizeState || imageDragState);
   if(imageResizeState){ imageResizeState = null; showToast('Image redimensionnée'); }
   if(imageDragState){ imageDragState = null; showToast('Image déplacée'); }
+  if(wasActive) renderDotTrack();
 }
 
 window.addEventListener('pointermove', onCarouselImagePointerMove);
@@ -1268,6 +1590,7 @@ function onEditableBlur(e){
   slides[index][field] = sanitized;
   e.target.innerHTML = sanitized;
   fitEditableText(e.target);
+  scheduleAutosave();
 }
 
 function readCarouselImage(file){
@@ -1294,6 +1617,7 @@ async function addCarouselImage(file){
       if(w > maxW){ w = maxW; h = w / ratio; }
       const x = Math.max(0, Math.min(CAROUSEL_WIDTH - w, (CAROUSEL_WIDTH - w) / 2));
       const y = Math.max(140, Math.min(CAROUSEL_HEIGHT - h, 360));
+      pushHistory();
       slide.image = { src, alt: file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ') || 'Image ajoutée', x, y, w, h };
       selectedImageIndex = currentIndex;
       renderCarousel();
@@ -1306,11 +1630,14 @@ async function addCarouselImage(file){
 
 function removeCurrentImage(){
   if(!slides[currentIndex]?.image) return;
-  slides[currentIndex].image = null;
-  selectedImageIndex = null;
-  imageDragState = null;
-  renderCarousel();
-  showToast('Image supprimée');
+  showConfirmModal('Supprimer cette image de la slide ?', () => {
+    pushHistory();
+    slides[currentIndex].image = null;
+    selectedImageIndex = null;
+    imageDragState = null;
+    renderCarousel();
+    showToast('Image supprimée');
+  });
 }
 
 function navSlide(dir){
@@ -1360,6 +1687,7 @@ function dropSlide(e,targetIndex){
   if(slides[sourceIndex]?.type !== 'content') return;
   if(slides[targetIndex]?.type !== 'content' && slides[targetIndex]?.type !== 'cta') return;
 
+  pushHistory();
   const [moved] = slides.splice(sourceIndex, 1);
   const insertIndex = slides[targetIndex]?.type === 'cta'
     ? slides.length
@@ -1379,14 +1707,17 @@ function deleteCurrentSlide(){
     showToast("La couverture et la conclusion sont conservées.");
     return;
   }
-  slides.splice(currentIndex, 1);
-  currentIndex = Math.max(0, Math.min(currentIndex, slides.length - 1));
-  selectedImageIndex = null;
-  activeEditable = null;
-  imageDragState = null;
-  imageResizeState = null;
-  renderCarousel();
-  showToast("Slide supprimée");
+  showConfirmModal('Supprimer cette slide ? Cette action est réversible avec le bouton Annuler (↩).', () => {
+    pushHistory();
+    slides.splice(currentIndex, 1);
+    currentIndex = Math.max(0, Math.min(currentIndex, slides.length - 1));
+    selectedImageIndex = null;
+    activeEditable = null;
+    imageDragState = null;
+    imageResizeState = null;
+    renderCarousel();
+    showToast("Slide supprimée");
+  });
 }
 
 function removeSlide(index){
@@ -1394,13 +1725,18 @@ function removeSlide(index){
     showToast("Sélectionne une slide de contenu à supprimer.");
     return;
   }
-  slides.splice(index, 1);
-  currentIndex = Math.max(0, Math.min(currentIndex, slides.length - 1));
-  renderCarousel();
+  showConfirmModal('Supprimer cette slide ? Cette action est réversible avec le bouton Annuler (↩).', () => {
+    pushHistory();
+    slides.splice(index, 1);
+    currentIndex = Math.max(0, Math.min(currentIndex, slides.length - 1));
+    renderCarousel();
+    showToast("Slide supprimée");
+  });
 }
 
 function addContentSlide(){
   const insertAt = slides.length - 1; // before CTA
+  pushHistory();
   slides.splice(insertAt, 0, {type:'content', title: escapeHtml('Nouvelle idée'), body: escapeHtml('Écris ton contenu ici.')});
   currentIndex = insertAt;
   renderCarousel();
