@@ -26,6 +26,58 @@ function isRateLimited(ip) {
   return entry.count > MAX_REQUESTS_PER_WINDOW;
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Un appel est retentable si Gemini est temporairement surchargé (503) ou
+// bridé (429). Les autres erreurs (clé invalide, requête malformée, etc.)
+// ne doivent pas être réessayées — elles échoueront de la même façon à
+// chaque tentative.
+function isRetryableStatus(status) {
+  return status === 503 || status === 429;
+}
+
+const MAX_ATTEMPTS = 3;
+const BASE_DELAY_MS = 700; // 700ms, puis ~1.4s, puis ~2.8s (backoff exponentiel + jitter)
+
+async function callGeminiWithRetry(apiKey, body) {
+  let lastResponse = null;
+  let lastData = null;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    const data = await geminiResponse.json();
+
+    if (geminiResponse.ok) {
+      return { geminiResponse, data };
+    }
+
+    lastResponse = geminiResponse;
+    lastData = data;
+
+    const shouldRetry = attempt < MAX_ATTEMPTS && isRetryableStatus(geminiResponse.status);
+    if (!shouldRetry) break;
+
+    const delay = BASE_DELAY_MS * 2 ** (attempt - 1) + Math.random() * 250;
+    console.warn(`Gemini surchargé (statut ${geminiResponse.status}), nouvelle tentative ${attempt + 1}/${MAX_ATTEMPTS} dans ${Math.round(delay)}ms...`);
+    await sleep(delay);
+  }
+
+  return { geminiResponse: lastResponse, data: lastData };
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Méthode non autorisée' });
@@ -54,37 +106,28 @@ export default async function handler(req, res) {
 
     const userText = messages.map(m => m.content).join('\n');
 
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey,
+    const { geminiResponse, data } = await callGeminiWithRetry(apiKey, {
+      system_instruction: system ? { parts: [{ text: system }] } : undefined,
+      contents: [{ role: 'user', parts: [{ text: userText }] }],
+      generationConfig: {
+        temperature: 0.9,
+        // Gemini 3.6 Flash réfléchit par défaut (thinkingLevel "medium"),
+        // et ces tokens de réflexion sont décomptés dans maxOutputTokens.
+        // Sans ce réglage, la réflexion pouvait consommer tout le budget
+        // avant même d'écrire le JSON, provoquant un finishReason
+        // "MAX_TOKENS" avec une réponse vide à chaque génération.
+        thinkingConfig: {
+          thinkingLevel: 'low',
         },
-        body: JSON.stringify({
-          system_instruction: system ? { parts: [{ text: system }] } : undefined,
-          contents: [{ role: 'user', parts: [{ text: userText }] }],
-          generationConfig: {
-            temperature: 0.9,
-            // Gemini 3.6 Flash réfléchit par défaut (thinkingLevel "medium"),
-            // et ces tokens de réflexion sont décomptés dans maxOutputTokens.
-            // Sans ce réglage, la réflexion pouvait consommer tout le budget
-            // avant même d'écrire le JSON, provoquant un finishReason
-            // "MAX_TOKENS" avec une réponse vide à chaque génération.
-            thinkingConfig: {
-              thinkingLevel: 'low',
-            },
-            maxOutputTokens: 8192,
-          },
-        }),
-      }
-    );
-
-    const data = await geminiResponse.json();
+        maxOutputTokens: 8192,
+      },
+    });
 
     if (!geminiResponse.ok) {
-      res.status(geminiResponse.status).json({ error: data.error?.message || 'Erreur API Gemini' });
+      const message = geminiResponse.status === 503
+        ? 'Gemini est actuellement surchargé après plusieurs tentatives. Réessaie dans quelques instants.'
+        : (data.error?.message || 'Erreur API Gemini');
+      res.status(geminiResponse.status).json({ error: message });
       return;
     }
 
