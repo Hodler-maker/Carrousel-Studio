@@ -116,8 +116,11 @@
   .visual-frame.ratio-square{aspect-ratio:1/1;}
   @keyframes frameIn{from{opacity:0; transform:translateY(14px) scale(0.98);} to{opacity:1; transform:translateY(0) scale(1);}}
 
-  .visual-inner{position:absolute; inset:0; padding:9%; display:flex; flex-direction:column; font-family:var(--font-visual); background-size:cover; background-position:center;}
-  .visual-overlay{position:absolute; inset:0; z-index:0;}
+  .visual-inner{position:absolute; inset:0; padding:9%; display:flex; flex-direction:column; font-family:var(--font-visual);}
+  .visual-bg-image{position:absolute; inset:-6%; z-index:0; background-size:cover; background-position:50% 50%; background-repeat:no-repeat; cursor:default; touch-action:none;}
+  .visual-bg-image.has-image{cursor:grab;}
+  .visual-bg-image.has-image.dragging{cursor:grabbing;}
+  .visual-overlay{position:absolute; inset:0; z-index:1; pointer-events:none;}
 
   .theme-sunset .visual-overlay{background:radial-gradient(circle at 85% 8%, rgba(255,255,255,0.35), transparent 40%), radial-gradient(circle at 10% 100%, rgba(120,30,0,0.35), transparent 55%), linear-gradient(150deg, var(--amber) 0%, var(--orange) 45%, var(--orange-deep) 100%); color:#fff;}
   .theme-editorial .visual-overlay{background:linear-gradient(145deg, #f2e7d5 0%, #d9c09b 100%); color:#211b14;}
@@ -128,14 +131,19 @@
   .visual-inner.theme-editorial,.visual-inner.theme-yellow-black{color:#211b14;}
   .visual-inner.has-bg-image .visual-overlay{opacity:0.72;}
 
-  .visual-content{position:relative; z-index:2; display:flex; flex-direction:column; height:100%;}
+  .visual-content{position:relative; z-index:2; display:flex; flex-direction:column; height:100%; pointer-events:none;}
+  .draggable-text{cursor:move; touch-action:none; user-select:none; pointer-events:auto; position:relative; border-radius:8px; transition:outline-color .15s ease;}
+  .draggable-text:hover{outline:1px dashed rgba(255,122,47,0.45); outline-offset:6px;}
+  .draggable-text.dragging{outline:2px solid var(--orange); outline-offset:6px; z-index:5;}
+  #drag-title{margin-top:auto;}
   .visual-eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.85; display:flex; align-items:center; gap:8px;}
   .visual-eyebrow::before{content:''; width:16px; height:1px; background:currentColor; display:inline-block;}
   .visual-eyebrow:empty{display:none;}
-  .visual-quote-mark{font-family:var(--font-display); font-size:56px; font-weight:800; line-height:0.6; opacity:0.5; margin-top:auto;}
+  #drag-eyebrow:has(.visual-eyebrow:empty){display:none;}
+  .visual-quote-mark{font-family:var(--font-display); font-size:56px; font-weight:800; line-height:0.6; opacity:0.5;}
   .visual-title{font-family:var(--font-visual); font-weight:700; line-height:1.2; letter-spacing:-0.01em; margin-top:12px; font-size:23px; white-space:pre-line;}
   .type-citation .visual-title{margin-top:10px;}
-  .type-annonce .visual-title{margin-top:auto; font-size:26px;}
+  .type-annonce .visual-title{font-size:26px;}
   .visual-subtitle{font-size:14px; margin-top:16px; line-height:1.5; opacity:0.9; white-space:pre-line;}
   .visual-spacer{flex:1;}
   .visual-footer{margin-top:auto; padding-top:16px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid rgba(0,0,0,0.08);}
@@ -158,6 +166,13 @@
   .format-toggle{display:flex; gap:8px; justify-content:center; margin-top:14px;}
   .format-btn{padding:6px 14px; border-radius:100px; border:1px solid var(--border); background:var(--glass-strong); font-family:var(--font-mono); font-size:11px; color:var(--text-dim); cursor:pointer; transition:all .18s ease;}
   .format-btn.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  #export-stage{position:absolute; left:-99999px; top:0; width:1080px; height:1350px; overflow:hidden;}
+
+  .reposition-hint{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-faint); text-align:center; margin-top:10px; line-height:1.4;}
+  .zoom-row{display:flex; align-items:center; gap:10px; margin-top:10px;}
+  .zoom-row input[type=range]{flex:1; accent-color:var(--orange);}
+  .zoom-row span{font-family:var(--font-mono); font-size:11px; color:var(--text-dim); min-width:36px; text-align:right;}
 
   .empty-state{display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:60px 24px; color:var(--text-dim); max-width:420px; margin:0 auto;}
   .empty-icon{width:48px; height:48px; border-radius:50%; background:rgba(255,122,47,0.12); display:flex; align-items:center; justify-content:center; color:var(--orange-deep);}
@@ -234,7 +249,12 @@
         <button type="button" class="toolbar-btn remove-btn" id="bg-image-remove-btn" style="display:none;" onclick="removeBgImage()">Retirer</button>
       </div>
       <input id="bg-image-file" type="file" accept="image/png,image/jpeg,image/webp" style="display:none">
-      <p class="field-hint">L'image passe en fond avec un léger voile pour garder le texte lisible.</p>
+      <div class="zoom-row" id="bg-zoom-row" style="display:none;">
+        <label style="margin:0; text-transform:none; letter-spacing:0; font-size:11.5px;">Zoom</label>
+        <input type="range" id="v-bg-zoom" min="100" max="220" value="100" oninput="onZoomChange(this.value)">
+        <span id="v-bg-zoom-value">100%</span>
+      </div>
+      <p class="field-hint">Glisse l'image directement sur l'aperçu pour la repositionner.</p>
 
       <div class="row">
         <div>
@@ -279,16 +299,25 @@
         <div class="visual-viewport" id="visual-viewport">
           <div class="visual-frame" id="visual-frame">
             <div class="visual-inner theme-sunset type-citation" id="visual-inner">
+              <div class="visual-bg-image" id="visual-bg-image"></div>
               <div class="visual-overlay" id="visual-bg"></div>
-              <div class="visual-content">
-                <div class="visual-eyebrow" id="out-eyebrow"></div>
-                <div class="visual-quote-mark" id="out-quote-mark">”</div>
-                <div class="visual-title" id="out-title">Colle ou écris ta citation ici...</div>
-                <div class="visual-subtitle" id="out-subtitle"></div>
+              <div class="visual-content" id="visual-content">
+                <div class="draggable-text" id="drag-eyebrow" data-key="eyebrow">
+                  <div class="visual-eyebrow" id="out-eyebrow"></div>
+                </div>
+                <div class="draggable-text" id="drag-title" data-key="title">
+                  <div class="visual-quote-mark" id="out-quote-mark">”</div>
+                  <div class="visual-title" id="out-title">Colle ou écris ta citation ici...</div>
+                </div>
+                <div class="draggable-text" id="drag-subtitle" data-key="subtitle">
+                  <div class="visual-subtitle" id="out-subtitle"></div>
+                </div>
                 <div class="visual-spacer"></div>
-                <div class="visual-footer" id="out-footer">
-                  <span class="visual-author" id="out-author"></span>
-                  <span class="visual-brand" id="out-brand"></span>
+                <div class="draggable-text" id="drag-footer" data-key="footer">
+                  <div class="visual-footer" id="out-footer">
+                    <span class="visual-author" id="out-author"></span>
+                    <span class="visual-brand" id="out-brand"></span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -296,14 +325,13 @@
         </div>
       </div>
 
-      <div class="format-toggle">
-        <span class="field-hint">Le visuel se met à jour en direct à mesure que tu écris.</span>
-      </div>
+      <p class="reposition-hint">Glisse le texte ou l'image de fond directement sur l'aperçu pour les repositionner.</p>
 
-      <div class="actions-row">
+      <div class="actions-row" style="flex-direction:column; gap:8px;">
         <button class="toolbar-btn download-btn" style="width:100%;" onclick="exportVisual()">
           <span class="download-icon"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 21h16"></path></svg></span> Télécharger le visuel (PNG)
         </button>
+        <button class="toolbar-btn" style="width:100%;" onclick="resetLayout()">↺ Réinitialiser la mise en page</button>
       </div>
     </div>
   </div>
@@ -331,6 +359,139 @@ const AVAILABLE_FONTS = {
 
 let currentType = 'citation';
 let bgImageData = null;
+
+const DEFAULT_TEXT_OFFSETS = () => ({
+  eyebrow:{x:0,y:0}, title:{x:0,y:0}, subtitle:{x:0,y:0}, footer:{x:0,y:0},
+});
+let textOffsets = DEFAULT_TEXT_OFFSETS();
+let bgPos = {x:50, y:50};
+let bgZoom = 1;
+
+function clamp(v, min, max){ return Math.min(max, Math.max(min, v)); }
+
+function applyTextTransforms(inner){
+  const rect = {width: inner.offsetWidth || 1, height: inner.offsetHeight || 1};
+  Object.keys(textOffsets).forEach(key => {
+    const el = inner.querySelector(`[data-key="${key}"]`);
+    if(!el) return;
+    const off = textOffsets[key];
+    el.style.transform = `translate(${(off.x * rect.width).toFixed(1)}px, ${(off.y * rect.height).toFixed(1)}px)`;
+  });
+}
+
+function applyBgTransform(inner){
+  const bgEl = inner.querySelector('.visual-bg-image');
+  if(!bgEl) return;
+  bgEl.style.backgroundPosition = `${bgPos.x}% ${bgPos.y}%`;
+  bgEl.style.transform = `scale(${bgZoom})`;
+}
+
+let activeDrag = null;
+
+function startTextDrag(e){
+  const el = e.currentTarget;
+  const key = el.dataset.key;
+  if(!key) return;
+  e.preventDefault();
+  try{ el.setPointerCapture(e.pointerId); }catch(err){}
+  const inner = document.getElementById('visual-inner');
+  const rect = inner.getBoundingClientRect();
+  activeDrag = {
+    type:'text', key, el,
+    startX:e.clientX, startY:e.clientY,
+    startOffset:{...textOffsets[key]},
+    rectW:rect.width || 1, rectH:rect.height || 1,
+  };
+  el.classList.add('dragging');
+  el.addEventListener('pointermove', onTextDragMove);
+  el.addEventListener('pointerup', endTextDrag);
+  el.addEventListener('pointercancel', endTextDrag);
+}
+
+function onTextDragMove(e){
+  if(!activeDrag || activeDrag.type !== 'text') return;
+  const dx = e.clientX - activeDrag.startX;
+  const dy = e.clientY - activeDrag.startY;
+  textOffsets[activeDrag.key] = {
+    x: clamp(activeDrag.startOffset.x + dx / activeDrag.rectW, -0.42, 0.42),
+    y: clamp(activeDrag.startOffset.y + dy / activeDrag.rectH, -0.42, 0.42),
+  };
+  applyTextTransforms(document.getElementById('visual-inner'));
+}
+
+function endTextDrag(e){
+  if(!activeDrag || activeDrag.type !== 'text') return;
+  const el = activeDrag.el;
+  el.classList.remove('dragging');
+  el.removeEventListener('pointermove', onTextDragMove);
+  el.removeEventListener('pointerup', endTextDrag);
+  el.removeEventListener('pointercancel', endTextDrag);
+  activeDrag = null;
+}
+
+function startBgDrag(e){
+  if(!bgImageData) return;
+  e.preventDefault();
+  const bgEl = e.currentTarget;
+  try{ bgEl.setPointerCapture(e.pointerId); }catch(err){}
+  const inner = document.getElementById('visual-inner');
+  const rect = inner.getBoundingClientRect();
+  activeDrag = {
+    type:'bg', el:bgEl,
+    startX:e.clientX, startY:e.clientY,
+    startPos:{...bgPos},
+    rectW:rect.width || 1, rectH:rect.height || 1,
+  };
+  bgEl.classList.add('dragging');
+  bgEl.addEventListener('pointermove', onBgDragMove);
+  bgEl.addEventListener('pointerup', endBgDrag);
+  bgEl.addEventListener('pointercancel', endBgDrag);
+}
+
+function onBgDragMove(e){
+  if(!activeDrag || activeDrag.type !== 'bg') return;
+  const dx = e.clientX - activeDrag.startX;
+  const dy = e.clientY - activeDrag.startY;
+  bgPos = {
+    x: clamp(activeDrag.startPos.x - (dx / activeDrag.rectW) * 100, 0, 100),
+    y: clamp(activeDrag.startPos.y - (dy / activeDrag.rectH) * 100, 0, 100),
+  };
+  applyBgTransform(document.getElementById('visual-inner'));
+}
+
+function endBgDrag(e){
+  if(!activeDrag || activeDrag.type !== 'bg') return;
+  const el = activeDrag.el;
+  el.classList.remove('dragging');
+  el.removeEventListener('pointermove', onBgDragMove);
+  el.removeEventListener('pointerup', endBgDrag);
+  el.removeEventListener('pointercancel', endBgDrag);
+  activeDrag = null;
+}
+
+function onZoomChange(value){
+  bgZoom = Number(value) / 100;
+  document.getElementById('v-bg-zoom-value').textContent = `${value}%`;
+  applyBgTransform(document.getElementById('visual-inner'));
+}
+
+function resetLayout(){
+  textOffsets = DEFAULT_TEXT_OFFSETS();
+  bgPos = {x:50, y:50};
+  bgZoom = 1;
+  document.getElementById('v-bg-zoom').value = 100;
+  document.getElementById('v-bg-zoom-value').textContent = '100%';
+  applyTextTransforms(document.getElementById('visual-inner'));
+  applyBgTransform(document.getElementById('visual-inner'));
+  showToast('Mise en page réinitialisée');
+}
+
+function initDragHandlers(){
+  document.querySelectorAll('.draggable-text').forEach(el => {
+    el.addEventListener('pointerdown', startTextDrag);
+  });
+  document.getElementById('visual-bg-image').addEventListener('pointerdown', startBgDrag);
+}
 
 function escapeHtml(str){
   return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -379,13 +540,17 @@ function render(){
   frame.classList.toggle('ratio-square', ratio === '1-1');
   document.getElementById('visual-viewport').classList.toggle('ratio-square', ratio === '1-1');
 
+  const bgImageEl = document.getElementById('visual-bg-image');
   if(bgImageData){
     inner.classList.add('has-bg-image');
-    inner.style.backgroundImage = `url(${bgImageData})`;
+    bgImageEl.style.backgroundImage = `url(${bgImageData})`;
+    bgImageEl.classList.add('has-image');
   } else {
     inner.classList.remove('has-bg-image');
-    inner.style.backgroundImage = 'none';
+    bgImageEl.style.backgroundImage = 'none';
+    bgImageEl.classList.remove('has-image');
   }
+  applyBgTransform(inner);
 
   const eyebrow = document.getElementById('v-eyebrow').value.trim();
   const mainText = document.getElementById('v-text').value.trim();
@@ -413,6 +578,8 @@ function render(){
 
   const footer = document.getElementById('out-footer');
   footer.classList.toggle('is-empty', !authorEl.textContent && !brandEl.textContent);
+
+  applyTextTransforms(inner);
 }
 
 document.getElementById('bg-image-file').addEventListener('change', async (event) => {
@@ -423,16 +590,24 @@ document.getElementById('bg-image-file').addEventListener('change', async (event
   const reader = new FileReader();
   reader.onload = () => {
     bgImageData = reader.result;
+    bgPos = {x:50, y:50};
+    bgZoom = 1;
+    document.getElementById('v-bg-zoom').value = 100;
+    document.getElementById('v-bg-zoom-value').textContent = '100%';
     document.getElementById('bg-image-remove-btn').style.display = '';
+    document.getElementById('bg-zoom-row').style.display = '';
     render();
-    showToast('Image de fond ajoutée ✓');
+    showToast('Image de fond ajoutée ✓ — glisse-la pour la repositionner');
   };
   reader.readAsDataURL(file);
 });
 
 function removeBgImage(){
   bgImageData = null;
+  bgPos = {x:50, y:50};
+  bgZoom = 1;
   document.getElementById('bg-image-remove-btn').style.display = 'none';
+  document.getElementById('bg-zoom-row').style.display = 'none';
   render();
 }
 
@@ -457,6 +632,7 @@ async function exportVisual(){
 
     const stage = document.getElementById('export-stage');
     const clone = document.getElementById('visual-inner').cloneNode(true);
+    clone.removeAttribute('id');
     clone.style.position = 'static';
     const wrapper = document.createElement('div');
     wrapper.style.width = `${width}px`;
@@ -468,6 +644,11 @@ async function exportVisual(){
     wrapper.appendChild(clone);
     stage.innerHTML = '';
     stage.appendChild(wrapper);
+
+    // Les décalages sont stockés en % de la taille de l'aperçu : on les recalcule
+    // ici en pixels réels pour la taille d'export (1080px de large).
+    applyTextTransforms(clone);
+    applyBgTransform(clone);
 
     const canvas = await html2canvas(wrapper, {
       scale: 2,
@@ -491,6 +672,7 @@ async function exportVisual(){
 }
 
 render();
+initDragHandlers();
 </script>
 </body>
 </html>
