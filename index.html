@@ -202,7 +202,8 @@
 
   /* preview area */
   .preview-wrap{min-height:70vh; display:flex; flex-direction:column;}
-  .preview-toolbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;}
+  .preview-toolbar{display:flex; align-items:center; justify-content:flex-end; margin-bottom:18px; flex-wrap:wrap; gap:12px;}
+  .thumbnail-strip{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:18px;}
   .toolbar-left{display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-width:0;}
   .dot-track{display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; max-width:100%;}
   .slide-chip{
@@ -612,10 +613,6 @@
 
       <div id="carousel-container" style="display:none;">
         <div class="preview-toolbar">
-          <div class="toolbar-left">
-            <div class="dot-track" id="dot-track" aria-label="Réordonner les slides"></div>
-            <span class="drag-hint">Glisse une vignette pour réordonner</span>
-          </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
             <div class="history-controls" aria-label="Annuler / Rétablir">
               <button class="toolbar-btn icon-btn" id="undo-btn" type="button" onclick="undo()" title="Annuler (Ctrl+Z)" aria-label="Annuler la dernière action" disabled><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-15-6.7L3 13"></path></svg></button>
@@ -657,6 +654,11 @@
             <div class="slide-frame" id="slide-frame"></div>
           </div>
           <button class="nav-arrow" id="next-btn" onclick="navSlide(1)" aria-label="Slide suivante" title="Slide suivante"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></button>
+        </div>
+
+        <div class="thumbnail-strip">
+          <div class="dot-track" id="dot-track" aria-label="Réordonner les slides"></div>
+          <span class="drag-hint">Glisse une vignette pour réordonner</span>
         </div>
 
         <div class="add-slide-row">
