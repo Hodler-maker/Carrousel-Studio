@@ -134,6 +134,9 @@
   .visual-inner.has-bg-image .visual-overlay{opacity:0.72;}
 
   .visual-content{position:relative; z-index:2; display:flex; flex-direction:column; height:100%;}
+  .visual-textblock{position:absolute; left:0; top:0; width:100%; display:flex; flex-direction:column; cursor:grab; touch-action:none; padding:4px; margin:-4px; border-radius:8px; transition:background .15s ease;}
+  .visual-textblock:hover{background:rgba(255,255,255,0.06);}
+  .visual-textblock:active,.visual-textblock.dragging{cursor:grabbing; background:rgba(255,255,255,0.1); outline:2px dashed rgba(255,122,47,0.85); outline-offset:4px;}
   .visual-eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.85; display:flex; align-items:center; gap:8px;}
   .visual-eyebrow::before{content:''; width:16px; height:1px; background:currentColor; display:inline-block;}
   .visual-eyebrow:empty{display:none;}
@@ -251,8 +254,9 @@
         <button type="button" class="toolbar-btn icon-btn align-btn active" id="align-left-btn" onclick="setVisualAlign('left')" title="Aligner le texte à gauche" aria-label="Aligner le texte à gauche"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h13"></path></svg></button>
         <button type="button" class="toolbar-btn icon-btn align-btn" id="align-center-btn" onclick="setVisualAlign('center')" title="Centrer le texte" aria-label="Centrer le texte"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16"></path><path d="M7 12h10"></path><path d="M5.5 18h13"></path></svg></button>
         <button type="button" class="toolbar-btn icon-btn align-btn" id="align-right-btn" onclick="setVisualAlign('right')" title="Aligner le texte à droite" aria-label="Aligner le texte à droite"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16"></path><path d="M10 12h10"></path><path d="M7 18h13"></path></svg></button>
+        <button type="button" class="toolbar-btn icon-btn" onclick="resetTextPosition()" title="Remettre le texte à sa position d’origine" aria-label="Réinitialiser la position du texte">↺</button>
       </div>
-      <p class="field-hint">Ajuste la taille du titre et du sous-texte, et leur alignement sur le visuel.</p>
+      <p class="field-hint">Ajuste la taille du titre et du sous-texte, leur alignement, et glisse le texte directement dans l’aperçu pour le repositionner.</p>
 
       <label>Image de fond (optionnel)</label>
       <div class="image-upload-row">
@@ -307,10 +311,12 @@
             <div class="visual-inner theme-sunset type-citation" id="visual-inner">
               <div class="visual-overlay" id="visual-bg"></div>
               <div class="visual-content">
-                <div class="visual-eyebrow" id="out-eyebrow"></div>
-                <div class="visual-quote-mark" id="out-quote-mark">”</div>
-                <div class="visual-title" id="out-title">Colle ou écris ta citation ici...</div>
-                <div class="visual-subtitle" id="out-subtitle"></div>
+                <div class="visual-textblock" id="visual-textblock" title="Glisse pour déplacer le texte" aria-label="Déplacer le texte">
+                  <div class="visual-eyebrow" id="out-eyebrow"></div>
+                  <div class="visual-quote-mark" id="out-quote-mark">”</div>
+                  <div class="visual-title" id="out-title">Colle ou écris ta citation ici...</div>
+                  <div class="visual-subtitle" id="out-subtitle"></div>
+                </div>
                 <div class="visual-spacer"></div>
                 <div class="visual-footer" id="out-footer">
                   <span class="visual-author" id="out-author"></span>
@@ -360,6 +366,8 @@ let bgImageData = null;
 let titleScale = 1;
 let subtitleScale = 1;
 let visualAlign = 'left';
+let textOffset = { x: 0, y: 0 };
+let textDragState = null;
 
 function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
 
@@ -381,6 +389,49 @@ function setVisualAlign(align){
   render();
   showToast('Alignement mis à jour');
 }
+
+function applyTextOffset(){
+  const block = document.getElementById('visual-textblock');
+  if(!block) return;
+  block.style.left = `${textOffset.x}%`;
+  block.style.top = `${textOffset.y}%`;
+}
+
+function resetTextPosition(){
+  textOffset = { x: 0, y: 0 };
+  applyTextOffset();
+  showToast('Position du texte réinitialisée');
+}
+
+function onTextBlockPointerDown(event){
+  event.preventDefault();
+  const block = event.currentTarget;
+  const rect = block.closest('.visual-frame').getBoundingClientRect();
+  textDragState = { startX: event.clientX, startY: event.clientY, originX: textOffset.x, originY: textOffset.y, frameWidth: rect.width, frameHeight: rect.height };
+  block.classList.add('dragging');
+  block.setPointerCapture?.(event.pointerId);
+}
+
+function onTextBlockPointerMove(event){
+  if(!textDragState) return;
+  const dx = (event.clientX - textDragState.startX) / textDragState.frameWidth * 100;
+  const dy = (event.clientY - textDragState.startY) / textDragState.frameHeight * 100;
+  textOffset.x = clamp(textDragState.originX + dx, -20, 20);
+  textOffset.y = clamp(textDragState.originY + dy, -15, 60);
+  applyTextOffset();
+}
+
+function onTextBlockPointerUp(){
+  if(!textDragState) return;
+  textDragState = null;
+  document.getElementById('visual-textblock')?.classList.remove('dragging');
+  showToast('Texte déplacé');
+}
+
+document.getElementById('visual-textblock')?.addEventListener('pointerdown', onTextBlockPointerDown);
+window.addEventListener('pointermove', onTextBlockPointerMove);
+window.addEventListener('pointerup', onTextBlockPointerUp);
+window.addEventListener('pointercancel', onTextBlockPointerUp);
 
 function escapeHtml(str){
   return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -466,6 +517,7 @@ function render(){
 
   const footer = document.getElementById('out-footer');
   footer.classList.toggle('is-empty', !authorEl.textContent && !brandEl.textContent);
+  applyTextOffset();
 }
 
 document.getElementById('bg-image-file').addEventListener('change', async (event) => {
