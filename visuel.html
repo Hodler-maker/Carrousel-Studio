@@ -47,7 +47,7 @@
 
   .app{position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:32px 28px 80px;}
 
-  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:32px;}
+  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:16px;}
   .brand{display:flex; align-items:center; gap:12px;}
   .brand-mark{width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg, var(--orange), var(--amber)); position:relative; flex-shrink:0; box-shadow:0 0 24px rgba(255,122,47,0.45);}
   .brand-mark::after{content:''; position:absolute; inset:8px; border-radius:5px; background:var(--ink);}
@@ -56,10 +56,16 @@
   .brand-text h1{font-family:var(--font-display); font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink);}
   .brand-text span{font-size:11px; color:var(--text-dim); font-family:var(--font-mono); letter-spacing:0.04em;}
 
-  .home-link{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; isolation:isolate; font-size:12px; font-weight:800; color:#fff; text-decoration:none; background:linear-gradient(135deg, var(--orange-deep), var(--orange) 52%, var(--amber)); border:1px solid rgba(255,255,255,.35); padding:9px 14px; border-radius:11px; box-shadow:0 8px 22px rgba(255,122,47,.3); transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;}
-  .home-link:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(255,122,47,.4); filter:brightness(1.04);}
-  .home-link:active{transform:translateY(0);}
+  .home-link{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; isolation:isolate; font-size:12px; font-weight:700; color:var(--text); text-decoration:none; background:var(--glass-strong); border:1px solid var(--border); padding:9px 14px; border-radius:11px; transition:transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .25s ease;}
+  .home-link::before{content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(110deg, transparent 25%, rgba(255,122,47,.22) 48%, transparent 70%); transform:translateX(-125%); animation:homeSheen 4.5s ease-in-out infinite;}
+  .home-link:hover{transform:translateY(-2px) scale(1.03); background:#fff; border-color:rgba(255,122,47,0.4); box-shadow:0 10px 24px -8px rgba(255,122,47,.35);}
+  .home-link:active{transform:translateY(0) scale(0.97);}
   .home-link:focus-visible{outline:3px solid rgba(255,122,47,.45); outline-offset:3px;}
+  .home-arrow{display:inline-block; animation:homeArrowNudge 1.8s ease-in-out infinite;}
+  .home-link:hover .home-arrow{animation-duration:.7s;}
+  @keyframes homeSheen{0%,15%{transform:translateX(-125%);} 55%,100%{transform:translateX(125%);}}
+  @keyframes homeArrowNudge{0%,100%{transform:translateX(0);} 50%{transform:translateX(-3px);}}
+  @media (prefers-reduced-motion:reduce){.home-link::before{display:none;} .home-arrow{animation:none;}}
 
   .layout{display:grid; grid-template-columns:400px 1fr; gap:24px; align-items:start;}
   @media (max-width:980px){.layout{grid-template-columns:1fr;}}
@@ -88,12 +94,16 @@
   .type-toggle{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
   .type-btn{min-height:44px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,0.55); color:var(--text-dim); font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .18s ease;}
   .type-btn:hover{background:#fff;}
-  .type-btn.active{background:linear-gradient(135deg, var(--orange-deep), var(--orange)); border-color:transparent; color:#fff; box-shadow:0 8px 20px rgba(255,122,47,0.32);}
+  .type-btn.active{background:linear-gradient(135deg, var(--ink), #2e2519); border-color:transparent; color:#fff; box-shadow:0 8px 20px rgba(25,20,13,0.32);}
 
   .toolbar-btn{background:var(--glass-strong); border:1px solid var(--border); color:var(--text); font-family:var(--font-body); font-size:12.5px; font-weight:500; padding:8px 14px; border-radius:10px; cursor:pointer; transition:background .2s, border-color .2s; display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; touch-action:manipulation;}
   .toolbar-btn:hover{background:#fff; border-color:rgba(25,20,13,0.16);}
-  .toolbar-btn.download-btn{background:linear-gradient(135deg, var(--orange), var(--amber)); border:none; color:#fff; font-weight:600; box-shadow:0 8px 22px rgba(255,122,47,0.35); transition:transform .15s ease, box-shadow .25s ease; padding:14px 20px; font-size:14px;}
-  .toolbar-btn.download-btn:hover{transform:translateY(-1px); box-shadow:0 10px 28px rgba(255,122,47,0.45);}
+  .toolbar-btn.download-btn{position:relative; overflow:hidden; isolation:isolate; background:linear-gradient(135deg, var(--ink), #2e2519); border:none; color:#fff; font-weight:600; box-shadow:0 8px 22px rgba(25,20,13,0.35); transition:transform .15s ease, box-shadow .25s ease; padding:14px 20px; font-size:14px;}
+  .toolbar-btn.download-btn::before{content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(110deg, transparent 25%, rgba(255,255,255,.22) 48%, transparent 70%); transform:translateX(-125%); animation:downloadSheen 3.2s ease-in-out infinite;}
+  .toolbar-btn.download-btn:hover{transform:translateY(-1px) scale(1.015); box-shadow:0 10px 28px rgba(25,20,13,0.45);}
+  .toolbar-btn.download-btn:active{transform:translateY(0) scale(0.98);}
+  @keyframes downloadSheen{0%,15%{transform:translateX(-125%);} 55%,100%{transform:translateX(125%);}}
+  @media (prefers-reduced-motion:reduce){.toolbar-btn.download-btn::before{display:none;}}
   .toolbar-btn.remove-btn{color:#b83f28; border-color:rgba(184,63,40,0.22); background:rgba(220,60,40,0.06);}
   .toolbar-btn.remove-btn:hover{background:rgba(220,60,40,0.12); border-color:rgba(184,63,40,0.4);}
   .toolbar-btn.icon-btn{padding:8px 10px; min-width:40px;}
@@ -210,8 +220,8 @@
         <span>TEXTE → VISUEL UNIQUE</span>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;">
-      <a class="home-link" href="index.html">🎨 ← Carrousel Studio</a>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+      <a class="home-link" href="index.html"><span class="home-arrow" aria-hidden="true">←</span> Carrousel Studio</a>
     </div>
   </header>
 
@@ -223,8 +233,8 @@
 
       <label>Type de visuel</label>
       <div class="type-toggle">
-        <button type="button" class="type-btn active" id="type-citation-btn" onclick="setType('citation')">💬 Citation</button>
-        <button type="button" class="type-btn" id="type-annonce-btn" onclick="setType('annonce')">📣 Annonce</button>
+        <button type="button" class="type-btn active" id="type-citation-btn" onclick="setType('citation')">Citation</button>
+        <button type="button" class="type-btn" id="type-annonce-btn" onclick="setType('annonce')">Annonce</button>
       </div>
 
       <label for="v-eyebrow">Étiquette (optionnel)</label>
