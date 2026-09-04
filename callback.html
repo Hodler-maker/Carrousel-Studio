@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion en cours...</title>
+</head>
+<body>
+  <p>Connexion en cours...</p>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+
+    if (token) {
+      localStorage.setItem("xbooster_token", token);
+      window.location.href = "/index.html";
+    } else {
+      document.body.innerHTML = "<p>Erreur : aucun token reçu.</p>";
+    }
+  </script>
+</body>
+</html>
