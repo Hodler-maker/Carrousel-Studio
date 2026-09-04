@@ -1901,15 +1901,35 @@ async function exportAsPDF(){
     }
   }
 }
-  function checkAuth(){
+  function decodeJwtPayload(token){
+  try{
+    const payload = token.split(".")[1];
+    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+  }catch(e){
+    return null;
+  }
+}
+
+function logout(){
+  localStorage.removeItem("xbooster_token");
+  checkAuth();
+}
+
+function checkAuth(){
   const token = localStorage.getItem("xbooster_token");
   const zone = document.getElementById("auth-zone");
   if(!zone) return;
+
   if(token){
-    zone.innerHTML = `<span style="font-size:12.5px; color:var(--text-dim);">✓ Connecté via XBooster</span>`;
+    const payload = decodeJwtPayload(token);
+    const displayName = payload?.name || payload?.email || "membre";
+    zone.innerHTML = `
+      <span style="font-size:12.5px; color:var(--text-dim);">✓ Connecté en tant que <strong>${displayName}</strong></span>
+      <a href="#" onclick="logout(); return false;" style="font-size:12px; color:var(--orange-deep); text-decoration:underline; margin-left:8px;">Se déconnecter</a>
+    `;
   } else {
     const redirect = encodeURIComponent(window.location.origin + "/callback.html");
-    zone.innerHTML = `<a href="http://www.xbooster.site/api/sso/authorize?redirect_uri=${redirect}" style="font-size:12.5px; font-weight:600; color:var(--orange-deep); text-decoration:none; padding:6px 12px; border:1px solid var(--orange-deep); border-radius:100px;">Se connecter avec XBooster</a>`;
+    zone.innerHTML = `<a href="https://www.xbooster.site/api/sso/authorize?redirect_uri=${redirect}" style="font-size:12.5px; font-weight:600; color:var(--orange-deep); text-decoration:none; padding:6px 12px; border:1px solid var(--orange-deep); border-radius:100px;">Se connecter avec XBooster</a>`;
   }
 }
 checkAuth();
