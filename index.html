@@ -541,6 +541,7 @@
     </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
       <a class="editor-link" href="editor.html">Ouvrir l’éditeur <span class="editor-arrow" aria-hidden="true">→</span></a>
+        <div id="auth-zone"></div>
     </div>
   </header>
 
@@ -1901,6 +1902,18 @@ async function exportAsPDF(){
     }
   }
 }
+  function checkAuth(){
+  const token = localStorage.getItem("xbooster_token");
+  const zone = document.getElementById("auth-zone");
+  if(!zone) return;
+  if(token){
+    zone.innerHTML = `<span style="font-size:12.5px; color:var(--text-dim);">✓ Connecté via XBooster</span>`;
+  } else {
+    const redirect = encodeURIComponent(window.location.origin + "/callback.html");
+    zone.innerHTML = `<a href="http://localhost:3000/api/sso/authorize?redirect_uri=${redirect}" style="font-size:12.5px; font-weight:600; color:var(--orange-deep); text-decoration:none; padding:6px 12px; border:1px solid var(--orange-deep); border-radius:100px;">Se connecter avec XBooster</a>`;
+  }
+}
+checkAuth();
 </script>
 </body>
 </html>
