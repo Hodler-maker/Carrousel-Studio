@@ -34,52 +34,6 @@
     --font-slide:'Inter', sans-serif;
     --font-mono:'JetBrains Mono', monospace;
   }
-  [data-theme="dark"]{
-    --bg:#14100a;
-    --bg-2:#1e1810;
-    --orange:#ff7a2f;
-    --orange-deep:#ff8a42;
-    --amber:#ffb547;
-    --ink:#f5efe4;
-    --glass:rgba(255,255,255,0.06);
-    --glass-strong:rgba(255,255,255,0.1);
-    --border:rgba(255,245,230,0.12);
-    --border-soft:rgba(255,245,230,0.06);
-    --text:#f0e9dc;
-    --text-dim:#a89a85;
-    --text-faint:#7c7060;
-  }
-  [data-theme="dark"] body{
-    background:var(--bg);
-  }
-  /* In dark mode, keep form fields on a clear light surface with dark text for readability */
-  [data-theme="dark"] textarea,
-  [data-theme="dark"] select,
-  [data-theme="dark"] input[type="text"]{
-    background:#f5efe4;
-    color:#19140d;
-    border-color:rgba(25,20,13,0.14);
-  }
-  [data-theme="dark"] textarea::placeholder{
-    color:#8a7d68;
-  }
-  [data-theme="dark"] select option{
-    background:#f5efe4;
-    color:#19140d;
-  }
-  [data-theme="dark"] textarea:focus,
-  [data-theme="dark"] select:focus,
-  [data-theme="dark"] input[type="text"]:focus{
-    border-color:rgba(255,122,47,0.6);
-    box-shadow:0 0 0 3px rgba(255,122,47,0.18);
-  }
-  .theme-toggle{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:36px; height:36px; border-radius:50%;
-    background:var(--glass-strong); border:1px solid var(--border);
-    cursor:pointer; font-size:16px; transition:background .2s, transform .15s;
-  }
-  .theme-toggle:hover{transform:scale(1.06);}
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{height:100%;}
   body{
@@ -136,13 +90,13 @@
   header{position:relative; display:flex; align-items:center; justify-content:space-between; margin-bottom:36px; flex-wrap:wrap; gap:16px;}
   .brand{display:flex; align-items:center; gap:12px;}
   .brand-mark{width:38px; height:38px; border-radius:11px; background:linear-gradient(135deg, var(--orange), var(--amber)); position:relative; flex-shrink:0; box-shadow:0 0 24px rgba(255,122,47,0.45);}
-  .brand-mark::after{content:''; position:absolute; inset:8px; border-radius:5px; background:var(--ink); }
+  .brand-mark::after{content:''; position:absolute; inset:8px; border-radius:5px; background:var(--bg); }
   .brand-mark::before{content:''; position:absolute; inset:13px; border-radius:3px; background:linear-gradient(135deg, var(--orange), var(--amber)); animation:pulseMark 2.4s ease-in-out infinite;}
   @keyframes pulseMark{0%,100%{opacity:1; transform:scale(1);} 50%{opacity:0.6; transform:scale(0.8);}}
   .brand-text h1{font-family:var(--font-display); font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink);}
   .brand-text span{font-size:11px; color:var(--text-dim); font-family:var(--font-mono); letter-spacing:0.04em;}
   .eyebrow-badge{font-family:var(--font-mono); font-size:11px; letter-spacing:0.08em; color:var(--orange-deep); background:rgba(255,122,47,0.1); border:1px solid rgba(255,122,47,0.28); padding:6px 12px; border-radius:100px; text-transform:uppercase;}
-.visual-studio-link{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; isolation:isolate; font-size:12px; font-weight:800; color:#fff; text-decoration:none; background:linear-gradient(135deg, var(--ink), #2e2519); border:1px solid rgba(255,255,255,.14); padding:9px 14px; border-radius:11px; box-shadow:0 8px 22px rgba(25,20,13,.35); transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;}
+.visual-studio-link{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; isolation:isolate; font-size:12px; font-weight:800; color:#fff; text-decoration:none; background:linear-gradient(135deg, #19140d, #2e2519); border:1px solid rgba(255,255,255,.14); padding:9px 14px; border-radius:11px; box-shadow:0 8px 22px rgba(25,20,13,.35); transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;}
 .visual-studio-link::before{content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(110deg, transparent 25%, rgba(255,255,255,.28) 48%, transparent 70%); transform:translateX(-125%); animation:studioSheen 3.8s ease-in-out infinite;}
 .visual-studio-link:hover{transform:translateY(-2px) scale(1.02); box-shadow:0 12px 28px rgba(25,20,13,.44); filter:saturate(1.08);}
 .visual-studio-link:active{transform:translateY(0) scale(.98);}
@@ -176,6 +130,49 @@
   label{display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; margin-top:18px;}
   label:first-of-type{margin-top:0;}
 
+  /* panel sections — clearer visual grouping and breathing room */
+  .panel-section{margin-top:26px; padding-top:22px; border-top:1px solid var(--border-soft);}
+  .panel-section-first{margin-top:22px; padding-top:0; border-top:none;}
+  .panel-section-title{
+    font-family:var(--font-display); font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.09em; color:var(--orange-deep); margin-bottom:14px; display:flex; align-items:center; gap:6px;
+  }
+  .panel-section-title::before{content:''; width:5px; height:5px; border-radius:50%; background:var(--orange-deep); display:inline-block;}
+
+  /* example chips */
+  .example-chips{display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:8px; margin-top:-2px;}
+  .example-chips-label{font-size:11px; color:var(--text-faint); margin-right:2px;}
+  .example-chip{
+    font-family:var(--font-body); font-size:11.5px; font-weight:500; color:var(--orange-deep);
+    background:rgba(255,122,47,0.08); border:1px solid rgba(255,122,47,0.22); border-radius:100px;
+    padding:5px 11px; cursor:pointer; transition:background .15s ease, transform .15s ease, border-color .15s ease;
+  }
+  .example-chip:hover{background:rgba(255,122,47,0.16); border-color:rgba(255,122,47,0.4); transform:translateY(-1px);}
+  .example-chip:active{transform:translateY(0) scale(0.97);}
+
+  /* template swatch picker */
+  .template-swatch-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:18px;}
+  .template-swatch{
+    display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:12px;
+    background:rgba(255,255,255,0.5); border:1px solid var(--border); cursor:pointer;
+    font-family:var(--font-body); font-size:12px; font-weight:600; color:var(--text);
+    transition:border-color .15s ease, background .15s ease, transform .15s ease;
+  }
+  .template-swatch:hover{border-color:rgba(255,122,47,0.4); transform:translateY(-1px);}
+  .template-swatch.active{border-color:var(--orange); background:rgba(255,122,47,0.1); box-shadow:0 0 0 1px rgba(255,122,47,0.25);}
+  .swatch-dot{width:20px; height:20px; border-radius:50%; flex-shrink:0; box-shadow:0 2px 6px rgba(25,20,13,0.18);}
+  .swatch-sunset{background:linear-gradient(135deg, #ffb547 0%, #ff7a2f 50%, #ff5a1f 100%);}
+  .swatch-editorial{background:linear-gradient(135deg, #f2e7d5 0%, #d9c09b 100%);}
+  .swatch-midnight{background:linear-gradient(135deg, #16243d 0%, #07101f 100%);}
+  .swatch-signal{background:linear-gradient(135deg, #6c35e8 0%, #2d176d 100%);}
+  .swatch-yellow-black{background:linear-gradient(135deg, #ffe566 0%, #f4c928 50%, #171713 50%, #171713 100%);}
+
+  /* generation progress bar */
+  .progress-wrap{margin-top:14px;}
+  .progress-track{width:100%; height:6px; border-radius:100px; background:rgba(25,20,13,0.08); overflow:hidden;}
+  .progress-fill{height:100%; width:6%; border-radius:100px; background:linear-gradient(90deg, var(--orange), var(--amber)); transition:width .5s ease;}
+  .progress-status{margin-top:8px; font-size:11.5px; color:var(--text-dim); text-align:center;}
+
   textarea{
     width:100%; min-height:180px; resize:vertical; background:rgba(255,255,255,0.55);
     border:1px solid var(--border); border-radius:14px; padding:14px; color:var(--text);
@@ -196,7 +193,7 @@
   .btn-generate{
     margin-top:24px; width:100%; padding:14px; border:none; border-radius:14px; cursor:pointer;
     font-family:var(--font-display); font-weight:600; font-size:14.5px; color:#fff;
-    background:linear-gradient(135deg, #221c14, var(--ink));
+    background:linear-gradient(135deg, #221c14, #19140d);
     background-size:200% 200%; position:relative; overflow:hidden;
     transition:transform .15s ease, box-shadow .3s ease;
     box-shadow:0 10px 28px rgba(25,20,13,0.28);
@@ -388,7 +385,7 @@
   }
   .type-content{
     background:linear-gradient(175deg, #ffffff 0%, #fbf3e8 100%);
-    color:var(--ink);
+    color:#19140d;
   }
   .type-cta{
     background:
@@ -592,7 +589,6 @@
     </div>
 
     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Changer de thème" aria-label="Changer de thème">🌙</button>
       <a class="visual-studio-link" href="visuel.html"><span class="studio-arrow" aria-hidden="true">←</span> 🎨 Créer un visuel</a>
       <a class="editor-link" href="editor.html">Ouvrir l’éditeur <span class="editor-arrow" aria-hidden="true">→</span></a>
       <div id="auth-zone"></div>
@@ -605,70 +601,110 @@
       <h2>Générer un carrousel</h2>
       <p class="sub">Colle ton texte (article, réflexion, actu) et laisse Carrousel Studio le transformer en slides prêtes pour LinkedIn.</p>
 
-      <label for="topic">Titre du carrousel (optionnel)</label>
-      <input type="text" id="topic" placeholder="Ex : Le halving expliqué simplement">
+      <div class="panel-section panel-section-first">
+        <div class="panel-section-title">Contenu</div>
 
-      <label for="project-name">Nom du projet (pour les fichiers)</label>
-      <input type="text" id="project-name" maxlength="80" placeholder="Ex : Bitcoin en Afrique" autocomplete="off">
-      <p class="field-hint">Ce nom sera utilisé pour tes fichiers PNG et PDF téléchargés.</p>
+        <label for="topic">Titre du carrousel (optionnel)</label>
+        <input type="text" id="topic" placeholder="Ex : Le halving expliqué simplement">
 
-      <label for="handle">Ton handle (optionnel)</label>
-      <input type="text" id="handle" maxlength="32" placeholder="Ex : @tonhandle" autocomplete="off" onfocus="pushHistory()" oninput="updateHandle(this.value)" onblur="this.value=normalizeHandle(this.value); updateHandle(this.value)">
-      <p class="field-hint">Il apparaîtra en bas de chaque slide.</p>
-
-      <label for="source-text">Ton texte</label>
-      <textarea id="source-text" placeholder="Colle ici ton article, ton fil de pensée ou tes notes sur le Web3, le Bitcoin, la régulation UEMOA..."></textarea>
-
-      <div class="row">
-        <div>
-          <label for="slide-count">Nombre de slides</label>
-          <select id="slide-count">
-            <option value="auto">Auto</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-          </select>
+        <label for="source-text">Ton texte</label>
+        <div class="example-chips" aria-label="Exemples de texte">
+          <span class="example-chips-label">Pas d'idée ? Essaie :</span>
+          <button type="button" class="example-chip" onclick="useExampleText('halving')">Le halving expliqué</button>
+          <button type="button" class="example-chip" onclick="useExampleText('uemoa')">Régulation UEMOA</button>
+          <button type="button" class="example-chip" onclick="useExampleText('epargne')">Épargne en crypto</button>
         </div>
-        <div>
-          <label for="tone">Ton</label>
-          <select id="tone">
-            <option value="educatif">Éducatif</option>
-            <option value="opinion">Avis / Opinion</option>
-            <option value="storytelling">Storytelling</option>
-          </select>
+        <textarea id="source-text" placeholder="Colle ici ton article, ton fil de pensée ou tes notes sur le Web3, le Bitcoin, la régulation UEMOA..."></textarea>
+
+        <div class="row">
+          <div>
+            <label for="slide-count">Nombre de slides</label>
+            <select id="slide-count">
+              <option value="auto">Auto</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <div>
+            <label for="tone">Ton</label>
+            <select id="tone">
+              <option value="educatif">Éducatif</option>
+              <option value="opinion">Avis / Opinion</option>
+              <option value="storytelling">Storytelling</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <label for="template">Template visuel</label>
-      <select id="template" onchange="updateTemplate(this.value)">
-        <option value="sunset">Sunset — orange</option>
-        <option value="editorial">Editorial — beige</option>
-        <option value="midnight">Midnight — bleu nuit</option>
-        <option value="signal">Signal — violet</option>
-        <option value="yellow-black">Jaune &amp; Noir — contrasté</option>
-      </select>
+      <div class="panel-section">
+        <div class="panel-section-title">Personnalisation</div>
 
-      <label for="font-family">Police des slides</label>
-      <select id="font-family" onchange="updateFont(this.value)">
-        <option value="inter">Inter — moderne</option>
-        <option value="roboto">Roboto — universelle</option>
-        <option value="open-sans">Open Sans — très lisible</option>
-        <option value="montserrat">Montserrat — impact</option>
-        <option value="poppins">Poppins — géométrique</option>
-        <option value="lato">Lato — chaleureuse</option>
-        <option value="manrope">Manrope — contemporaine</option>
-        <option value="rubik">Rubik — arrondie</option>
-        <option value="raleway">Raleway — élégante</option>
-        <option value="playfair-display">Playfair Display — éditoriale</option>
-        <option value="merriweather">Merriweather — serif lisible</option>
-        <option value="source-sans-3">Source Sans 3 — sobre</option>
-      </select>
-      <p class="field-hint">La police s’applique à l’aperçu et aux exports PNG/PDF.</p>
+        <label for="project-name">Nom du projet (pour les fichiers)</label>
+        <input type="text" id="project-name" maxlength="80" placeholder="Ex : Bitcoin en Afrique" autocomplete="off">
+        <p class="field-hint">Ce nom sera utilisé pour tes fichiers PNG et PDF téléchargés.</p>
+
+        <label for="handle">Ton handle (optionnel)</label>
+        <input type="text" id="handle" maxlength="32" placeholder="Ex : @tonhandle" autocomplete="off" onfocus="pushHistory()" oninput="updateHandle(this.value)" onblur="this.value=normalizeHandle(this.value); updateHandle(this.value)">
+        <p class="field-hint">Il apparaîtra en bas de chaque slide.</p>
+
+        <label id="template-label">Template visuel</label>
+        <select id="template" onchange="updateTemplate(this.value)" style="display:none" aria-hidden="true" tabindex="-1">
+          <option value="sunset">Sunset — orange</option>
+          <option value="editorial">Editorial — beige</option>
+          <option value="midnight">Midnight — bleu nuit</option>
+          <option value="signal">Signal — violet</option>
+          <option value="yellow-black">Jaune &amp; Noir — contrasté</option>
+        </select>
+        <div class="template-swatch-grid" role="group" aria-labelledby="template-label">
+          <button type="button" class="template-swatch active" data-template="sunset" onclick="selectTemplateSwatch('sunset', this)">
+            <span class="swatch-dot swatch-sunset" aria-hidden="true"></span>
+            <span class="swatch-label">Sunset</span>
+          </button>
+          <button type="button" class="template-swatch" data-template="editorial" onclick="selectTemplateSwatch('editorial', this)">
+            <span class="swatch-dot swatch-editorial" aria-hidden="true"></span>
+            <span class="swatch-label">Editorial</span>
+          </button>
+          <button type="button" class="template-swatch" data-template="midnight" onclick="selectTemplateSwatch('midnight', this)">
+            <span class="swatch-dot swatch-midnight" aria-hidden="true"></span>
+            <span class="swatch-label">Midnight</span>
+          </button>
+          <button type="button" class="template-swatch" data-template="signal" onclick="selectTemplateSwatch('signal', this)">
+            <span class="swatch-dot swatch-signal" aria-hidden="true"></span>
+            <span class="swatch-label">Signal</span>
+          </button>
+          <button type="button" class="template-swatch" data-template="yellow-black" onclick="selectTemplateSwatch('yellow-black', this)">
+            <span class="swatch-dot swatch-yellow-black" aria-hidden="true"></span>
+            <span class="swatch-label">Jaune &amp; Noir</span>
+          </button>
+        </div>
+
+        <label for="font-family">Police des slides</label>
+        <select id="font-family" onchange="updateFont(this.value)">
+          <option value="inter">Inter — moderne</option>
+          <option value="roboto">Roboto — universelle</option>
+          <option value="open-sans">Open Sans — très lisible</option>
+          <option value="montserrat">Montserrat — impact</option>
+          <option value="poppins">Poppins — géométrique</option>
+          <option value="lato">Lato — chaleureuse</option>
+          <option value="manrope">Manrope — contemporaine</option>
+          <option value="rubik">Rubik — arrondie</option>
+          <option value="raleway">Raleway — élégante</option>
+          <option value="playfair-display">Playfair Display — éditoriale</option>
+          <option value="merriweather">Merriweather — serif lisible</option>
+          <option value="source-sans-3">Source Sans 3 — sobre</option>
+        </select>
+        <p class="field-hint">La police s’applique à l’aperçu et aux exports PNG/PDF.</p>
+      </div>
 
       <button class="btn-generate" id="generate-btn" onclick="generateCarousel()">Générer le carrousel</button>
+      <div class="progress-wrap" id="progress-wrap" hidden>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        <p class="progress-status" id="progress-status">Analyse du texte…</p>
+      </div>
       <div class="error-box" id="error-box"></div>
 
       <div class="hint"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" style="vertical-align:-4px; margin-right:5px;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M8.5 14.5A6 6 0 1 1 16 14c-.8.6-1.2 1.3-1.4 2.2H9.4c-.2-.9-.5-1.2-.9-1.7Z"></path><path d="M12 2v1"></path><path d="m4.9 4.9.7.7"></path><path d="m19.1 4.9-.7.7"></path></svg>Une fois généré, clique directement sur le texte de chaque slide pour le modifier avant export.</div>
@@ -837,6 +873,35 @@ function updateTemplate(value){
   scheduleAutosave();
 }
 
+function syncTemplateSwatches(){
+  document.querySelectorAll('.template-swatch').forEach(btn=>{
+    btn.classList.toggle('active', btn.getAttribute('data-template') === currentTemplate);
+  });
+}
+
+function selectTemplateSwatch(value, el){
+  const select = document.getElementById('template');
+  if(select) select.value = value;
+  updateTemplate(value);
+  syncTemplateSwatches();
+}
+
+const EXAMPLE_TEXTS = {
+  halving: "Le halving du Bitcoin est un événement programmé qui divise par deux la récompense versée aux mineurs environ tous les quatre ans. Concrètement, cela ralentit le rythme de création de nouveaux bitcoins et renforce la rareté de l'actif. Historiquement, les halvings ont souvent précédé des phases de forte hausse du prix, même si rien ne garantit qu'il en sera de même à l'avenir. Pour un débutant, l'essentiel à retenir : moins d'offre nouvelle, une demande qui doit s'ajuster, et un mécanisme qui rend le Bitcoin de plus en plus rare au fil du temps, un peu comme l'or numérique.",
+  uemoa: "Dans l'espace UEMOA, la régulation des crypto-actifs reste en construction. Les autorités monétaires observent de près l'essor des plateformes d'échange et des usages liés au Web3, entre volonté de protéger les épargnants et besoin de ne pas freiner l'innovation financière régionale. Plusieurs pays membres réfléchissent à des cadres inspirés de règlements internationaux, tout en tenant compte des réalités locales : inclusion financière, transferts d'argent transfrontaliers, et poids de l'économie informelle. Pour les entrepreneurs et utilisateurs de la zone, comprendre ce cadre en évolution est essentiel avant de se lancer.",
+  epargne: "Face à l'inflation et à la dépréciation de certaines monnaies locales, de plus en plus de jeunes actifs en Afrique se tournent vers l'épargne en cryptomonnaies comme alternative ou complément à l'épargne traditionnelle. Le Bitcoin et les stablecoins adossés au dollar séduisent particulièrement, car ils permettent de conserver de la valeur sans dépendre uniquement d'une banque locale. Cette approche comporte aussi des risques : volatilité des prix, absence de garantie des dépôts, et nécessité de bien sécuriser ses propres clés numériques. Une bonne épargne crypto commence toujours par l'éducation avant l'action."
+};
+
+function useExampleText(key){
+  const sample = EXAMPLE_TEXTS[key];
+  if(!sample) return;
+  const textarea = document.getElementById('source-text');
+  pushHistory();
+  textarea.value = sample;
+  textarea.focus();
+  showToast("Exemple inséré — modifie-le ou clique directement sur « Générer »");
+}
+
 function updateFont(value){
   pushHistory();
   currentFont = AVAILABLE_FONTS[value] ? value : 'inter';
@@ -845,7 +910,7 @@ function updateFont(value){
   scheduleAutosave();
 }
 
-/* ---------- Historique (undo/redo) ---------- */
+/* ---------- Historique (annuler/rétablir) ---------- */
 
 function snapshotState(){
   return {
@@ -881,6 +946,7 @@ function applyStateSnapshot(snapshot){
   if(handleInput) handleInput.value = currentHandle;
   const templateSelect = document.getElementById('template');
   if(templateSelect) templateSelect.value = currentTemplate;
+  syncTemplateSwatches();
   const fontSelect = document.getElementById('font-family');
   if(fontSelect) fontSelect.value = currentFont;
   document.documentElement.style.setProperty('--font-slide', AVAILABLE_FONTS[currentFont].family);
@@ -1158,6 +1224,47 @@ function initSupportAnimation(){
 
 initSupportAnimation();
 
+let generationProgressTimer = null;
+const GENERATION_STEPS = [
+  "Analyse du texte…",
+  "Structuration des idées…",
+  "Rédaction des slides…",
+  "Mise en forme du carrousel…"
+];
+
+function startGenerationProgress(){
+  const wrap = document.getElementById('progress-wrap');
+  const fill = document.getElementById('progress-fill');
+  const status = document.getElementById('progress-status');
+  if(!wrap || !fill || !status) return;
+  wrap.hidden = false;
+  let step = 0;
+  let pct = 6;
+  fill.style.width = pct + '%';
+  status.textContent = GENERATION_STEPS[0];
+  clearInterval(generationProgressTimer);
+  generationProgressTimer = setInterval(()=>{
+    step = Math.min(step + 1, GENERATION_STEPS.length - 1);
+    status.textContent = GENERATION_STEPS[step];
+    pct = Math.min(pct + 22, 92);
+    fill.style.width = pct + '%';
+  }, 1400);
+}
+
+function finishGenerationProgress(success){
+  clearInterval(generationProgressTimer);
+  const wrap = document.getElementById('progress-wrap');
+  const fill = document.getElementById('progress-fill');
+  const status = document.getElementById('progress-status');
+  if(!wrap || !fill || !status) return;
+  fill.style.width = '100%';
+  status.textContent = success ? 'Terminé ✓' : 'Échec de la génération';
+  setTimeout(()=>{
+    wrap.hidden = true;
+    fill.style.width = '6%';
+  }, success ? 700 : 1200);
+}
+
 async function generateCarousel(){
   const text = document.getElementById('source-text').value.trim();
   const topic = document.getElementById('topic').value.trim();
@@ -1175,7 +1282,8 @@ async function generateCarousel(){
   const btn = document.getElementById('generate-btn');
   btn.disabled = true;
   btn.classList.add('loading');
-  btn.innerHTML = '<span class="spinner"></span>Génération en cours...';
+  btn.textContent = 'Génération en cours...';
+  startGenerationProgress();
 
   const toneLabel = {educatif:"éducatif, clair, pédagogique", opinion:"avis tranché, point de vue affirmé, incisif", storytelling:"narratif, storytelling personnel, immersif"}[tone];
   const countInstruction = count === 'auto' ? "Choisis toi-même le nombre idéal de slides de contenu (entre 5 et 8) selon la richesse du texte." : `Crée exactement ${count} slides de contenu.`;
@@ -1242,9 +1350,11 @@ Contraintes :
       setTimeout(()=> dlBtn.style.animation = '', 2900);
     }
     showToast("Carrousel généré — clique sur le texte pour l'éditer");
+    finishGenerationProgress(true);
   }catch(err){
     console.error(err);
     showError(err.message || "La génération a échoué. Réessaie, ou reformule ton texte.");
+    finishGenerationProgress(false);
   }finally{
     btn.disabled = false;
     btn.classList.remove('loading');
@@ -2004,25 +2114,6 @@ function checkAuth(){
   }
 }
 checkAuth();
-
-function applyTheme(theme){
-  document.documentElement.setAttribute("data-theme", theme);
-  const btn = document.getElementById("theme-toggle");
-  if(btn) btn.textContent = theme === "dark" ? "☀️" : "🌙";
-}
-
-function toggleTheme(){
-  const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
-  const next = current === "dark" ? "light" : "dark";
-  localStorage.setItem("carrousel_theme", next);
-  applyTheme(next);
-}
-
-(function initTheme(){
-  const saved = localStorage.getItem("carrousel_theme");
-  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  applyTheme(saved || (prefersDark ? "dark" : "light"));
-})();
 </script>
 </body>
 </html>
