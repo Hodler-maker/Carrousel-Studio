@@ -34,6 +34,31 @@
     --font-slide:'Inter', sans-serif;
     --font-mono:'JetBrains Mono', monospace;
   }
+  [data-theme="dark"]{
+    --bg:#14100a;
+    --bg-2:#1e1810;
+    --orange:#ff7a2f;
+    --orange-deep:#ff8a42;
+    --amber:#ffb547;
+    --ink:#f5efe4;
+    --glass:rgba(255,255,255,0.06);
+    --glass-strong:rgba(255,255,255,0.1);
+    --border:rgba(255,245,230,0.12);
+    --border-soft:rgba(255,245,230,0.06);
+    --text:#f0e9dc;
+    --text-dim:#a89a85;
+    --text-faint:#7c7060;
+  }
+  [data-theme="dark"] body{
+    background:var(--bg);
+  }
+  .theme-toggle{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:36px; height:36px; border-radius:50%;
+    background:var(--glass-strong); border:1px solid var(--border);
+    cursor:pointer; font-size:16px; transition:background .2s, transform .15s;
+  }
+  .theme-toggle:hover{transform:scale(1.06);}
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{height:100%;}
   body{
@@ -459,6 +484,14 @@
   .editable:focus{background:rgba(255,122,47,0.12); box-shadow:0 0 0 2px rgba(255,122,47,0.35);}
   .editable.text-fitted{letter-spacing:-0.015em;}
   .editable.text-overflow-warning{box-shadow:0 0 0 2px rgba(220,60,40,0.35);}
+  .char-counter{
+    position:absolute; bottom:10px; right:14px; z-index:5;
+    font-family:var(--font-mono); font-size:10.5px; padding:3px 8px;
+    border-radius:100px; background:var(--glass-strong); border:1px solid var(--border);
+    color:var(--text-dim); pointer-events:none; opacity:0; transition:opacity .15s, color .15s, border-color .15s;
+  }
+  .char-counter.visible{opacity:1;}
+  .char-counter.warning{color:#b83f28; border-color:rgba(220,60,40,0.4);}
   .slide-inner > div:nth-child(2){min-height:0; overflow:hidden;}
   .slide-body,.slide-subtitle{max-height:100%; overflow:hidden;}
 
@@ -538,6 +571,7 @@
     </div>
 
     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Changer de thème" aria-label="Changer de thème">🌙</button>
       <a class="visual-studio-link" href="visuel.html"><span class="studio-arrow" aria-hidden="true">←</span> 🎨 Créer un visuel</a>
       <a class="editor-link" href="editor.html">Ouvrir l’éditeur <span class="editor-arrow" aria-hidden="true">→</span></a>
       <div id="auth-zone"></div>
@@ -1428,12 +1462,13 @@ function renderCarousel(){
       ${slides[currentIndex]?.image ? `<button class="mini-btn image-remove-btn" onclick="removeCurrentImage()" title="Supprimer l’image" aria-label="Supprimer l’image">×</button>` : ''}
     </div>
     ${slideMarkup(slides[currentIndex], currentIndex)}
+    <div class="char-counter" id="char-counter"></div>
   `;
   frame.querySelectorAll('.editable').forEach(el=>{
     el.addEventListener('input', onEditableInput);
-    el.addEventListener('focus', ()=> { pushHistory(); activeEditable = el; requestAnimationFrame(()=> fitAllEditableText(frame)); });
-    el.addEventListener('click', ()=> { activeEditable = el; });
-    el.addEventListener('blur', onEditableBlur);
+    el.addEventListener('focus', ()=> { pushHistory(); activeEditable = el; requestAnimationFrame(()=> fitAllEditableText(frame)); updateCharCounter(el); });
+    el.addEventListener('click', ()=> { activeEditable = el; updateCharCounter(el); });
+    el.addEventListener('blur', (e)=> { onEditableBlur(e); hideCharCounter(); });
   });
   const image = frame.querySelector('.slide-image-layer');
   if(image){
@@ -1462,6 +1497,21 @@ function renderCarousel(){
 
 function onEditableInput(e){
   fitEditableText(e.target);
+  updateCharCounter(e.target);
+}
+
+function updateCharCounter(el){
+  const counter = document.getElementById('char-counter');
+  if(!counter || !el) return;
+  const length = el.textContent.trim().length;
+  counter.textContent = `${length} caractère${length > 1 ? 's' : ''}`;
+  counter.classList.add('visible');
+  counter.classList.toggle('warning', el.classList.contains('text-overflow-warning'));
+}
+
+function hideCharCounter(){
+  const counter = document.getElementById('char-counter');
+  if(counter) counter.classList.remove('visible');
 }
 
 function insertCarouselEmoji(emoji){
@@ -1933,6 +1983,25 @@ function checkAuth(){
   }
 }
 checkAuth();
+
+function applyTheme(theme){
+  document.documentElement.setAttribute("data-theme", theme);
+  const btn = document.getElementById("theme-toggle");
+  if(btn) btn.textContent = theme === "dark" ? "☀️" : "🌙";
+}
+
+function toggleTheme(){
+  const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  const next = current === "dark" ? "light" : "dark";
+  localStorage.setItem("carrousel_theme", next);
+  applyTheme(next);
+}
+
+(function initTheme(){
+  const saved = localStorage.getItem("carrousel_theme");
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(saved || (prefersDark ? "dark" : "light"));
+})();
 </script>
 </body>
 </html>
