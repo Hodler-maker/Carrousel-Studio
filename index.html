@@ -280,8 +280,8 @@
   }
 
   /* preview area */
-  .preview-wrap{min-height:70vh; display:flex; flex-direction:column; position:relative;}
-  .preview-toolbar{display:flex; align-items:center; justify-content:flex-end; margin-bottom:18px; flex-wrap:wrap; gap:12px;}
+  .preview-wrap{min-height:70vh; display:flex; flex-direction:column; position:relative; max-width:900px; margin:0 auto; width:100%;}
+  .preview-toolbar{display:flex; align-items:center; justify-content:center; margin-bottom:18px; flex-wrap:wrap; gap:12px; width:100%;}
   .thumbnail-strip{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:18px;}
   .toolbar-left{display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-width:0;}
   .dot-track{display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; max-width:100%;}
@@ -745,7 +745,7 @@
 
       <div id="carousel-container" style="display:none;">
         <div class="preview-toolbar">
-          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center;">
             <div class="history-controls" aria-label="Annuler / Rétablir">
               <button class="toolbar-btn icon-btn" id="undo-btn" type="button" onclick="undo()" title="Annuler (Ctrl+Z)" aria-label="Annuler la dernière action" disabled><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-15-6.7L3 13"></path></svg></button>
               <button class="toolbar-btn icon-btn" id="redo-btn" type="button" onclick="redo()" title="Rétablir (Ctrl+Maj+Z)" aria-label="Rétablir la dernière action annulée" disabled><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 15-6.7L21 13"></path></svg></button>
