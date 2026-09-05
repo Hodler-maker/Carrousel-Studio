@@ -281,8 +281,8 @@
 
   /* preview area */
   .preview-wrap{min-height:70vh; display:flex; flex-direction:column; position:relative; max-width:900px; margin:0 auto; width:100%;}
-  .preview-toolbar{display:flex; align-items:center; justify-content:center; padding-top:250px; margin-bottom:200px; flex-wrap:wrap; gap:12px; width:100%;}
-  .thumbnail-strip{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:100px;}
+  .preview-toolbar{display:flex; align-items:center; justify-content:center; margin-bottom:64px; flex-wrap:wrap; gap:12px; width:100%;}
+  .thumbnail-strip{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:18px;}
   .toolbar-left{display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-width:0;}
   .dot-track{display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; max-width:100%;}
   .slide-chip{
@@ -746,34 +746,34 @@
       <div id="carousel-container" style="display:none;">
         <div class="preview-toolbar">
           <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center;">
-            <div class="history-controls" aria-label="Annuler / Rétablir">
-              <button class="toolbar-btn icon-btn" id="undo-btn" type="button" onclick="undo()" title="Annuler (Ctrl+Z)" aria-label="Annuler la dernière action" disabled><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-15-6.7L3 13"></path></svg></button>
-              <button class="toolbar-btn icon-btn" id="redo-btn" type="button" onclick="redo()" title="Rétablir (Ctrl+Maj+Z)" aria-label="Rétablir la dernière action annulée" disabled><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 15-6.7L21 13"></path></svg></button>
-            </div>
             <div class="menu-dropdown">
               <button class="toolbar-btn menu-trigger" id="actions-menu-btn" type="button" aria-haspopup="true" aria-expanded="false" onclick="toggleActionsMenu()">
                 <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
                 Actions <span class="menu-caret">▾</span>
               </button>
               <div class="menu-panel" id="actions-menu-panel" role="menu" aria-label="Actions sur la slide" hidden>
+                <button class="menu-item" role="menuitem" id="undo-btn" onclick="undo()" disabled><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-15-6.7L3 13"></path></svg> Annuler</button>
+                <button class="menu-item" role="menuitem" id="redo-btn" onclick="redo()" disabled><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 15-6.7L21 13"></path></svg> Rétablir</button>
+                <div class="menu-divider" role="separator"></div>
                 <button class="menu-item" role="menuitem" id="regenerate-current-btn" onclick="regenerateCurrentSlide()"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.9-3L3 11"></path><path d="M3 4v7h7"></path><path d="M4 13a8 8 0 0 0 14.9 3L21 13"></path><path d="M21 20v-7h-7"></path></svg> Régénérer cette slide</button>
-                <button class="menu-item" role="menuitem" onclick="exportCurrentSlide()"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 21h16"></path></svg> Exporter cette slide</button>
-                <button class="menu-item" role="menuitem" id="pdf-btn" onclick="exportAsPDF()"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg> Exporter en PDF</button>
+                <div class="menu-divider" role="separator"></div>
+                <button class="menu-item" role="menuitem" id="add-image-btn" type="button"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg> Ajouter une image</button>
+                <input id="carousel-image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none">
+                <button class="menu-item" role="menuitem" id="bold-btn" type="button" onclick="toggleBoldSelection()"><strong>G</strong>&nbsp; Mettre en gras</button>
+                <div class="menu-item" style="cursor:default;" aria-label="Ajouter un emoji dans le texte">
+                  <div class="emoji-palette">
+                    <button class="emoji-btn" type="button" data-carousel-emoji="✨" aria-label="Ajouter l’emoji étincelles">✨</button>
+                    <button class="emoji-btn" type="button" data-carousel-emoji="🚀" aria-label="Ajouter l’emoji fusée">🚀</button>
+                    <button class="emoji-btn" type="button" data-carousel-emoji="💡" aria-label="Ajouter l’emoji ampoule">💡</button>
+                    <button class="emoji-btn" type="button" data-carousel-emoji="✅" aria-label="Ajouter l’emoji validation">✅</button>
+                  </div>
+                </div>
                 <div class="menu-divider" role="separator"></div>
                 <button class="menu-item menu-item-danger" role="menuitem" id="delete-current-btn" onclick="deleteCurrentSlide()"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path></svg> Supprimer cette slide</button>
               </div>
             </div>
-            <div class="media-tools" aria-label="Ajouter ou mettre en forme le contenu">
-              <button class="toolbar-btn" id="add-image-btn" type="button" title="Ajouter une image à la slide">＋ Image</button>
-              <input id="carousel-image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none">
-              <button class="toolbar-btn bold-toolbar-btn" id="bold-btn" type="button" onclick="toggleBoldSelection()" title="Mettre le texte sélectionné en gras" aria-label="Mettre le texte sélectionné en gras"><strong>G</strong> Gras</button>
-              <div class="emoji-palette" aria-label="Ajouter un emoji dans le texte">
-                <button class="emoji-btn" type="button" data-carousel-emoji="✨" aria-label="Ajouter l’emoji étincelles">✨</button>
-                <button class="emoji-btn" type="button" data-carousel-emoji="🚀" aria-label="Ajouter l’emoji fusée">🚀</button>
-                <button class="emoji-btn" type="button" data-carousel-emoji="💡" aria-label="Ajouter l’emoji ampoule">💡</button>
-                <button class="emoji-btn" type="button" data-carousel-emoji="✅" aria-label="Ajouter l’emoji validation">✅</button>
-              </div>
-            </div>
+            <button class="toolbar-btn regenerate-btn" onclick="exportCurrentSlide()"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 21h16"></path></svg> Exporter cette slide</button>
+            <button class="toolbar-btn pdf-btn" id="pdf-btn" onclick="exportAsPDF()"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg> Exporter en PDF</button>
             <button class="toolbar-btn download-btn" onclick="exportAllSlides()">
               <span class="download-icon"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 21h16"></path></svg></span> Télécharger le carrousel
             </button>
