@@ -52,6 +52,27 @@
   [data-theme="dark"] body{
     background:var(--bg);
   }
+  /* In dark mode, keep form fields on a clear light surface with dark text for readability */
+  [data-theme="dark"] textarea,
+  [data-theme="dark"] select,
+  [data-theme="dark"] input[type="text"]{
+    background:#f5efe4;
+    color:#19140d;
+    border-color:rgba(25,20,13,0.14);
+  }
+  [data-theme="dark"] textarea::placeholder{
+    color:#8a7d68;
+  }
+  [data-theme="dark"] select option{
+    background:#f5efe4;
+    color:#19140d;
+  }
+  [data-theme="dark"] textarea:focus,
+  [data-theme="dark"] select:focus,
+  [data-theme="dark"] input[type="text"]:focus{
+    border-color:rgba(255,122,47,0.6);
+    box-shadow:0 0 0 3px rgba(255,122,47,0.18);
+  }
   .theme-toggle{
     display:inline-flex; align-items:center; justify-content:center;
     width:36px; height:36px; border-radius:50%;
