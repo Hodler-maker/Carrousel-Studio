@@ -167,11 +167,32 @@
   .swatch-signal{background:linear-gradient(135deg, #6c35e8 0%, #2d176d 100%);}
   .swatch-yellow-black{background:linear-gradient(135deg, #ffe566 0%, #f4c928 50%, #171713 50%, #171713 100%);}
 
-  /* generation progress bar */
-  .progress-wrap{margin-top:14px;}
-  .progress-track{width:100%; height:6px; border-radius:100px; background:rgba(25,20,13,0.08); overflow:hidden;}
-  .progress-fill{height:100%; width:6%; border-radius:100px; background:linear-gradient(90deg, var(--orange), var(--amber)); transition:width .5s ease;}
-  .progress-status{margin-top:8px; font-size:11.5px; color:var(--text-dim); text-align:center;}
+  /* generation progress overlay — covers the preview area while slides render underneath, then fades to reveal them */
+  .preview-progress{
+    position:absolute; inset:0; z-index:6; border-radius:var(--radius);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    gap:16px; padding:40px; overflow:hidden;
+    background:var(--bg-2); opacity:1; transition:opacity .4s ease;
+  }
+  .preview-progress[hidden]{display:none;}
+  .preview-progress.fading{opacity:0;}
+  .preview-progress-icon{
+    width:64px; height:64px; border-radius:18px; background:linear-gradient(135deg, rgba(255,122,47,0.16), rgba(255,181,71,0.22));
+    border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:26px;
+    animation:floatIcon 2s ease-in-out infinite;
+  }
+  .preview-progress-status{color:var(--text-dim); font-size:14px; font-weight:500;}
+  .preview-progress .progress-track{width:100%; max-width:280px; height:6px; border-radius:100px; background:rgba(25,20,13,0.08); overflow:hidden;}
+  .preview-progress .progress-fill{height:100%; width:6%; border-radius:100px; background:linear-gradient(90deg, var(--orange), var(--amber)); transition:width .5s ease;}
+
+  .confetti-piece{
+    position:absolute; top:-12px; width:8px; height:14px; border-radius:2px; opacity:1; pointer-events:none;
+    animation:confettiFall 1.05s ease-in forwards;
+  }
+  @keyframes confettiFall{
+    0%{transform:translateY(0) rotate(0deg); opacity:1;}
+    100%{transform:translateY(260px) rotate(340deg); opacity:0;}
+  }
 
   textarea{
     width:100%; min-height:180px; resize:vertical; background:rgba(255,255,255,0.55);
@@ -259,7 +280,7 @@
   }
 
   /* preview area */
-  .preview-wrap{min-height:70vh; display:flex; flex-direction:column;}
+  .preview-wrap{min-height:70vh; display:flex; flex-direction:column; position:relative;}
   .preview-toolbar{display:flex; align-items:center; justify-content:flex-end; margin-bottom:18px; flex-wrap:wrap; gap:12px;}
   .thumbnail-strip{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:18px;}
   .toolbar-left{display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-width:0;}
@@ -701,10 +722,6 @@
       </div>
 
       <button class="btn-generate" id="generate-btn" onclick="generateCarousel()">Générer le carrousel</button>
-      <div class="progress-wrap" id="progress-wrap" hidden>
-        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-        <p class="progress-status" id="progress-status">Analyse du texte…</p>
-      </div>
       <div class="error-box" id="error-box"></div>
 
       <div class="hint"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" style="vertical-align:-4px; margin-right:5px;"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M8.5 14.5A6 6 0 1 1 16 14c-.8.6-1.2 1.3-1.4 2.2H9.4c-.2-.9-.5-1.2-.9-1.7Z"></path><path d="M12 2v1"></path><path d="m4.9 4.9.7.7"></path><path d="m19.1 4.9-.7.7"></path></svg>Une fois généré, clique directement sur le texte de chaque slide pour le modifier avant export.</div>
@@ -718,6 +735,12 @@
         <h3>Ton carrousel apparaîtra ici</h3>
               <p>Colle un texte à gauche et clique sur « Générer le carrousel ». Chaque slide sera éditable et exportable en PNG haute résolution, prête pour LinkedIn.</p>
               <p class="image-edit-hint">Astuce : sélectionne un texte avant de cliquer sur un emoji pour l’insérer ; utilise « ＋ Image » pour ajouter un visuel à la slide active.</p>
+      </div>
+
+      <div class="preview-progress" id="preview-progress" hidden>
+        <div class="preview-progress-icon">✨</div>
+        <p class="preview-progress-status" id="progress-status">Analyse du texte…</p>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
       </div>
 
       <div id="carousel-container" style="display:none;">
@@ -1233,10 +1256,11 @@ const GENERATION_STEPS = [
 ];
 
 function startGenerationProgress(){
-  const wrap = document.getElementById('progress-wrap');
+  const wrap = document.getElementById('preview-progress');
   const fill = document.getElementById('progress-fill');
   const status = document.getElementById('progress-status');
   if(!wrap || !fill || !status) return;
+  wrap.classList.remove('fading');
   wrap.hidden = false;
   let step = 0;
   let pct = 6;
@@ -1251,18 +1275,48 @@ function startGenerationProgress(){
   }, 1400);
 }
 
-function finishGenerationProgress(success){
+function launchConfetti(container){
+  if(!container) return;
+  const colors = ['#ff7a2f', '#ffb547', '#ff5a1f', '#ffd76a', '#ffffff'];
+  const count = 26;
+  for(let i = 0; i < count; i++){
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    piece.style.left = (Math.random() * 96) + '%';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.25) + 's';
+    piece.style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+    container.appendChild(piece);
+    setTimeout(() => piece.remove(), 1500);
+  }
+}
+
+function finishGenerationProgress(success, onDone){
   clearInterval(generationProgressTimer);
-  const wrap = document.getElementById('progress-wrap');
+  const wrap = document.getElementById('preview-progress');
   const fill = document.getElementById('progress-fill');
   const status = document.getElementById('progress-status');
-  if(!wrap || !fill || !status) return;
+  if(!wrap || !fill || !status){ if(onDone) onDone(); return; }
   fill.style.width = '100%';
   status.textContent = success ? 'Terminé ✓' : 'Échec de la génération';
-  setTimeout(()=>{
-    wrap.hidden = true;
-    fill.style.width = '6%';
-  }, success ? 700 : 1200);
+  // Le contenu (carrousel ou état vide) est déjà mis à jour derrière l'overlay.
+  if(onDone) onDone();
+  if(success){
+    launchConfetti(wrap);
+    setTimeout(()=>{
+      wrap.classList.add('fading');
+      setTimeout(()=>{
+        wrap.hidden = true;
+        wrap.classList.remove('fading');
+        fill.style.width = '6%';
+      }, 400);
+    }, 650);
+  } else {
+    setTimeout(()=>{
+      wrap.hidden = true;
+      fill.style.width = '6%';
+    }, 900);
+  }
 }
 
 async function generateCarousel(){
@@ -1344,13 +1398,14 @@ Contraintes :
     document.getElementById('empty-state').style.display = 'none';
     document.getElementById('carousel-container').style.display = 'block';
     renderCarousel();
-    const dlBtn = document.querySelector('.download-btn');
-    if(dlBtn){
-      dlBtn.style.animation = 'attentionPulse 1.4s ease-in-out 2';
-      setTimeout(()=> dlBtn.style.animation = '', 2900);
-    }
-    showToast("Carrousel généré — clique sur le texte pour l'éditer");
-    finishGenerationProgress(true);
+    finishGenerationProgress(true, () => {
+      const dlBtn = document.querySelector('.download-btn');
+      if(dlBtn){
+        dlBtn.style.animation = 'attentionPulse 1.4s ease-in-out 2';
+        setTimeout(()=> dlBtn.style.animation = '', 2900);
+      }
+      showToast("Carrousel généré — clique sur le texte pour l'éditer");
+    });
   }catch(err){
     console.error(err);
     showError(err.message || "La génération a échoué. Réessaie, ou reformule ton texte.");
