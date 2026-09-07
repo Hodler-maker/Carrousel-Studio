@@ -13,6 +13,8 @@
     --orange:#ff7a2f;
     --orange-deep:#ff5a1f;
     --amber:#ffb547;
+    --green:#2f9e5c;
+    --red:#d94b3a;
     --ink:#19140d;
     --glass:rgba(255,255,255,0.55);
     --glass-strong:rgba(255,255,255,0.88);
@@ -68,11 +70,13 @@
     display:flex;
     flex-direction:column;
     position:relative;
-    transition:transform .25s ease, box-shadow .25s ease;
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
   }
   .card:hover{transform:translateY(-4px);}
+  .card.is-active{border-color:var(--orange); box-shadow:0 0 0 2px rgba(255,122,47,0.25);}
 
-  .tier-label{font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; color:var(--text-faint); margin-bottom:6px;}
+  .tier-label{font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; color:var(--text-faint); margin-bottom:6px; display:flex; align-items:center; gap:8px;}
+  .tier-label .active-pill{font-family:var(--font-mono); font-size:10px; color:var(--green); background:rgba(47,158,92,0.12); padding:2px 8px; border-radius:100px;}
   .tier-name{font-size:22px; font-weight:700; color:var(--ink); margin-bottom:4px;}
   .tier-tagline{font-size:13px; color:var(--text-dim); margin-bottom:22px; min-height:36px; line-height:1.5;}
 
@@ -85,11 +89,15 @@
     display:block; text-align:center; text-decoration:none;
     font-size:14px; font-weight:700; padding:12px 16px; border-radius:12px;
     margin-bottom:26px; transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    border:none; width:100%; cursor:pointer; font-family:inherit;
   }
   .cta:hover{transform:translateY(-1px);}
+  .cta:active{transform:translateY(0);}
   .cta.ghost{background:rgba(25,20,13,0.06); color:var(--ink); border:1px solid var(--border);}
   .cta.solid{background:linear-gradient(135deg, var(--orange-deep), var(--orange) 55%, var(--amber)); color:#fff; box-shadow:0 10px 24px rgba(255,122,47,0.3);}
   .cta.dark{background:linear-gradient(135deg, var(--ink), #2e2519); color:#fff; box-shadow:0 10px 24px rgba(25,20,13,0.35);}
+  .cta.is-selected{background:rgba(47,158,92,0.12); color:var(--green); border:1px solid rgba(47,158,92,0.35); box-shadow:none;}
+  .card.top .cta.is-selected{background:rgba(47,158,92,0.18); color:#a9f0c4; border:1px solid rgba(47,158,92,0.4);}
 
   .features{list-style:none; display:flex; flex-direction:column; gap:11px; flex:1;}
   .features li{font-size:13.5px; color:var(--text); display:flex; align-items:flex-start; gap:9px; line-height:1.45;}
@@ -102,6 +110,7 @@
     border:1px solid rgba(255,122,47,0.35);
     box-shadow:0 24px 60px -20px rgba(255,122,47,0.35);
   }
+  .card.featured.is-active{border-color:var(--orange); box-shadow:0 24px 60px -20px rgba(255,122,47,0.35), 0 0 0 2px rgba(255,122,47,0.3);}
   .featured .badge{
     position:absolute; top:-13px; left:24px;
     font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:0.02em;
@@ -111,6 +120,7 @@
   }
 
   .card.top{background:linear-gradient(160deg, #221a10, #19140d); border:1px solid rgba(255,181,71,0.25);}
+  .card.top.is-active{border-color:var(--amber); box-shadow:0 0 0 2px rgba(255,181,71,0.3);}
   .card.top .tier-name, .card.top .price .amount{color:#fdf6ea;}
   .card.top .tier-label{color:var(--amber);}
   .card.top .tier-tagline, .card.top .price .period, .card.top .price-note{color:rgba(253,246,234,0.55);}
@@ -121,7 +131,57 @@
   .footnote{text-align:center; margin-top:52px; font-size:13px; color:var(--text-dim);}
   .footnote a{color:var(--orange-deep); text-decoration:none; border-bottom:1px solid rgba(255,90,31,0.3);}
 
-  @media (prefers-reduced-motion:reduce){.card{transition:none;} .card:hover{transform:none;}}
+  /* Simulator */
+  .sim{
+    margin-top:64px;
+    background:var(--glass-strong);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:32px;
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+  }
+  .sim-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px;}
+  .sim-head h2{font-size:19px; font-weight:700; color:var(--ink); margin-bottom:6px;}
+  .sim-head p{font-size:13.5px; color:var(--text-dim); max-width:480px; line-height:1.5;}
+  .sim-plan-tag{font-family:var(--font-mono); font-size:12px; color:var(--text-dim); background:rgba(25,20,13,0.05); border:1px solid var(--border); padding:6px 12px; border-radius:100px; white-space:nowrap;}
+  .sim-plan-tag b{color:var(--ink);}
+  .sim-reset{background:none; border:1px solid var(--border); color:var(--text-dim); font-family:inherit; font-size:12.5px; padding:6px 12px; border-radius:100px; cursor:pointer; transition:border-color .15s ease, color .15s ease;}
+  .sim-reset:hover{border-color:var(--orange); color:var(--orange-deep);}
+
+  .sim-empty{font-size:14px; color:var(--text-faint); text-align:center; padding:36px 0;}
+
+  .sim-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media (max-width:800px){.sim-grid{grid-template-columns:1fr;}}
+
+  .sim-card{background:var(--bg-2); border:1px solid var(--border-soft); border-radius:16px; padding:20px;}
+  .sim-card h3{font-size:14px; font-weight:700; color:var(--ink); margin-bottom:4px;}
+  .sim-card .sim-period{font-family:var(--font-mono); font-size:11px; color:var(--text-faint); margin-bottom:14px; display:block;}
+
+  .sim-bar{height:6px; background:var(--border); border-radius:100px; overflow:hidden; margin-bottom:10px;}
+  .sim-bar-fill{height:100%; background:linear-gradient(90deg, var(--orange-deep), var(--amber)); border-radius:100px; transition:width .3s ease;}
+  .sim-bar-fill.is-full{background:var(--red);}
+
+  .sim-count{font-size:12.5px; color:var(--text-dim); margin-bottom:14px; display:block;}
+  .sim-count b{color:var(--ink); font-weight:700;}
+
+  .sim-btn{width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:rgba(25,20,13,0.05); color:var(--ink); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s ease, border-color .15s ease;}
+  .sim-btn:hover:not(:disabled){background:rgba(255,122,47,0.12); border-color:rgba(255,122,47,0.35);}
+  .sim-btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .sim-btn.is-unavailable{background:transparent;}
+
+  .sim-msg{font-size:12px; margin-top:10px; min-height:16px;}
+  .sim-msg.warn{color:var(--red);}
+  .sim-msg.ok{color:var(--green);}
+  .sim-msg.info{color:var(--text-faint);}
+
+  .sim-exports{display:flex; align-items:center; gap:8px; margin-top:20px; flex-wrap:wrap;}
+  .sim-exports span.label{font-size:12.5px; color:var(--text-dim); margin-right:4px;}
+  .export-badge{font-family:var(--font-mono); font-size:11px; padding:4px 10px; border-radius:100px; border:1px solid var(--border);}
+  .export-badge.on{color:var(--green); background:rgba(47,158,92,0.1); border-color:rgba(47,158,92,0.3);}
+  .export-badge.off{color:var(--text-faint); background:transparent;}
+
+  @media (prefers-reduced-motion:reduce){.card{transition:none;} .card:hover{transform:none;} .sim-bar-fill{transition:none;}}
 </style>
 </head>
 <body>
@@ -145,13 +205,13 @@
   <div class="grid">
 
     <!-- GENESIS -->
-    <div class="card">
-      <div class="tier-label">GENESIS</div>
+    <div class="card" data-plan="genesis">
+      <div class="tier-label"><span>GENESIS</span></div>
       <div class="tier-name">Freemium</div>
       <div class="tier-tagline">Pour découvrir l'outil et poster ta première création.</div>
       <div class="price"><span class="amount">0</span><span class="period">FCFA</span></div>
       <div class="price-note">Aucune carte bancaire requise</div>
-      <a href="#" class="cta ghost">Commencer gratuitement</a>
+      <button type="button" class="cta ghost" data-select="genesis">Commencer gratuitement</button>
       <ul class="features">
         <li>1 visuel par semaine sur Visuel Studio</li>
         <li>1 carrousel offert à l'inscription</li>
@@ -161,13 +221,13 @@
     </div>
 
     <!-- NODE -->
-    <div class="card">
-      <div class="tier-label">NODE</div>
+    <div class="card" data-plan="node">
+      <div class="tier-label"><span>NODE</span></div>
       <div class="tier-name">Basique</div>
       <div class="tier-tagline">Pour publier du contenu chaque semaine, sans y penser.</div>
       <div class="price"><span class="amount price-monthly">2 500</span><span class="period">FCFA / mois</span></div>
       <div class="price-note">soit ~2 000 FCFA/mois en annuel</div>
-      <a href="#" class="cta ghost">Choisir Basique</a>
+      <button type="button" class="cta ghost" data-select="node">Choisir Basique</button>
       <ul class="features">
         <li>1 carrousel par semaine</li>
         <li>1 visuel par jour</li>
@@ -177,14 +237,14 @@
     </div>
 
     <!-- VALIDATOR (featured) -->
-    <div class="card featured">
+    <div class="card featured" data-plan="validator">
       <div class="badge">Le plus choisi</div>
-      <div class="tier-label">VALIDATOR</div>
+      <div class="tier-label"><span>VALIDATOR</span></div>
       <div class="tier-name">Premium</div>
       <div class="tier-tagline">Pour les créateurs actifs qui ne veulent plus compter.</div>
       <div class="price"><span class="amount price-monthly">7 000</span><span class="period">FCFA / mois</span></div>
       <div class="price-note">soit ~5 600 FCFA/mois en annuel</div>
-      <a href="#" class="cta solid">Passer en Premium</a>
+      <button type="button" class="cta solid" data-select="validator">Passer en Premium</button>
       <ul class="features">
         <li>3 carrousels par semaine</li>
         <li>Visuel Studio illimité</li>
@@ -194,13 +254,13 @@
     </div>
 
     <!-- SATOSHI -->
-    <div class="card top">
-      <div class="tier-label">SATOSHI</div>
+    <div class="card top" data-plan="satoshi">
+      <div class="tier-label"><span>SATOSHI</span></div>
       <div class="tier-name">Premium+</div>
       <div class="tier-tagline">Pour les consultants et agences qui produisent en volume.</div>
       <div class="price"><span class="amount price-monthly">14 000</span><span class="period">FCFA / mois</span></div>
       <div class="price-note">soit ~11 200 FCFA/mois en annuel</div>
-      <a href="#" class="cta ghost">Passer en Premium+</a>
+      <button type="button" class="cta ghost" data-select="satoshi">Passer en Premium+</button>
       <ul class="features">
         <li>5 carrousels par semaine</li>
         <li>Visuel Studio illimité</li>
@@ -211,26 +271,211 @@
 
   </div>
 
+  <!-- SIMULATEUR D'UTILISATION -->
+  <div class="sim" id="sim">
+    <div class="sim-head">
+      <div>
+        <h2>Simulateur d'utilisation</h2>
+        <p>Choisis un forfait ci-dessus, puis teste ses limites en générant des visuels, des carrousels et des exports. Chaque bouton respecte exactement ce qui est écrit sur la carte.</p>
+      </div>
+      <div id="sim-plan-tag-wrap"></div>
+    </div>
+    <div id="sim-body">
+      <div class="sim-empty">Sélectionne un forfait ci-dessus pour activer le simulateur.</div>
+    </div>
+  </div>
+
   <div class="footnote">Besoin de plus de volume pour ton équipe ou ton agence ? <a href="#">Contacte-nous</a>.</div>
 </div>
 
 <script>
+  /* ---------- Billing toggle (existing behaviour) ---------- */
   const monthly = {node:2500, validator:7000, satoshi:14000};
   const annual = {node:2000, validator:5600, satoshi:11200};
   function toggleBilling(el){
     const isOn = el.classList.toggle('on');
     document.querySelectorAll('.price-monthly').forEach(span => {
       const card = span.closest('.card');
-      let key = null;
-      if(card.querySelector('.tier-label').textContent === 'NODE') key = 'node';
-      if(card.querySelector('.tier-label').textContent === 'VALIDATOR') key = 'validator';
-      if(card.querySelector('.tier-label').textContent === 'SATOSHI') key = 'satoshi';
-      if(!key) return;
+      const key = card.getAttribute('data-plan');
+      if(!(key in monthly)) return;
       span.textContent = (isOn ? annual[key] : monthly[key]).toLocaleString('fr-FR');
     });
     document.querySelectorAll('.price-note').forEach(note => {
       if(note.textContent.includes('FCFA')) note.style.opacity = isOn ? '0.35' : '1';
     });
+  }
+
+  /* ---------- Plan definitions: mirrors exactly what each card's bullet list says ---------- */
+  const PLANS = {
+    genesis: {
+      label: 'GENESIS', name: 'Freemium', ctaText: 'Commencer gratuitement',
+      visuels:   { limit: 1, period: 'par semaine' },
+      carrousels:{ limit: 1, period: 'offert à l\'inscription (unique)' },
+      ppt:       { limit: 0, period: null },
+      exportHD: false,
+      brand: false
+    },
+    node: {
+      label: 'NODE', name: 'Basique', ctaText: 'Choisir Basique',
+      visuels:   { limit: 1, period: 'par jour' },
+      carrousels:{ limit: 1, period: 'par semaine' },
+      ppt:       { limit: 0, period: null },
+      exportHD: true,
+      brand: false
+    },
+    validator: {
+      label: 'VALIDATOR', name: 'Premium', ctaText: 'Passer en Premium',
+      visuels:   { limit: Infinity, period: 'illimité' },
+      carrousels:{ limit: 3, period: 'par semaine' },
+      ppt:       { limit: 1, period: 'par mois' },
+      exportHD: true,
+      brand: true
+    },
+    satoshi: {
+      label: 'SATOSHI', name: 'Premium+', ctaText: 'Passer en Premium+',
+      visuels:   { limit: Infinity, period: 'illimité' },
+      carrousels:{ limit: 5, period: 'par semaine' },
+      ppt:       { limit: 2, period: 'par semaine' },
+      exportHD: true,
+      brand: true
+    }
+  };
+
+  let currentPlan = null;
+  let usage = { visuels: 0, carrousels: 0, ppt: 0 };
+
+  /* ---------- Plan selection ---------- */
+  document.querySelectorAll('[data-select]').forEach(btn => {
+    btn.addEventListener('click', () => selectPlan(btn.getAttribute('data-select')));
+  });
+
+  function selectPlan(planId){
+    currentPlan = planId;
+    usage = { visuels: 0, carrousels: 0, ppt: 0 };
+
+    document.querySelectorAll('.card').forEach(card => {
+      const id = card.getAttribute('data-plan');
+      const btn = card.querySelector('[data-select]');
+      const isActive = id === planId;
+      card.classList.toggle('is-active', isActive);
+      if(btn){
+        btn.classList.toggle('is-selected', isActive);
+        btn.textContent = isActive ? '✓ Forfait actif' : PLANS[id].ctaText;
+      }
+      let pill = card.querySelector('.active-pill');
+      if(isActive && !pill){
+        pill = document.createElement('span');
+        pill.className = 'active-pill';
+        pill.textContent = 'Actif';
+        card.querySelector('.tier-label').appendChild(pill);
+      } else if(!isActive && pill){
+        pill.remove();
+      }
+    });
+
+    renderSimulator();
+    document.getElementById('sim').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ---------- Simulator rendering ---------- */
+  function renderSimulator(){
+    const wrap = document.getElementById('sim-plan-tag-wrap');
+    const body = document.getElementById('sim-body');
+
+    if(!currentPlan){
+      wrap.innerHTML = '';
+      body.innerHTML = '<div class="sim-empty">Sélectionne un forfait ci-dessus pour activer le simulateur.</div>';
+      return;
+    }
+
+    const plan = PLANS[currentPlan];
+    wrap.innerHTML = `
+      <span class="sim-plan-tag">Forfait actif : <b>${plan.name}</b></span>
+      <button type="button" class="sim-reset" id="sim-reset-btn">Réinitialiser les quotas</button>
+    `;
+    document.getElementById('sim-reset-btn').addEventListener('click', () => {
+      usage = { visuels: 0, carrousels: 0, ppt: 0 };
+      renderSimulator();
+    });
+
+    body.innerHTML = `
+      <div class="sim-grid">
+        ${simCardHTML('visuels', 'Visuels', plan.visuels)}
+        ${simCardHTML('carrousels', 'Carrousels', plan.carrousels)}
+        ${simCardHTML('ppt', 'Présentations PowerPoint', plan.ppt)}
+      </div>
+      <div class="sim-exports">
+        <span class="label">Export disponible :</span>
+        <span class="export-badge on">PDF standard</span>
+        <span class="export-badge ${plan.exportHD ? 'on' : 'off'}">${plan.exportHD ? 'HD sans filigrane' : 'HD — indisponible'}</span>
+        <span class="export-badge ${plan.brand ? 'on' : 'off'}">${plan.brand ? 'Personnalisation de marque' : 'Personnalisation de marque — indisponible'}</span>
+      </div>
+    `;
+
+    ['visuels','carrousels','ppt'].forEach(key => {
+      const btn = document.getElementById(`btn-${key}`);
+      if(btn) btn.addEventListener('click', () => attemptAction(key));
+    });
+  }
+
+  function simCardHTML(key, title, spec){
+    const limit = spec.limit;
+    const unavailable = limit === 0;
+    const used = usage[key];
+    const pct = unavailable ? 0 : (limit === Infinity ? 0 : Math.min(100, (used / limit) * 100));
+    const isFull = !unavailable && limit !== Infinity && used >= limit;
+
+    const countLabel = unavailable
+      ? 'Non inclus dans ce forfait'
+      : limit === Infinity
+        ? `<b>${used}</b> générés — illimité`
+        : `<b>${used}</b> / ${limit} utilisés`;
+
+    const btnLabel = key === 'ppt' ? 'Exporter une présentation' : `Créer un ${title === 'Carrousels' ? 'carrousel' : 'visuel'}`;
+
+    return `
+      <div class="sim-card">
+        <h3>${title}</h3>
+        <span class="sim-period">${unavailable ? 'Fonctionnalité verrouillée' : spec.period}</span>
+        ${unavailable ? '' : `
+          <div class="sim-bar"><div class="sim-bar-fill ${isFull ? 'is-full' : ''}" style="width:${limit === Infinity ? 8 : pct}%"></div></div>
+        `}
+        <span class="sim-count">${countLabel}</span>
+        <button type="button" class="sim-btn ${unavailable ? 'is-unavailable' : ''}" id="btn-${key}" ${(unavailable || isFull) ? 'disabled' : ''}>
+          ${unavailable ? 'Indisponible sur ce forfait' : btnLabel}
+        </button>
+        <div class="sim-msg" id="msg-${key}"></div>
+      </div>
+    `;
+  }
+
+  function attemptAction(key){
+    const plan = PLANS[currentPlan];
+    const spec = plan[key];
+    const msgEl = document.getElementById(`msg-${key}`);
+
+    if(spec.limit === 0){
+      msgEl.className = 'sim-msg warn';
+      msgEl.textContent = 'Cette fonctionnalité n\'est pas incluse dans ton forfait.';
+      return;
+    }
+    if(spec.limit !== Infinity && usage[key] >= spec.limit){
+      msgEl.className = 'sim-msg warn';
+      msgEl.textContent = 'Limite atteinte pour ce forfait — passe à un forfait supérieur pour continuer.';
+      return;
+    }
+
+    usage[key] += 1;
+    msgEl.className = 'sim-msg ok';
+    const noun = key === 'ppt' ? 'Présentation exportée' : key === 'carrousels' ? 'Carrousel créé' : 'Visuel créé';
+    msgEl.textContent = `${noun} ✓`;
+    renderSimulator();
+    // re-flash the message after re-render since renderSimulator wipes the DOM
+    const freshMsg = document.getElementById(`msg-${key}`);
+    if(freshMsg){
+      freshMsg.className = 'sim-msg ok';
+      freshMsg.textContent = `${noun} ✓`;
+    }
   }
 </script>
 </body>
