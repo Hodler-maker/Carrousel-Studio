@@ -61,6 +61,19 @@
   .brand-text span{font-size:11px; color:var(--text-dim); font-family:var(--font-mono); letter-spacing:0.04em;}
   .eyebrow-badge{font-family:var(--font-mono); font-size:11px; letter-spacing:0.08em; color:var(--orange-deep); background:rgba(255,122,47,0.1); border:1px solid rgba(255,122,47,0.28); padding:6px 12px; border-radius:100px; text-transform:uppercase;}
 
+  .progress-widget{display:flex; align-items:center; margin-bottom:28px; background:var(--glass); border:1px solid var(--border); border-radius:100px; padding:14px 22px; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); box-shadow:0 14px 40px -22px rgba(120,70,20,0.25); animation:fadeUp .6s cubic-bezier(.16,1,.3,1);}
+  .step{display:flex; align-items:center; gap:10px; flex:1; min-width:0;}
+  .step-circle{width:26px; height:26px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:11px; font-weight:600; background:rgba(25,20,13,0.06); color:var(--text-faint); border:1px solid var(--border); transition:all .35s cubic-bezier(.16,1,.3,1);}
+  .step-label{font-family:var(--font-display); font-size:12.5px; font-weight:600; color:var(--text-faint); white-space:nowrap; transition:color .35s ease;}
+  .step-line{height:2px; flex:1; background:rgba(25,20,13,0.08); margin:0 6px; border-radius:2px; overflow:hidden; position:relative;}
+  .step-line::after{content:''; position:absolute; inset:0; background:linear-gradient(90deg, var(--orange), var(--amber)); transform:scaleX(0); transform-origin:left; transition:transform .5s cubic-bezier(.16,1,.3,1);}
+  .step-line.filled::after{transform:scaleX(1);}
+  .step.active .step-circle{background:linear-gradient(135deg, var(--orange), var(--amber)); border-color:transparent; color:#fff; box-shadow:0 0 0 4px rgba(255,122,47,0.16);}
+  .step.active .step-label{color:var(--ink);}
+  .step.done .step-circle{background:var(--ink); border-color:transparent; color:#fff;}
+  .step.done .step-label{color:var(--text-dim);}
+  @media (max-width:760px){.progress-widget{padding:12px 14px;} .step-label{display:none;} .step{gap:0; justify-content:center;}}
+
   .layout{display:grid; grid-template-columns:400px 1fr; gap:24px; align-items:start;}
   @media (max-width:980px){.layout{grid-template-columns:1fr;}}
   .glass{background:var(--glass); border:1px solid var(--border); border-radius:var(--radius); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); box-shadow:0 20px 60px -25px rgba(120,70,20,0.25);}
@@ -74,6 +87,14 @@
   textarea{width:100%; min-height:180px; resize:vertical; background:rgba(255,255,255,0.55); border:1px solid var(--border); border-radius:14px; padding:14px; color:var(--text); font-family:var(--font-body); font-size:13.5px; line-height:1.55; transition:border-color .2s, box-shadow .2s;}
   textarea::placeholder{color:var(--text-faint);}
   textarea:focus{outline:none; border-color:rgba(255,122,47,0.5); box-shadow:0 0 0 3px rgba(255,122,47,0.12);}
+  .char-counter{display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-top:6px; font-family:var(--font-mono); font-size:11px; color:var(--text-faint); transition:color .2s ease;}
+  .char-counter .dot-status{width:6px; height:6px; border-radius:50%; background:var(--text-faint); transition:background .2s ease;}
+  .char-counter.low{color:#b83f28;}
+  .char-counter.low .dot-status{background:#b83f28;}
+  .char-counter.ok{color:#3a8a4e;}
+  .char-counter.ok .dot-status{background:#3a8a4e;}
+  .char-counter.long{color:#9a5a12;}
+  .char-counter.long .dot-status{background:#ffb547;}
   .row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   select, input[type=text]{width:100%; background:rgba(255,255,255,0.55); border:1px solid var(--border); border-radius:12px; padding:10px 12px; color:var(--text); font-family:var(--font-body); font-size:13px; cursor:pointer;}
   select:focus, input[type=text]:focus{outline:none; border-color:rgba(255,122,47,0.5);}
@@ -107,11 +128,12 @@
   .nav-arrow{width:42px; height:42px; border-radius:50%; background:var(--glass-strong); border:1px solid var(--border); color:var(--text); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:16px; transition:background .2s, transform .15s;}
   .nav-arrow:hover{background:#fff; transform:scale(1.06);}
   .nav-arrow:disabled{opacity:0.25; cursor:default; transform:none;}
-  .slide-viewport{width:100%; max-width:420px; position:relative;}
-  .slide-frame{aspect-ratio:4/5; width:100%; border-radius:26px; overflow:hidden; position:relative; border:1px solid var(--border); box-shadow:0 30px 70px -20px rgba(120,60,10,0.35), 0 0 0 1px rgba(255,255,255,0.02) inset; animation:slideIn .45s cubic-bezier(.16,1,.3,1); transition:transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease;}
-  .slide-frame:hover{transform:translateY(-6px); box-shadow:0 40px 80px -20px rgba(120,60,10,0.42);}
+  .slide-viewport{width:100%; max-width:420px; position:relative; perspective:1200px;}
+  .slide-frame{aspect-ratio:4/5; width:100%; border-radius:26px; overflow:hidden; position:relative; border:1px solid var(--border); box-shadow:0 30px 70px -20px rgba(120,60,10,0.35), 0 0 0 1px rgba(255,255,255,0.02) inset; animation:slideIn .45s cubic-bezier(.16,1,.3,1); transition:transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s ease; transform-style:preserve-3d; will-change:transform;}
+  .slide-frame:hover{transform:translateY(-10px) scale(1.035) rotateX(6deg) rotateY(-7deg); box-shadow:0 46px 90px -18px rgba(120,60,10,0.48);}
   @keyframes slideIn{from{opacity:0; transform:translateY(14px) scale(0.98);} to{opacity:1; transform:translateY(0) scale(1);}}
-  .slide-inner{position:absolute; inset:0; padding:9% 9%; display:flex; flex-direction:column; font-family:var(--font-body);}
+  .slide-inner{position:absolute; inset:0; padding:9% 9%; display:flex; flex-direction:column; font-family:var(--font-body); opacity:1; transform:scale(1); transition:opacity .32s cubic-bezier(.16,1,.3,1), transform .32s cubic-bezier(.16,1,.3,1);}
+  .slide-inner.template-fading{opacity:0; transform:scale(0.96);}
   .type-cover{background:radial-gradient(circle at 85% 8%, rgba(255,255,255,0.35), transparent 40%), radial-gradient(circle at 10% 100%, rgba(120,30,0,0.35), transparent 55%), linear-gradient(150deg, var(--amber) 0%, var(--orange) 45%, var(--orange-deep) 100%); color:#fff;}
   .type-content{background:linear-gradient(175deg, #ffffff 0%, #fbf3e8 100%); color:var(--ink);}
   .type-cta{background:radial-gradient(circle at 80% 15%, rgba(255,150,60,0.35), transparent 50%), radial-gradient(circle at 5% 95%, rgba(255,181,71,0.18), transparent 45%), linear-gradient(160deg, #221c14 0%, #14100a 100%); color:#fff;}
@@ -210,6 +232,15 @@
     </div>
     <div class="eyebrow-badge">Block-Bridge Technology</div>
   </header>
+  <div class="progress-widget" id="progress-widget">
+    <div class="step active" data-step="1"><div class="step-circle">1</div><div class="step-label">Coller texte</div></div>
+    <div class="step-line" data-line="1"></div>
+    <div class="step" data-step="2"><div class="step-circle">2</div><div class="step-label">Générer</div></div>
+    <div class="step-line" data-line="2"></div>
+    <div class="step" data-step="3"><div class="step-circle">3</div><div class="step-label">Éditer</div></div>
+    <div class="step-line" data-line="3"></div>
+    <div class="step" data-step="4"><div class="step-circle">4</div><div class="step-label">Exporter</div></div>
+  </div>
   <div class="layout">
     <div class="glass panel">
       <h2>Générer un carrousel</h2>
@@ -219,7 +250,8 @@
       <label for="alias">Ton alias (optionnel)</label>
       <input type="text" id="alias" maxlength="32" placeholder="Ex : @monalias" oninput="updateAlias(this.value)">
       <label for="source-text">Ton texte</label>
-      <textarea id="source-text" placeholder="Colle ici ton article, ton fil de pensée ou tes notes sur le Web3, le Bitcoin, la régulation UEMOA..."></textarea>
+      <textarea id="source-text" placeholder="Colle ici ton article, ton fil de pensée ou tes notes sur le Web3, le Bitcoin, la régulation UEMOA..." oninput="updateCharCounter()"></textarea>
+      <div class="char-counter" id="char-counter"><span class="dot-status"></span><span id="char-counter-text">0 caractère — colle au moins 40 caractères</span></div>
       <div class="row">
         <div>
           <label for="slide-count">Nombre de slides</label>
@@ -274,10 +306,58 @@ let slides = [];
 let currentIndex = 0;
 let currentAlias = '';
 let currentTemplate = 'sunset';
+let currentStep = 1;
+let stepRevertTimer = null;
 const AVAILABLE_TEMPLATES = ['sunset', 'editorial', 'midnight', 'signal'];
+function setStep(n){
+  currentStep=n;
+  document.querySelectorAll('.step').forEach(el=>{
+    const idx=parseInt(el.getAttribute('data-step'));
+    el.classList.toggle('done', idx<n);
+    el.classList.toggle('active', idx===n);
+  });
+  document.querySelectorAll('.step-line').forEach(el=>{
+    const idx=parseInt(el.getAttribute('data-line'));
+    el.classList.toggle('filled', idx<n);
+  });
+}
+function updateCharCounter(){
+  const text=document.getElementById('source-text').value;
+  const len=text.trim().length;
+  const box=document.getElementById('char-counter');
+  const label=document.getElementById('char-counter-text');
+  box.classList.remove('low','ok','long');
+  if(len===0){
+    label.textContent='0 caractère — colle au moins 40 caractères';
+  }else if(len<40){
+    box.classList.add('low');
+    label.textContent=`${len} caractères — encore ${40-len} pour démarrer`;
+  }else if(len>4000){
+    box.classList.add('long');
+    label.textContent=`${len} caractères — texte long, envisage de le resserrer`;
+  }else{
+    box.classList.add('ok');
+    label.textContent=`${len} caractères — prêt à générer`;
+  }
+  if(!slides.length){setStep(len>=40?2:1);}
+}
 function normalizeAlias(value){const alias=String(value||'').trim().replace(/\s+/g,' '); if(!alias)return ''; return alias.startsWith('@')?alias:`@${alias}`;}
 function updateAlias(value){currentAlias=normalizeAlias(value); if(slides.length)renderCarousel();}
-function updateTemplate(value){currentTemplate=AVAILABLE_TEMPLATES.includes(value)?value:'sunset'; if(slides.length)renderCarousel();}
+function updateTemplate(value){
+  currentTemplate=AVAILABLE_TEMPLATES.includes(value)?value:'sunset';
+  if(!slides.length)return;
+  const inner=document.querySelector('#slide-frame .slide-inner');
+  if(!inner){renderCarousel();return;}
+  inner.classList.add('template-fading');
+  setTimeout(()=>{
+    renderCarousel();
+    const fresh=document.querySelector('#slide-frame .slide-inner');
+    if(fresh){
+      fresh.classList.add('template-fading');
+      requestAnimationFrame(()=>requestAnimationFrame(()=>fresh.classList.remove('template-fading')));
+    }
+  },220);
+}
 function showToast(msg){const t=document.getElementById('toast');document.getElementById('toast-text').textContent=msg;t.classList.add('show');clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.classList.remove('show'),2600);}
 function showError(msg){const box=document.getElementById('error-box');if(!msg){box.style.display='none';box.textContent='';return;}box.style.display='block';box.textContent=msg;}
 async function generateCarousel(){
@@ -291,6 +371,7 @@ async function generateCarousel(){
   currentTemplate=AVAILABLE_TEMPLATES.includes(document.getElementById('template').value)?document.getElementById('template').value:'sunset';
   showError(null);
   if(text.length<40){showError("Colle un texte un peu plus complet (au moins quelques phrases) pour obtenir un bon carrousel.");return;}
+  setStep(2);
   const btn=document.getElementById('generate-btn');btn.disabled=true;btn.classList.add('loading');btn.innerHTML='<span class="spinner"></span>Génération en cours...';
   const toneLabel={educatif:'éducatif, clair, pédagogique',opinion:'avis tranché, point de vue affirmé, incisif',storytelling:'narratif, storytelling personnel, immersif'}[tone];
   const countInstruction=count==='auto'?'Choisis toi-même le nombre idéal de slides de contenu (entre 5 et 8) selon la richesse du texte.':`Crée exactement ${count} slides de contenu.`;
@@ -320,8 +401,8 @@ Contraintes :
     const data=responseData;
     let raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();const parsed=JSON.parse(raw);
     slides=[];slides.push({type:'cover',title:parsed.cover.title,subtitle:parsed.cover.subtitle});(parsed.slides||[]).forEach(s=>slides.push({type:'content',title:s.title,body:s.body}));slides.push({type:'cta',title:parsed.cta.title,body:parsed.cta.body});
-    currentIndex=0;document.getElementById('empty-state').style.display='none';document.getElementById('carousel-container').style.display='block';renderCarousel();const dlBtn=document.querySelector('.download-btn');if(dlBtn){dlBtn.style.animation='attentionPulse 1.4s ease-in-out 2';setTimeout(()=>dlBtn.style.animation='',2900);}CSQuota.recordCarrouselUsed();showToast('Carrousel généré — clique sur le texte pour l\'éditer');
-  }catch(err){console.error(err);showError('La génération a échoué. Réessaie, ou reformule ton texte.');}
+    currentIndex=0;document.getElementById('empty-state').style.display='none';document.getElementById('carousel-container').style.display='block';renderCarousel();const dlBtn=document.querySelector('.download-btn');if(dlBtn){dlBtn.style.animation='attentionPulse 1.4s ease-in-out 2';setTimeout(()=>dlBtn.style.animation='',2900);}CSQuota.recordCarrouselUsed();showToast('Carrousel généré — clique sur le texte pour l\'éditer');setStep(3);
+  }catch(err){console.error(err);showError('La génération a échoué. Réessaie, ou reformule ton texte.');setStep(text.trim().length>=40?2:1);}
   finally{btn.disabled=false;btn.classList.remove('loading');btn.textContent='Générer le carrousel';}
 }
 function contentIndexLabel(i){let n=0;for(let k=0;k<=i;k++){if(slides[k].type==='content')n++;}const total=slides.filter(s=>s.type==='content').length;return `${String(n).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;}
@@ -353,8 +434,9 @@ function canDeleteSlide(index){return slides.length>3&&slides[index]?.type==='co
 function deleteCurrentSlide(){if(!canDeleteSlide(currentIndex)){showToast('La couverture et la conclusion sont conservées.');return;}slides.splice(currentIndex,1);currentIndex=Math.max(0,Math.min(currentIndex,slides.length-1));renderCarousel();showToast('Slide supprimée');}
 function addContentSlide(){const insertAt=slides.length-1;slides.splice(insertAt,0,{type:'content',title:'Nouvelle idée',body:'Écris ton contenu ici.'});currentIndex=insertAt;renderCarousel();showToast('Slide ajoutée');}
 async function exportSlideAsPNG(index,filenamePrefix){const stage=document.getElementById('export-stage');stage.innerHTML=`<div style="width:1080px;height:1350px;">${slideMarkup(slides[index],index)}</div>`;const target=stage.firstElementChild;const canvas=await html2canvas(target,{scale:1,backgroundColor:null,useCORS:true});const link=document.createElement('a');link.download=`${filenamePrefix}-slide-${String(index+1).padStart(2,'0')}.png`;link.href=canvas.toDataURL('image/png');link.click();stage.innerHTML='';}
-async function exportCurrentSlide(){showToast('Export en cours...');await exportSlideAsPNG(currentIndex,'carrousel');showToast('Slide exportée ✓');}
-async function exportAllSlides(){showToast(`Export de ${slides.length} slides...`);for(let i=0;i<slides.length;i++){await exportSlideAsPNG(i,'carrousel');await new Promise(r=>setTimeout(r,250));}showToast('Toutes les slides ont été exportées ✓');}
+function markExportDone(){setStep(4);clearTimeout(stepRevertTimer);stepRevertTimer=setTimeout(()=>{if(slides.length)setStep(3);},2400);}
+async function exportCurrentSlide(){setStep(4);showToast('Export en cours...');await exportSlideAsPNG(currentIndex,'carrousel');showToast('Slide exportée ✓');markExportDone();}
+async function exportAllSlides(){setStep(4);showToast(`Export de ${slides.length} slides...`);for(let i=0;i<slides.length;i++){await exportSlideAsPNG(i,'carrousel');await new Promise(r=>setTimeout(r,250));}showToast('Toutes les slides ont été exportées ✓');markExportDone();}
 </script>
 </body>
 </html>
