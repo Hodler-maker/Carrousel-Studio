@@ -213,7 +213,7 @@
       <div class="tier-tagline">Pour découvrir l'outil et poster ta première création.</div>
       <div class="price"><span class="amount">0</span><span class="period">FCFA</span></div>
       <div class="price-note">Aucune carte bancaire requise — teste-le directement dans le simulateur ci-dessous</div>
-      <a href="https://carrousel-studio.vercel.app/" target="_blank" rel="noopener" class="cta ghost">Commencer gratuitement</a>
+      <a href="editor.html" class="cta ghost">Commencer gratuitement</a>
       <ul class="features">
         <li>1 visuel par semaine sur Visuel Studio</li>
         <li>1 carrousel offert à l'inscription</li>
@@ -360,8 +360,12 @@
     }
   };
 
-  // Visuel Studio, les carrousels et l'export PowerPoint vivent tous sur le même site
-  const TOOL_URL = 'https://carrousel-studio.vercel.app/';
+  // Visuel Studio (visuels) et l'éditeur (carrousels / présentations) sont deux pages distinctes du site
+  const TOOL_URLS = {
+    visuels: 'visuel.html',
+    carrousels: 'editor.html',
+    ppt: 'editor.html'
+  };
 
   let currentPlan = null;
   let usage = { visuels: 0, carrousels: 0, ppt: 0 };
@@ -498,8 +502,8 @@
       freshMsg.className = 'sim-msg ok';
       freshMsg.textContent = `${noun} ✓ — ouverture de Carrousel Studio…`;
     }
-    // Redirige réellement vers l'outil (Visuel Studio, carrousels et export PowerPoint y vivent tous)
-    window.open(TOOL_URL, '_blank', 'noopener');
+    // Redirige réellement vers l'outil correspondant (Visuel Studio ou l'éditeur de carrousels)
+    window.open(TOOL_URLS[key], '_blank', 'noopener');
   }
 </script>
 </body>
