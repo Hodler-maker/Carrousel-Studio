@@ -80,10 +80,12 @@
   .tier-name{font-size:22px; font-weight:700; color:var(--ink); margin-bottom:4px;}
   .tier-tagline{font-size:13px; color:var(--text-dim); margin-bottom:22px; min-height:36px; line-height:1.5;}
 
-  .price{display:flex; align-items:baseline; gap:6px; margin-bottom:4px;}
+  .price{display:flex; align-items:baseline; gap:6px; margin-bottom:4px; flex-wrap:wrap;}
   .price .amount{font-size:30px; font-weight:800; color:var(--ink); letter-spacing:-0.01em;}
   .price .period{font-size:13px; color:var(--text-dim);}
-  .price-note{font-size:12px; color:var(--text-faint); margin-bottom:24px;}
+  .price .price-usd{font-family:var(--font-mono); font-size:12px; color:var(--text-faint); width:100%;}
+  .card.top .price .price-usd{color:rgba(253,246,234,0.55);}
+  .price-note{font-size:12px; color:var(--text-faint); margin-bottom:24px; transition:opacity .2s ease;}
 
   .cta{
     display:block; text-align:center; text-decoration:none;
@@ -210,7 +212,7 @@
       <div class="tier-name">Freemium</div>
       <div class="tier-tagline">Pour découvrir l'outil et poster ta première création.</div>
       <div class="price"><span class="amount">0</span><span class="period">FCFA</span></div>
-      <div class="price-note">Aucune carte bancaire requise</div>
+      <div class="price-note">Aucune carte bancaire requise — teste-le directement dans le simulateur ci-dessous</div>
       <button type="button" class="cta ghost" data-select="genesis">Commencer gratuitement</button>
       <ul class="features">
         <li>1 visuel par semaine sur Visuel Studio</li>
@@ -225,8 +227,11 @@
       <div class="tier-label"><span>NODE</span></div>
       <div class="tier-name">Basique</div>
       <div class="tier-tagline">Pour publier du contenu chaque semaine, sans y penser.</div>
-      <div class="price"><span class="amount price-monthly">2 500</span><span class="period">FCFA / mois</span></div>
-      <div class="price-note">soit ~2 000 FCFA/mois en annuel</div>
+      <div class="price">
+        <span class="amount price-monthly">1 700</span><span class="period">FCFA / mois</span>
+        <span class="price-usd">(~3 $)</span>
+      </div>
+      <div class="price-note">soit ~1 350 FCFA/mois en annuel (~2,4 $)</div>
       <button type="button" class="cta ghost" data-select="node">Choisir Basique</button>
       <ul class="features">
         <li>1 carrousel par semaine</li>
@@ -242,8 +247,11 @@
       <div class="tier-label"><span>VALIDATOR</span></div>
       <div class="tier-name">Premium</div>
       <div class="tier-tagline">Pour les créateurs actifs qui ne veulent plus compter.</div>
-      <div class="price"><span class="amount price-monthly">7 000</span><span class="period">FCFA / mois</span></div>
-      <div class="price-note">soit ~5 600 FCFA/mois en annuel</div>
+      <div class="price">
+        <span class="amount price-monthly">4 500</span><span class="period">FCFA / mois</span>
+        <span class="price-usd">(~8 $)</span>
+      </div>
+      <div class="price-note">soit ~3 600 FCFA/mois en annuel (~6,4 $)</div>
       <button type="button" class="cta solid" data-select="validator">Passer en Premium</button>
       <ul class="features">
         <li>3 carrousels par semaine</li>
@@ -258,8 +266,11 @@
       <div class="tier-label"><span>SATOSHI</span></div>
       <div class="tier-name">Premium+</div>
       <div class="tier-tagline">Pour les consultants et agences qui produisent en volume.</div>
-      <div class="price"><span class="amount price-monthly">14 000</span><span class="period">FCFA / mois</span></div>
-      <div class="price-note">soit ~11 200 FCFA/mois en annuel</div>
+      <div class="price">
+        <span class="amount price-monthly">8 500</span><span class="period">FCFA / mois</span>
+        <span class="price-usd">(~15 $)</span>
+      </div>
+      <div class="price-note">soit ~6 800 FCFA/mois en annuel (~12 $)</div>
       <button type="button" class="cta ghost" data-select="satoshi">Passer en Premium+</button>
       <ul class="features">
         <li>5 carrousels par semaine</li>
@@ -276,7 +287,7 @@
     <div class="sim-head">
       <div>
         <h2>Simulateur d'utilisation</h2>
-        <p>Choisis un forfait ci-dessus, puis teste ses limites en générant des visuels, des carrousels et des exports. Chaque bouton respecte exactement ce qui est écrit sur la carte.</p>
+        <p>Choisis un forfait ci-dessus (y compris Freemium), puis teste ses limites en générant des visuels, des carrousels et des exports. Chaque bouton respecte exactement ce qui est écrit sur la carte.</p>
       </div>
       <div id="sim-plan-tag-wrap"></div>
     </div>
@@ -289,19 +300,27 @@
 </div>
 
 <script>
-  /* ---------- Billing toggle (existing behaviour) ---------- */
-  const monthly = {node:2500, validator:7000, satoshi:14000};
-  const annual = {node:2000, validator:5600, satoshi:11200};
+  /* ---------- Billing toggle ---------- */
+  // FCFA (mensuel / annuel équivalent) et équivalent USD affiché entre parenthèses
+  const monthly = {node:1700, validator:4500, satoshi:8500};
+  const annual  = {node:1350, validator:3600, satoshi:6800};
+  const monthlyUSD = {node:3, validator:8, satoshi:15};
+  const annualUSD  = {node:'2,4', validator:'6,4', satoshi:'12'};
+
   function toggleBilling(el){
     const isOn = el.classList.toggle('on');
-    document.querySelectorAll('.price-monthly').forEach(span => {
-      const card = span.closest('.card');
+    document.querySelectorAll('.card').forEach(card => {
       const key = card.getAttribute('data-plan');
       if(!(key in monthly)) return;
-      span.textContent = (isOn ? annual[key] : monthly[key]).toLocaleString('fr-FR');
-    });
-    document.querySelectorAll('.price-note').forEach(note => {
-      if(note.textContent.includes('FCFA')) note.style.opacity = isOn ? '0.35' : '1';
+
+      const amountEl = card.querySelector('.price-monthly');
+      if(amountEl) amountEl.textContent = (isOn ? annual[key] : monthly[key]).toLocaleString('fr-FR');
+
+      const usdEl = card.querySelector('.price-usd');
+      if(usdEl) usdEl.textContent = `(~${isOn ? annualUSD[key] : monthlyUSD[key]} $)`;
+
+      const note = card.querySelector('.price-note');
+      if(note) note.style.opacity = isOn ? '0.35' : '1';
     });
   }
 
