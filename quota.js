@@ -11,7 +11,7 @@
  *
  * Règles du forfait Freemium (Genesis) :
  *   - 1 visuel exporté par semaine glissante sur Visuel Studio
- *   - 1 carrousel offert à l'inscription (une seule fois, à vie)
+ *   - 1 carrousel offert par mois glissant
  *   - Export PDF standard autorisé
  *   - Pas d'accès à l'export PowerPoint
  */
@@ -19,6 +19,7 @@
   const STORAGE_KEY = 'cs_freemium_usage';
   const PLAN_KEY = 'cs_plan';
   const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
   function getUsage() {
     try {
@@ -68,21 +69,23 @@
       setUsage(usage);
     },
 
-    // Éditeur de carrousels : 1 carrousel offert, une seule fois à vie
+    // Éditeur de carrousels : 1 carrousel offert par mois glissant
     canUseCarrousel() {
       if (getPlan() !== 'freemium') return { allowed: true };
       const usage = getUsage();
-      if (usage.carrouselOffertUtilise) {
-        return {
-          allowed: false,
-          message: 'Ton carrousel offert à l’inscription a déjà été utilisé. Passe à un forfait payant pour créer d’autres carrousels.'
-        };
-      }
-      return { allowed: true };
+      const last = usage.lastCarrouselUsed;
+      if (!last) return { allowed: true };
+      const elapsed = Date.now() - last;
+      if (elapsed >= MONTH_MS) return { allowed: true };
+      const days = daysLeft(MONTH_MS - elapsed);
+      return {
+        allowed: false,
+        message: `Quota Freemium atteint : 1 carrousel offert par mois. Réessaie dans ${days} jour${days > 1 ? 's' : ''}, ou passe à un forfait payant pour créer d’autres carrousels dès maintenant.`
+      };
     },
     recordCarrouselUsed() {
       const usage = getUsage();
-      usage.carrouselOffertUtilise = true;
+      usage.lastCarrouselUsed = Date.now();
       setUsage(usage);
     },
 
