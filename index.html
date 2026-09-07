@@ -360,6 +360,9 @@
     }
   };
 
+  // Visuel Studio, les carrousels et l'export PowerPoint vivent tous sur le même site
+  const TOOL_URL = 'https://carrousel-studio.vercel.app/';
+
   let currentPlan = null;
   let usage = { visuels: 0, carrousels: 0, ppt: 0 };
 
@@ -487,14 +490,16 @@
     usage[key] += 1;
     msgEl.className = 'sim-msg ok';
     const noun = key === 'ppt' ? 'Présentation exportée' : key === 'carrousels' ? 'Carrousel créé' : 'Visuel créé';
-    msgEl.textContent = `${noun} ✓`;
+    msgEl.textContent = `${noun} ✓ — ouverture de Carrousel Studio…`;
     renderSimulator();
     // re-flash the message after re-render since renderSimulator wipes the DOM
     const freshMsg = document.getElementById(`msg-${key}`);
     if(freshMsg){
       freshMsg.className = 'sim-msg ok';
-      freshMsg.textContent = `${noun} ✓`;
+      freshMsg.textContent = `${noun} ✓ — ouverture de Carrousel Studio…`;
     }
+    // Redirige réellement vers l'outil (Visuel Studio, carrousels et export PowerPoint y vivent tous)
+    window.open(TOOL_URL, '_blank', 'noopener');
   }
 </script>
 </body>
