@@ -219,7 +219,8 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-      <a class="home-link" href="index.html"><span class="home-arrow" aria-hidden="true">←</span> Carrousel Studio</a>
+      <a class="home-link" href="carrousel.html"><span class="home-arrow" aria-hidden="true">←</span> Carrousel Studio</a>
+      <a class="home-link" href="editor.html">Ouvrir l'éditeur <span class="home-arrow" aria-hidden="true">→</span></a>
     </div>
   </header>
 
@@ -344,11 +345,8 @@
       </div>
 
       <div class="actions-row">
-        <button class="toolbar-btn download-btn" style="width:100%;" onclick="exportVisualPNG()">
+        <button class="toolbar-btn download-btn" style="width:100%;" onclick="exportVisual()">
           <span class="download-icon"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 21h16"></path></svg></span> Télécharger le visuel (PNG)
-        </button>
-        <button class="toolbar-btn download-btn" style="width:100%;margin-top:10px;" onclick="exportVisualPDF()">
-          <span class="download-icon"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 21h16"></path></svg></span> Télécharger en PDF
         </button>
       </div>
     </div>
@@ -359,8 +357,6 @@
 <div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-text"></span></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="quota.js"></script>
 <script>
 const AVAILABLE_FONTS = {
   inter: "'Inter', sans-serif",
@@ -620,88 +616,50 @@ function showToast(message){
   toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
 }
 
-async function renderVisualCanvas(){
+async function exportVisual(){
   const mainText = document.getElementById('v-text').value.trim();
-  if(!mainText){ showToast('Ajoute un texte avant d’exporter.'); return null; }
-  if(document.fonts?.ready) await document.fonts.ready;
-  const ratio = document.getElementById('v-ratio').value || '4-5';
-  const width = 1080;
-  const height = ratio === '1-1' ? 1080 : 1350;
-
-  const stage = document.getElementById('export-stage');
-  const clone = document.getElementById('visual-inner').cloneNode(true);
-  clone.style.position = 'static';
-  const wrapper = document.createElement('div');
-  wrapper.style.width = `${width}px`;
-  wrapper.style.height = `${height}px`;
-  wrapper.style.position = 'relative';
-  wrapper.style.overflow = 'hidden';
-  clone.style.position = 'absolute';
-  clone.style.inset = '0';
-  wrapper.appendChild(clone);
-  stage.innerHTML = '';
-  stage.appendChild(wrapper);
-
-  const canvas = await html2canvas(wrapper, {
-    scale: 2,
-    width, height,
-    backgroundColor: null,
-    useCORS: true,
-    logging: false,
-  });
-  stage.innerHTML = '';
-  return { canvas, mainText, width, height };
-}
-
-function visualFilenamePart(mainText){
-  return mainText.slice(0, 30).replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'visuel';
-}
-
-async function exportVisualPNG(){
-  const check = CSQuota.canExportVisuel();
-  if (!check.allowed) { CSQuota.notify(check.message); return; }
+  if(!mainText){ showToast('Ajoute un texte avant d’exporter.'); return; }
   showToast('Export en cours...');
   try{
-    const result = await renderVisualCanvas();
-    if (!result) return;
-    const { canvas, mainText } = result;
+    if(document.fonts?.ready) await document.fonts.ready;
+    const ratio = document.getElementById('v-ratio').value || '4-5';
+    const width = 1080;
+    const height = ratio === '1-1' ? 1080 : 1350;
+
+    const stage = document.getElementById('export-stage');
+    const clone = document.getElementById('visual-inner').cloneNode(true);
+    clone.style.position = 'static';
+    const wrapper = document.createElement('div');
+    wrapper.style.width = `${width}px`;
+    wrapper.style.height = `${height}px`;
+    wrapper.style.position = 'relative';
+    wrapper.style.overflow = 'hidden';
+    clone.style.position = 'absolute';
+    clone.style.inset = '0';
+    wrapper.appendChild(clone);
+    stage.innerHTML = '';
+    stage.appendChild(wrapper);
+
+    const canvas = await html2canvas(wrapper, {
+      scale: 2,
+      width, height,
+      backgroundColor: null,
+      useCORS: true,
+      logging: false,
+    });
+    stage.innerHTML = '';
+
     const link = document.createElement('a');
-    link.download = `visuel-studio-${visualFilenamePart(mainText)}.png`;
+    const namePart = mainText.slice(0, 30).replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'visuel';
+    link.download = `visuel-studio-${namePart}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-    CSQuota.recordVisuelExport();
     showToast('Visuel exporté ✓');
   }catch(err){
     console.error(err);
     showToast('L’export a échoué, réessaie.');
   }
 }
-
-async function exportVisualPDF(){
-  const check = CSQuota.canExportVisuel();
-  if (!check.allowed) { CSQuota.notify(check.message); return; }
-  showToast('Export en cours...');
-  try{
-    const result = await renderVisualCanvas();
-    if (!result) return;
-    const { canvas, mainText, width, height } = result;
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({
-      orientation: width > height ? 'landscape' : 'portrait',
-      unit: 'pt',
-      format: [width * 0.75, height * 0.75] // px -> pt à 96dpi
-    });
-    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, width * 0.75, height * 0.75);
-    pdf.save(`visuel-studio-${visualFilenamePart(mainText)}.pdf`);
-    CSQuota.recordVisuelExport();
-    showToast('Visuel exporté en PDF ✓');
-  }catch(err){
-    console.error(err);
-    showToast('L’export PDF a échoué, réessaie.');
-  }
-}
-
-
 
 render();
 </script>
