@@ -29,7 +29,7 @@ function isRateLimited(ip) {
 // --- Quota "carrousel gratuit" (forfait Freemium) ---------------------------
 // Tant qu'il n'existe pas de vrais comptes/paiement, on ne peut pas savoir
 // avec certitude qui est un utilisateur payant : on applique donc un garde-fou
-// serveur par adresse IP — 1 génération IA de carrousel offerte, à vie.
+// serveur par adresse IP — 1 génération IA de carrousel offerte par mois glissant.
 //
 // ⚠️ Limites connues de cette approche (à corriger le jour où il y aura de
 // vrais comptes) :
@@ -42,14 +42,17 @@ function isRateLimited(ip) {
 //     d'un carrousel dans l'éditeur reste gérée côté client par quota.js.
 // C'est donc un filet de sécurité en plus du contrôle client, pas un
 // remplacement d'un vrai système d'abonnement.
-const freeCarrouselLog = new Set();
+const freeCarrouselLog = new Map();
+const FREE_CARROUSEL_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 jours
 
 function hasUsedFreeCarrousel(ip) {
-  return freeCarrouselLog.has(ip);
+  const last = freeCarrouselLog.get(ip);
+  if (!last) return false;
+  return Date.now() - last < FREE_CARROUSEL_WINDOW_MS;
 }
 
 function markFreeCarrouselUsed(ip) {
-  freeCarrouselLog.add(ip);
+  freeCarrouselLog.set(ip, Date.now());
 }
 
 function sleep(ms) {
@@ -117,10 +120,10 @@ export default async function handler(req, res) {
   }
 
   // Garde-fou serveur pour le forfait Freemium : 1 génération IA de carrousel
-  // offerte à vie par IP (voir les explications au-dessus de freeCarrouselLog).
+  // offerte par mois glissant, par IP (voir explications au-dessus de freeCarrouselLog).
   if (hasUsedFreeCarrousel(ip)) {
     res.status(403).json({
-      error: 'Ton carrousel gratuit généré par IA a déjà été utilisé sur ce forfait. Passe à un forfait payant pour en générer d\'autres.',
+      error: 'Ton carrousel gratuit du mois généré par IA a déjà été utilisé. Réessaie le mois prochain, ou passe à un forfait payant pour en générer d\'autres dès maintenant.',
     });
     return;
   }
