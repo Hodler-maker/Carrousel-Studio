@@ -60,6 +60,7 @@
   .brand-text h1{font-family:var(--font-display); font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink);}
   .brand-text span{font-size:11px; color:var(--text-dim); font-family:var(--font-mono); letter-spacing:0.04em;}
   .eyebrow-badge{font-family:var(--font-mono); font-size:11px; letter-spacing:0.08em; color:var(--orange-deep); background:rgba(255,122,47,0.1); border:1px solid rgba(255,122,47,0.28); padding:6px 12px; border-radius:100px; text-transform:uppercase;}
+  .owner-badge{display:none; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; color:#3a8a4e; background:rgba(58,138,78,0.1); border:1px solid rgba(58,138,78,0.3); padding:6px 12px; border-radius:100px; text-transform:uppercase;}
 
   .progress-widget{display:flex; align-items:center; margin-bottom:28px; background:var(--glass); border:1px solid var(--border); border-radius:100px; padding:14px 22px; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); box-shadow:0 14px 40px -22px rgba(120,70,20,0.25); animation:fadeUp .6s cubic-bezier(.16,1,.3,1);}
   .step{display:flex; align-items:center; gap:10px; flex:1; min-width:0;}
@@ -231,6 +232,7 @@
       </a>
     </div>
     <div class="eyebrow-badge">Block-Bridge Technology</div>
+    <div class="owner-badge" id="owner-badge">✦ Accès concepteur — illimité</div>
   </header>
   <div class="progress-widget" id="progress-widget">
     <div class="step active" data-step="1"><div class="step-circle">1</div><div class="step-label">Coller texte</div></div>
@@ -309,6 +311,25 @@ let currentTemplate = 'sunset';
 let currentStep = 1;
 let stepRevertTimer = null;
 const AVAILABLE_TEMPLATES = ['sunset', 'editorial', 'midnight', 'signal'];
+const OWNER_ACCESS_KEY = 'CARROUSEL'; // remplace par ta propre clé secrète
+function isOwnerUnlocked(){return localStorage.getItem('cs_owner_unlocked')==='true';}
+function checkOwnerAccessFromUrl(){
+  const params=new URLSearchParams(window.location.search);
+  const key=params.get('owner');
+  if(key && key===OWNER_ACCESS_KEY){
+    localStorage.setItem('cs_owner_unlocked','true');
+    params.delete('owner');
+    const query=params.toString();
+    const newUrl=window.location.pathname+(query?`?${query}`:'')+window.location.hash;
+    window.history.replaceState({},'',newUrl);
+  }
+  updateOwnerBadge();
+}
+function updateOwnerBadge(){
+  const badge=document.getElementById('owner-badge');
+  if(badge)badge.style.display=isOwnerUnlocked()?'inline-flex':'none';
+}
+checkOwnerAccessFromUrl();
 function setStep(n){
   currentStep=n;
   document.querySelectorAll('.step').forEach(el=>{
@@ -361,7 +382,7 @@ function updateTemplate(value){
 function showToast(msg){const t=document.getElementById('toast');document.getElementById('toast-text').textContent=msg;t.classList.add('show');clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.classList.remove('show'),2600);}
 function showError(msg){const box=document.getElementById('error-box');if(!msg){box.style.display='none';box.textContent='';return;}box.style.display='block';box.textContent=msg;}
 async function generateCarousel(){
-  const quotaCheck = CSQuota.canUseCarrousel();
+  const quotaCheck = isOwnerUnlocked() ? {allowed:true} : CSQuota.canUseCarrousel();
   if (!quotaCheck.allowed) { showError(quotaCheck.message); return; }
   const text=document.getElementById('source-text').value.trim();
   const topic=document.getElementById('topic').value.trim();
@@ -401,7 +422,7 @@ Contraintes :
     const data=responseData;
     let raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();const parsed=JSON.parse(raw);
     slides=[];slides.push({type:'cover',title:parsed.cover.title,subtitle:parsed.cover.subtitle});(parsed.slides||[]).forEach(s=>slides.push({type:'content',title:s.title,body:s.body}));slides.push({type:'cta',title:parsed.cta.title,body:parsed.cta.body});
-    currentIndex=0;document.getElementById('empty-state').style.display='none';document.getElementById('carousel-container').style.display='block';renderCarousel();const dlBtn=document.querySelector('.download-btn');if(dlBtn){dlBtn.style.animation='attentionPulse 1.4s ease-in-out 2';setTimeout(()=>dlBtn.style.animation='',2900);}CSQuota.recordCarrouselUsed();showToast('Carrousel généré — clique sur le texte pour l\'éditer');setStep(3);
+    currentIndex=0;document.getElementById('empty-state').style.display='none';document.getElementById('carousel-container').style.display='block';renderCarousel();const dlBtn=document.querySelector('.download-btn');if(dlBtn){dlBtn.style.animation='attentionPulse 1.4s ease-in-out 2';setTimeout(()=>dlBtn.style.animation='',2900);}if(!isOwnerUnlocked())CSQuota.recordCarrouselUsed();showToast('Carrousel généré — clique sur le texte pour l\'éditer');setStep(3);
   }catch(err){console.error(err);showError('La génération a échoué. Réessaie, ou reformule ton texte.');setStep(text.trim().length>=40?2:1);}
   finally{btn.disabled=false;btn.classList.remove('loading');btn.textContent='Générer le carrousel';}
 }
