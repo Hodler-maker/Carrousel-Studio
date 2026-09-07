@@ -158,6 +158,13 @@
   </style>
 </head>
 <body>
+  <div id="quota-lock-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,8,0.92);color:#fff;align-items:center;justify-content:center;text-align:center;padding:32px;font-family:Inter,system-ui,sans-serif;">
+    <div style="max-width:420px;">
+      <h2 style="margin:0 0 12px;font-size:22px;">Ton carrousel gratuit a déjà été utilisé</h2>
+      <p id="quota-lock-message" style="margin:0 0 24px;opacity:.85;line-height:1.5;">Le forfait Freemium inclut un seul carrousel offert à l’inscription. Passe à un forfait payant pour en créer davantage.</p>
+      <a href="index.html" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#ff7a2f;color:#fff;text-decoration:none;font-weight:600;">Voir les forfaits</a>
+    </div>
+  </div>
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="index.html" aria-label="Retour à Carrousel Studio" style="text-decoration:none;color:inherit">
@@ -269,6 +276,7 @@
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </div>
 
+  <script src="quota.js"></script>
   <script>
     (() => {
       'use strict';
@@ -482,8 +490,16 @@
       function exportJson() { const data = JSON.stringify(state.presentation, null, 2); download((state.presentation.title || 'presentation').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase() + '.json', new Blob([data], { type: 'application/json' })); toast('Sauvegarde JSON téléchargée.'); }
       function svgForSlide(slide) { const lines = slide.objects.filter(obj => obj.type === 'connector'); const map = new Map(slide.objects.map(obj => [obj.id, obj])); let body = `<rect width="${SURFACE_W}" height="${SURFACE_H}" fill="${slide.background}"/>`; body += '<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#ff7a2f"/></marker></defs>'; lines.forEach(line => { const a = map.get(line.from), b = map.get(line.to); if (a && b) body += `<line x1="${a.x + a.w/2}" y1="${a.y + a.h/2}" x2="${b.x + b.w/2}" y2="${b.y + b.h/2}" stroke="#ff7a2f" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)"/>`; }); slide.objects.filter(obj => obj.type !== 'connector').forEach(obj => { if (obj.type === 'image') { body += `<rect x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}" rx="${obj.radius}" fill="#ffffff" fill-opacity="0.3"/>`; body += `<image href="${escapeXml(obj.src)}" x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}" preserveAspectRatio="xMidYMid meet"/>`; return; } const fill = obj.type === 'rect' ? obj.fill : 'transparent'; body += `<rect x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}" rx="${obj.radius}" fill="${fill}"/>`; if (obj.text) { const lines = obj.text.split('\n'); lines.forEach((line, index) => { body += `<text x="${obj.x + 8}" y="${obj.y + obj.fontSize + 5 + index * obj.fontSize * 1.15}" fill="${obj.color}" font-family="Inter,Arial,sans-serif" font-size="${obj.fontSize}" font-weight="${obj.bold ? 800 : 500}">${escapeXml(line)}</text>`; }); } }); return `<svg xmlns="http://www.w3.org/2000/svg" width="${SURFACE_W}" height="${SURFACE_H}" viewBox="0 0 ${SURFACE_W} ${SURFACE_H}">${body}</svg>`; }
       function exportFilename() { const raw = state.presentation?.title || 'presentation'; const normalized = safeText(raw, 100).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase(); return (normalized || 'presentation').slice(0, 70); }
-      function exportSvg() { const slide = currentSlide(); if (!slide) return; download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.svg`, new Blob([svgForSlide(slide)], { type: 'image/svg+xml' })); toast('Export SVG terminé.'); }
-      function exportPng() { const slide = currentSlide(); if (!slide) return; const svg = svgForSlide(slide); const image = new Image(); image.onload = () => { const canvas = document.createElement('canvas'); canvas.width = SURFACE_W * 2; canvas.height = SURFACE_H * 2; const ctx = canvas.getContext('2d'); ctx.scale(2, 2); ctx.drawImage(image, 0, 0, SURFACE_W, SURFACE_H); canvas.toBlob(blob => { if (blob) { download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.png`, blob); toast('Export PNG terminé.'); } else toast('Export PNG impossible.', true); }, 'image/png'); }; image.onerror = () => toast('Impossible de générer le PNG.', true); image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
+      function exportSvg() { const check = CSQuota.canUseCarrousel(); if (!check.allowed) { showQuotaLock(check.message); return; } const slide = currentSlide(); if (!slide) return; download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.svg`, new Blob([svgForSlide(slide)], { type: 'image/svg+xml' })); CSQuota.recordCarrouselUsed(); toast('Export SVG terminé.'); }
+      function exportPng() { const check = CSQuota.canUseCarrousel(); if (!check.allowed) { showQuotaLock(check.message); return; } const slide = currentSlide(); if (!slide) return; const svg = svgForSlide(slide); const image = new Image(); image.onload = () => { const canvas = document.createElement('canvas'); canvas.width = SURFACE_W * 2; canvas.height = SURFACE_H * 2; const ctx = canvas.getContext('2d'); ctx.scale(2, 2); ctx.drawImage(image, 0, 0, SURFACE_W, SURFACE_H); canvas.toBlob(blob => { if (blob) { download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.png`, blob); CSQuota.recordCarrouselUsed(); toast('Export PNG terminé.'); } else toast('Export PNG impossible.', true); }, 'image/png'); }; image.onerror = () => toast('Impossible de générer le PNG.', true); image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
+
+      // Verrouillage plein écran quand le quota Freemium est épuisé (voir quota.js)
+      function showQuotaLock(message) {
+        const overlay = document.getElementById('quota-lock-overlay');
+        if (!overlay) { alert(message); return; }
+        document.getElementById('quota-lock-message').textContent = message;
+        overlay.style.display = 'flex';
+      }
 
       function bindInputs() {
         $('add-slide').addEventListener('click', () => { if (state.presentation.slides.length >= MAX_SLIDES) return toast('Limite de 30 slides atteinte.', true); snapshot(); state.presentation.slides.push({ id: uid('slide'), title: `Slide ${state.presentation.slides.length + 1}`, background: '#15233a', objects: [] }); state.selectedSlide = state.presentation.slides.length - 1; state.selectedObject = null; markChanged(); });
@@ -501,6 +517,11 @@
       }
       async function init() { bindInputs(); try { state.db = await openDb(); const saved = await dbGet(state.db, 'current'); state.presentation = saved ? normalizePresentation(saved) : samplePresentation(); setStatus(saved ? 'Enregistré localement' : 'Exemple prêt', 'success'); render(); if (!saved) await save(); } catch (error) { state.presentation = samplePresentation(); setStatus('Mode temporaire', 'error'); render(); toast('IndexedDB est indisponible. Utilisation temporaire en mémoire.', true); } }
       init();
+      // Verrouille tout l'éditeur si le carrousel gratuit du forfait Freemium a déjà été utilisé
+      (function enforceCarrouselQuota() {
+        const check = CSQuota.canUseCarrousel();
+        if (!check.allowed) showQuotaLock(check.message);
+      })();
     })();
   </script>
 </body>
