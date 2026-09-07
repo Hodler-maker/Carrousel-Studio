@@ -26,6 +26,32 @@ function isRateLimited(ip) {
   return entry.count > MAX_REQUESTS_PER_WINDOW;
 }
 
+// --- Quota "carrousel gratuit" (forfait Freemium) ---------------------------
+// Tant qu'il n'existe pas de vrais comptes/paiement, on ne peut pas savoir
+// avec certitude qui est un utilisateur payant : on applique donc un garde-fou
+// serveur par adresse IP — 1 génération IA de carrousel offerte, à vie.
+//
+// ⚠️ Limites connues de cette approche (à corriger le jour où il y aura de
+// vrais comptes) :
+//   - Stockage en mémoire : remis à zéro à chaque redémarrage à froid de la
+//     fonction Vercel (peut arriver plusieurs fois par jour sous faible trafic).
+//   - Basé sur l'IP : plusieurs personnes derrière la même IP (bureau, box
+//     familiale, 4G partagée) partageront le même quota, et une personne qui
+//     change de réseau peut regénérer une IA "gratuite".
+//   - Ne bloque QUE la génération automatique via l'IA. La création manuelle
+//     d'un carrousel dans l'éditeur reste gérée côté client par quota.js.
+// C'est donc un filet de sécurité en plus du contrôle client, pas un
+// remplacement d'un vrai système d'abonnement.
+const freeCarrouselLog = new Set();
+
+function hasUsedFreeCarrousel(ip) {
+  return freeCarrouselLog.has(ip);
+}
+
+function markFreeCarrouselUsed(ip) {
+  freeCarrouselLog.add(ip);
+}
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -90,6 +116,15 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Garde-fou serveur pour le forfait Freemium : 1 génération IA de carrousel
+  // offerte à vie par IP (voir les explications au-dessus de freeCarrouselLog).
+  if (hasUsedFreeCarrousel(ip)) {
+    res.status(403).json({
+      error: 'Ton carrousel gratuit généré par IA a déjà été utilisé sur ce forfait. Passe à un forfait payant pour en générer d\'autres.',
+    });
+    return;
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     res.status(500).json({ error: "Clé API non configurée côté serveur (GEMINI_API_KEY manquante)." });
@@ -143,6 +178,7 @@ export default async function handler(req, res) {
 
     // On normalise la réponse au même format que celui attendu par le site
     // (structure "content" façon Anthropic), pour ne rien changer côté client.
+    markFreeCarrouselUsed(ip);
     res.status(200).json({
       content: [{ type: 'text', text }],
     });
