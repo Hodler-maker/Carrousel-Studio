@@ -67,6 +67,33 @@
   @keyframes homeArrowNudge{0%,100%{transform:translateX(0);} 50%{transform:translateX(-3px);}}
   @media (prefers-reduced-motion:reduce){.home-link::before{display:none;} .home-arrow{animation:none;}}
 
+  .plan-badge{
+    display:flex; align-items:center; gap:10px;
+    background:var(--glass-strong);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:9px 16px;
+    box-sizing:border-box;
+    box-shadow:0 8px 22px -14px rgba(25,20,13,0.3);
+    flex-wrap:wrap;
+  }
+  .plan-select-wrap{position:relative; display:inline-flex; align-items:center; width:max-content;}
+  .plan-badge select{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    font-family:var(--font-display); font-size:13px; font-weight:800; color:var(--ink);
+    background:transparent; border:none; cursor:pointer; padding:0 20px 0 0; margin:0; line-height:1.2;
+  }
+  .plan-select-arrow{position:absolute; right:0; top:50%; transform:translateY(-50%); width:13px; height:13px; color:var(--text-faint); pointer-events:none; transition:color .15s ease;}
+  .plan-select-wrap:hover .plan-select-arrow{color:var(--orange-deep);}
+  .plan-badge select:focus-visible{outline:2px solid rgba(255,122,47,.5); outline-offset:3px; border-radius:6px;}
+  .plan-badge-divider{width:1px; height:15px; background:var(--border); flex-shrink:0;}
+  .plan-quota-label{font-family:var(--font-mono); font-size:11px; color:var(--text-dim); white-space:nowrap;}
+  .plan-quota-label b{color:var(--ink);}
+  .plan-quota-label.is-full{color:#b83f28; font-weight:700;}
+  .plan-upgrade-link{font-family:var(--font-mono); font-size:11px; color:var(--orange-deep); text-decoration:none; font-weight:600; white-space:nowrap;}
+  .plan-upgrade-link:hover{text-decoration:underline;}
+  @media (max-width:760px){.plan-badge{width:100%;}}
+
   .layout{display:grid; grid-template-columns:400px 1fr; gap:24px; align-items:start;}
   @media (max-width:980px){.layout{grid-template-columns:1fr;}}
 
@@ -219,8 +246,22 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-      <a class="home-link" href="carrousel.html"><span class="home-arrow" aria-hidden="true">←</span> Carrousel Studio</a>
-      <a class="home-link" href="editor.html">Ouvrir l'éditeur <span class="home-arrow" aria-hidden="true">→</span></a>
+      <div class="plan-badge">
+        <div class="plan-select-wrap">
+          <label for="plan-select" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Forfait</label>
+          <select id="plan-select" onchange="setCurrentPlanId(this.value)">
+            <option value="genesis">Freemium</option>
+            <option value="node">Basique</option>
+            <option value="validator">Premium</option>
+            <option value="satoshi">Premium+</option>
+          </select>
+          <svg class="plan-select-arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg>
+        </div>
+        <span class="plan-badge-divider" aria-hidden="true"></span>
+        <span class="plan-quota-label" id="plan-quota-label"></span>
+        <a class="plan-upgrade-link" href="index.html">Changer de forfait →</a>
+      </div>
+      <a class="home-link" href="index.html"><span class="home-arrow" aria-hidden="true">←</span> Carrousel Studio</a>
     </div>
   </header>
 
@@ -372,6 +413,93 @@ const AVAILABLE_FONTS = {
   merriweather: "'Merriweather', serif",
   'source-sans-3': "'Source Sans 3', sans-serif",
 };
+
+/* ---------- Forfaits & quotas (miroir des tarifs de index.html) ---------- */
+// Ces valeurs doivent rester identiques à celles affichées et utilisées dans le simulateur de index.html.
+const PLANS = {
+  genesis:   { name:'Freemium',  visuels:{ limit:1,        period:'week' },      exportHD:false },
+  node:      { name:'Basique',   visuels:{ limit:1,        period:'day'  },      exportHD:true  },
+  validator: { name:'Premium',   visuels:{ limit:Infinity, period:'unlimited' }, exportHD:true  },
+  satoshi:   { name:'Premium+',  visuels:{ limit:Infinity, period:'unlimited' }, exportHD:true  },
+};
+const PERIOD_LABEL = { week:'cette semaine', day:'aujourd’hui', unlimited:'illimité' };
+// Clé localStorage partagée avec index.html et carrousel.html pour que le forfait choisi soit le même partout.
+const PLAN_STORAGE_KEY = 'carrouselStudioPlan';
+const USAGE_STORAGE_KEY = 'carrouselStudioVisuelUsage';
+
+function getCurrentPlanId(){
+  const stored = localStorage.getItem(PLAN_STORAGE_KEY);
+  return PLANS[stored] ? stored : 'genesis';
+}
+
+function setCurrentPlanId(id){
+  if(!PLANS[id]) return;
+  localStorage.setItem(PLAN_STORAGE_KEY, id);
+  renderPlanBadge();
+}
+
+function getPeriodKeyFor(period){
+  const now = new Date();
+  if(period === 'day') return `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+  if(period === 'week'){
+    const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return `${d.getUTCFullYear()}-W${weekNo}`;
+  }
+  return 'unlimited';
+}
+
+function getUsageState(){
+  const planId = getCurrentPlanId();
+  const plan = PLANS[planId];
+  const periodKey = getPeriodKeyFor(plan.visuels.period);
+  let state = null;
+  try{ state = JSON.parse(localStorage.getItem(USAGE_STORAGE_KEY) || 'null'); }catch(err){ state = null; }
+  if(!state || state.planId !== planId || state.periodKey !== periodKey){
+    state = { planId, periodKey, count:0 };
+    localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(state));
+  }
+  return state;
+}
+
+function canExportVisual(){
+  const plan = PLANS[getCurrentPlanId()];
+  if(plan.visuels.limit === Infinity) return true;
+  return getUsageState().count < plan.visuels.limit;
+}
+
+function incrementVisuelUsage(){
+  const plan = PLANS[getCurrentPlanId()];
+  if(plan.visuels.limit === Infinity) return;
+  const state = getUsageState();
+  state.count += 1;
+  localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(state));
+  renderPlanBadge();
+}
+
+function renderPlanBadge(){
+  const select = document.getElementById('plan-select');
+  const label = document.getElementById('plan-quota-label');
+  if(!select || !label) return;
+  const planId = getCurrentPlanId();
+  const plan = PLANS[planId];
+  select.value = planId;
+  if(plan.visuels.limit === Infinity){
+    label.classList.remove('is-full');
+    label.innerHTML = `Visuels <b>illimités</b>${plan.exportHD ? '' : ' · export filigrané'}`;
+    return;
+  }
+  const state = getUsageState();
+  const isFull = state.count >= plan.visuels.limit;
+  label.classList.toggle('is-full', isFull);
+  label.innerHTML = `<b>${state.count}</b> / ${plan.visuels.limit} visuel${plan.visuels.limit > 1 ? 's' : ''} ${PERIOD_LABEL[plan.visuels.period]}${plan.exportHD ? '' : ' · export filigrané'}`;
+}
+
+document.addEventListener('DOMContentLoaded', renderPlanBadge);
+if(document.readyState !== 'loading') renderPlanBadge();
 
 let currentType = 'citation';
 let bgImageData = null;
@@ -619,6 +747,11 @@ function showToast(message){
 async function exportVisual(){
   const mainText = document.getElementById('v-text').value.trim();
   if(!mainText){ showToast('Ajoute un texte avant d’exporter.'); return; }
+  if(!canExportVisual()){
+    const plan = PLANS[getCurrentPlanId()];
+    showToast(`Limite atteinte : le forfait ${plan.name} permet ${plan.visuels.limit} visuel${plan.visuels.limit > 1 ? 's' : ''} ${PERIOD_LABEL[plan.visuels.period]}. Passe à un forfait supérieur pour continuer.`);
+    return;
+  }
   showToast('Export en cours...');
   try{
     if(document.fonts?.ready) await document.fonts.ready;
@@ -648,17 +781,40 @@ async function exportVisual(){
       logging: false,
     });
     stage.innerHTML = '';
+    if(!PLANS[getCurrentPlanId()].exportHD){
+      applyWatermark(canvas);
+    }
 
     const link = document.createElement('a');
     const namePart = mainText.slice(0, 30).replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'visuel';
     link.download = `visuel-studio-${namePart}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
+    incrementVisuelUsage();
     showToast('Visuel exporté ✓');
   }catch(err){
     console.error(err);
     showToast('L’export a échoué, réessaie.');
   }
+}
+
+function applyWatermark(canvas){
+  // Filigrane appliqué aux exports des forfaits sans "export HD" (ex: Freemium).
+  const ctx = canvas.getContext('2d');
+  if(!ctx) return;
+  const text = 'CARROUSEL STUDIO · VERSION FREEMIUM';
+  ctx.save();
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = '#19140d';
+  ctx.font = `bold ${Math.round(canvas.width * 0.045)}px Inter, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(-Math.PI / 6);
+  for(let y = -canvas.height; y <= canvas.height; y += canvas.height / 4){
+    ctx.fillText(text, 0, y);
+  }
+  ctx.restore();
 }
 
 render();
