@@ -287,6 +287,7 @@
             <button class="toolbar-btn danger-btn" id="delete-current-btn" onclick="deleteCurrentSlide()">Supprimer cette slide</button>
             <button class="toolbar-btn" onclick="exportCurrentSlide()">Exporter cette slide</button>
             <button class="toolbar-btn download-btn" onclick="exportAllSlides()"><span class="download-icon">⬇</span> Télécharger le carrousel</button>
+            <button class="toolbar-btn download-btn" id="pdf-download-btn" onclick="exportAllSlidesAsPDF()"><span class="download-icon">⬇</span> Télécharger en PDF</button>
           </div>
         </div>
         <div class="carousel-stage">
@@ -302,6 +303,7 @@
 <div id="export-stage"></div>
 <div class="toast" id="toast"><span class="toast-dot"></span><span id="toast-text"></span></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="quota.js"></script>
 <script>
 let slides = [];
@@ -458,6 +460,66 @@ async function exportSlideAsPNG(index,filenamePrefix){const stage=document.getEl
 function markExportDone(){setStep(4);clearTimeout(stepRevertTimer);stepRevertTimer=setTimeout(()=>{if(slides.length)setStep(3);},2400);}
 async function exportCurrentSlide(){setStep(4);showToast('Export en cours...');await exportSlideAsPNG(currentIndex,'carrousel');showToast('Slide exportée ✓');markExportDone();}
 async function exportAllSlides(){setStep(4);showToast(`Export de ${slides.length} slides...`);for(let i=0;i<slides.length;i++){await exportSlideAsPNG(i,'carrousel');await new Promise(r=>setTimeout(r,250));}showToast('Toutes les slides ont été exportées ✓');markExportDone();}
+
+const PDF_MAX_BYTES=6*1024*1024; // limite fixée à 6 Mo
+const PDF_PAGE_W=1080, PDF_PAGE_H=1350; // format identique aux slides (4:5)
+async function renderSlideCanvas(index,scale){
+  const stage=document.getElementById('export-stage');
+  stage.innerHTML=`<div style="width:${PDF_PAGE_W}px;height:${PDF_PAGE_H}px;">${slideMarkup(slides[index],index)}</div>`;
+  const target=stage.firstElementChild;
+  const canvas=await html2canvas(target,{scale,backgroundColor:'#ffffff',useCORS:true});
+  stage.innerHTML='';
+  return canvas;
+}
+async function buildCarouselPdf(scale,quality){
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:'portrait',unit:'px',format:[PDF_PAGE_W,PDF_PAGE_H],compress:true});
+  for(let i=0;i<slides.length;i++){
+    const canvas=await renderSlideCanvas(i,scale);
+    const imgData=canvas.toDataURL('image/jpeg',quality);
+    if(i>0)pdf.addPage([PDF_PAGE_W,PDF_PAGE_H],'portrait');
+    pdf.addImage(imgData,'JPEG',0,0,PDF_PAGE_W,PDF_PAGE_H);
+  }
+  return pdf;
+}
+async function exportAllSlidesAsPDF(){
+  if(!slides.length)return;
+  setStep(4);
+  const btn=document.getElementById('pdf-download-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Génération du PDF...';}
+  showToast('Génération du PDF en cours...');
+  try{
+    let scale=2,quality=0.9,pdf=null,blob=null;
+    for(let attempt=0;attempt<8;attempt++){
+      pdf=await buildCarouselPdf(scale,quality);
+      blob=pdf.output('blob');
+      if(blob.size<=PDF_MAX_BYTES)break;
+      if(quality>0.4){quality=Math.max(0.4,quality-0.15);}
+      else if(scale>1){scale=Math.max(1,scale-0.5);quality=0.75;}
+      else break; // on ne peut plus réduire davantage
+    }
+    if(blob.size>PDF_MAX_BYTES){
+      showToast(`Attention : PDF généré à ${(blob.size/1024/1024).toFixed(1)} Mo, au-dessus de la limite de 6 Mo`);
+    }else{
+      showToast(`PDF exporté ✓ (${(blob.size/1024/1024).toFixed(1)} Mo)`);
+    }
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='carrousel.pdf';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    markExportDone();
+  }catch(err){
+    console.error(err);
+    showToast("L'export PDF a échoué. Réessaie.");
+    setStep(3);
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='<span class="download-icon">⬇</span> Télécharger en PDF';}
+  }
+}
 </script>
 </body>
 </html>
