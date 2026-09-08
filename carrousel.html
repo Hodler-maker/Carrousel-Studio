@@ -80,7 +80,7 @@
     header{display:flex; flex-direction:column; align-items:stretch; gap:14px;}
     header > .brand{order:1;}
     header .header-links{order:2; justify-content:center;}
-    .visual-studio-link{width:100%; max-width:280px;}
+    .visual-studio-link, .editor-link{width:100%; max-width:280px;}
   }
 
   .app{position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:32px 28px 80px;}
@@ -97,7 +97,7 @@
   .brand-text h1{font-family:var(--font-display); font-size:19px; font-weight:600; letter-spacing:-0.01em; color:var(--ink);}
   .brand-text span{font-size:11px; color:var(--text-dim); font-family:var(--font-mono); letter-spacing:0.04em;}
   .eyebrow-badge{font-family:var(--font-mono); font-size:11px; letter-spacing:0.08em; color:var(--orange-deep); background:rgba(255,122,47,0.1); border:1px solid rgba(255,122,47,0.28); padding:6px 12px; border-radius:100px; text-transform:uppercase;}
-.visual-studio-link{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; isolation:isolate; font-size:12px; font-weight:800; color:#fff; text-decoration:none; background:linear-gradient(135deg, var(--ink), #2e2519); border:1px solid rgba(255,255,255,.14); padding:9px 14px; border-radius:11px; box-shadow:0 8px 22px rgba(25,20,13,.35); transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;}
+.visual-studio-link{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; isolation:isolate; font-size:12px; font-weight:800; color:#fff; text-decoration:none; background:linear-gradient(135deg, var(--ink), #2e2519); border:1px solid rgba(255,255,255,.14); padding:9px 18px; border-radius:12px; box-shadow:0 8px 22px rgba(25,20,13,.35); transition:transform .18s ease, box-shadow .18s ease, filter .18s ease; min-width:192px; box-sizing:border-box;}
 .visual-studio-link::before{content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(110deg, transparent 25%, rgba(255,255,255,.28) 48%, transparent 70%); transform:translateX(-125%); animation:studioSheen 3.8s ease-in-out infinite;}
 .visual-studio-link:hover{transform:translateY(-2px) scale(1.02); box-shadow:0 12px 28px rgba(25,20,13,.44); filter:saturate(1.08);}
 .visual-studio-link:active{transform:translateY(0) scale(.98);}
@@ -105,7 +105,7 @@
 .visual-studio-link:hover .studio-arrow{transform:translateX(-4px);}
 .visual-studio-link:focus-visible{outline:3px solid rgba(255,122,47,.45); outline-offset:3px;}
 @keyframes studioSheen{0%,45%{transform:translateX(-125%);} 70%,100%{transform:translateX(125%);}}
-.editor-link{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; isolation:isolate; font-size:12px; font-weight:800; color:#fff; text-decoration:none; background:linear-gradient(135deg, var(--orange-deep), var(--orange) 52%, var(--amber)); border:1px solid rgba(255,255,255,.35); padding:9px 14px; border-radius:11px; box-shadow:0 8px 22px rgba(255,122,47,.3); transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;}
+.editor-link{position:relative; display:inline-flex; align-items:center; justify-content:center; gap:8px; overflow:hidden; isolation:isolate; font-size:12px; font-weight:800; color:#fff; text-decoration:none; background:linear-gradient(135deg, var(--orange-deep), var(--orange) 52%, var(--amber)); border:1px solid rgba(255,255,255,.35); padding:9px 18px; border-radius:12px; box-shadow:0 8px 22px rgba(255,122,47,.3); transition:transform .18s ease, box-shadow .18s ease, filter .18s ease; min-width:192px; box-sizing:border-box;}
 .editor-link::before{content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(110deg, transparent 25%, rgba(255,255,255,.38) 48%, transparent 70%); transform:translateX(-125%); animation:editorSheen 3.8s ease-in-out infinite;}
 .editor-link:hover{transform:translateY(-2px) scale(1.02); box-shadow:0 12px 28px rgba(255,122,47,.44); filter:saturate(1.08);}
 .editor-link:active{transform:translateY(0) scale(.98);}
