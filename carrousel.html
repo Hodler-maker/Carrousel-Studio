@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="favicon.png">
 <meta name="theme-color" content="#ff7a2f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Lora:wght@400;500;600&family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;500;600;700&family=Bricolage+Grotesque:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#f5efe4;
@@ -111,7 +111,11 @@
   .hint{margin-top:16px; padding:12px 14px; border-radius:12px; background:rgba(255,181,71,0.14); border:1px solid rgba(255,181,71,0.35); font-size:12px; color:#9a5a12; line-height:1.5;}
   .preview-wrap{min-height:70vh; display:flex; flex-direction:column;}
   .preview-toolbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;}
-  .toolbar-left{display:flex; align-items:center; gap:10px;}
+  .toolbar-left{display:flex; align-items:center; gap:14px;}
+  .format-toolbar{display:flex; gap:6px;}
+  .format-btn{width:28px; height:28px; border-radius:8px; background:var(--glass-strong); border:1px solid var(--border); color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:var(--font-body); font-size:13px; transition:background .15s, border-color .15s;}
+  .format-btn:hover{background:#fff; border-color:rgba(25,20,13,0.2);}
+  .format-btn:active{transform:scale(0.94);}
   .dot-track{display:flex; gap:6px; align-items:center;}
   .dot{width:6px; height:6px; border-radius:50%; background:var(--border); transition:all .25s ease; cursor:pointer;}
   .dot.active{width:20px; border-radius:4px; background:linear-gradient(90deg, var(--orange), var(--amber));}
@@ -272,9 +276,19 @@
       <select id="template" onchange="updateTemplate(this.value)">
         <option value="sunset">Sunset — orange</option><option value="editorial">Editorial — beige</option><option value="midnight">Midnight — bleu nuit</option><option value="signal">Signal — violet</option>
       </select>
+      <label for="font-pair">Police d'écriture</label>
+      <select id="font-pair" onchange="updateFontPair(this.value)">
+        <option value="default">Space Grotesk / Inter (défaut)</option>
+        <option value="poppins">Poppins / Roboto</option>
+        <option value="playfair">Playfair Display / Lora</option>
+        <option value="montserrat">Montserrat / Open Sans</option>
+        <option value="bricolage">Bricolage Grotesque / IBM Plex Sans</option>
+      </select>
+      <label for="pdf-filename">Nom du fichier PDF</label>
+      <input type="text" id="pdf-filename" placeholder="ex : carrousel-ethereum-quantique" oninput="pdfFilenameEdited=true" autocomplete="off">
       <button class="btn-generate" id="generate-btn" onclick="generateCarousel()">Générer le carrousel</button>
       <div class="error-box" id="error-box"></div>
-      <div class="hint">💡 Une fois généré, clique directement sur le texte de chaque slide pour le modifier avant export.</div>
+      <div class="hint">💡 Une fois généré, clique directement sur le texte de chaque slide pour le modifier avant export. Sélectionne du texte pour le mettre en <b>gras</b> ou en <i>italique</i>.</div>
     </div>
     <div class="preview-wrap" id="preview-wrap">
       <div class="empty-state" id="empty-state">
@@ -282,8 +296,13 @@
       </div>
       <div id="carousel-container" style="display:none;">
         <div class="preview-toolbar">
-          <div class="toolbar-left"><div class="dot-track" id="dot-track"></div></div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+          <div class="toolbar-left"><div class="dot-track" id="dot-track"></div>
+            <div class="format-toolbar" title="Sélectionne du texte dans une slide puis clique ici">
+              <button type="button" class="format-btn" onmousedown="event.preventDefault()" onclick="applyFormat('bold')"><b>G</b></button>
+              <button type="button" class="format-btn" onmousedown="event.preventDefault()" onclick="applyFormat('italic')"><i>I</i></button>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
             <button class="toolbar-btn danger-btn" id="delete-current-btn" onclick="deleteCurrentSlide()">Supprimer cette slide</button>
             <button class="toolbar-btn" onclick="exportCurrentSlide()">Exporter cette slide</button>
             <button class="toolbar-btn download-btn" onclick="exportAllSlides()"><span class="download-icon">⬇</span> Télécharger le carrousel</button>
@@ -312,8 +331,55 @@ let currentAlias = '';
 let currentTemplate = 'sunset';
 let currentStep = 1;
 let stepRevertTimer = null;
+let pdfFilenameEdited = false;
 const AVAILABLE_TEMPLATES = ['sunset', 'editorial', 'midnight', 'signal'];
 const OWNER_ACCESS_KEY = 'CARROUSEL'; // remplace par ta propre clé secrète
+const FONT_PAIRS = {
+  default:{display:"'Space Grotesk', sans-serif", body:"'Inter', sans-serif"},
+  poppins:{display:"'Poppins', sans-serif", body:"'Roboto', sans-serif"},
+  playfair:{display:"'Playfair Display', serif", body:"'Lora', serif"},
+  montserrat:{display:"'Montserrat', sans-serif", body:"'Open Sans', sans-serif"},
+  bricolage:{display:"'Bricolage Grotesque', sans-serif", body:"'IBM Plex Sans', sans-serif"}
+};
+function updateFontPair(key){
+  const pair=FONT_PAIRS[key]||FONT_PAIRS.default;
+  document.documentElement.style.setProperty('--font-display',pair.display);
+  document.documentElement.style.setProperty('--font-body',pair.body);
+}
+function sanitizeInlineHtml(html){
+  const allowed=['B','STRONG','I','EM','BR'];
+  const div=document.createElement('div');
+  div.innerHTML=html||'';
+  (function clean(node){
+    [...node.childNodes].forEach(child=>{
+      if(child.nodeType===1){
+        if(!allowed.includes(child.tagName)){
+          while(child.firstChild)node.insertBefore(child.firstChild,child);
+          node.removeChild(child);
+        }else{
+          [...child.attributes].forEach(attr=>child.removeAttribute(attr.name));
+          clean(child);
+        }
+      }else if(child.nodeType!==3){
+        node.removeChild(child);
+      }
+    });
+  })(div);
+  return div.innerHTML;
+}
+function applyFormat(command){
+  const active=document.activeElement;
+  if(!active||!active.classList||!active.classList.contains('editable')){
+    showToast('Clique dans le texte d\'une slide puis sélectionne les mots à mettre en forme.');
+    return;
+  }
+  document.execCommand(command,false,null);
+  onEditableBlur({target:active});
+}
+function sanitizeFilename(name){
+  const cleaned=String(name||'').trim().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9-_ ]/g,'').trim().replace(/\s+/g,'-');
+  return cleaned||'carrousel';
+}
 function isOwnerUnlocked(){return localStorage.getItem('cs_owner_unlocked')==='true';}
 function checkOwnerAccessFromUrl(){
   const params=new URLSearchParams(window.location.search);
@@ -423,7 +489,8 @@ Contraintes :
     if(!proxyResponse.ok)throw new Error(responseData.error||"Le serveur n'a pas pu générer le carrousel.");
     const data=responseData;
     let raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();const parsed=JSON.parse(raw);
-    slides=[];slides.push({type:'cover',title:parsed.cover.title,subtitle:parsed.cover.subtitle});(parsed.slides||[]).forEach(s=>slides.push({type:'content',title:s.title,body:s.body}));slides.push({type:'cta',title:parsed.cta.title,body:parsed.cta.body});
+    slides=[];slides.push({type:'cover',title:escapeHtml(parsed.cover.title),subtitle:escapeHtml(parsed.cover.subtitle)});(parsed.slides||[]).forEach(s=>slides.push({type:'content',title:escapeHtml(s.title),body:escapeHtml(s.body)}));slides.push({type:'cta',title:escapeHtml(parsed.cta.title),body:escapeHtml(parsed.cta.body)});
+    const fnInput=document.getElementById('pdf-filename');if(fnInput&&!pdfFilenameEdited){fnInput.value=sanitizeFilename(parsed.cover.title);}
     currentIndex=0;document.getElementById('empty-state').style.display='none';document.getElementById('carousel-container').style.display='block';renderCarousel();const dlBtn=document.querySelector('.download-btn');if(dlBtn){dlBtn.style.animation='attentionPulse 1.4s ease-in-out 2';setTimeout(()=>dlBtn.style.animation='',2900);}if(!isOwnerUnlocked())CSQuota.recordCarrouselUsed();showToast('Carrousel généré — clique sur le texte pour l\'éditer');setStep(3);
   }catch(err){console.error(err);showError('La génération a échoué. Réessaie, ou reformule ton texte.');setStep(text.trim().length>=40?2:1);}
   finally{btn.disabled=false;btn.classList.remove('loading');btn.textContent='Générer le carrousel';}
@@ -435,9 +502,9 @@ function slideMarkup(slide,index){
   const brandMarkup=currentAlias?escapeHtml(currentAlias):'';
   const brandClass=currentAlias?'':'slide-brand-empty';
   let inner='';
-  if(slide.type==='cover')inner=`<div class="slide-eyebrow">CARROUSEL · BLOCK-BRIDGE</div><div><div class="slide-title editable" contenteditable="true" data-field="title" data-index="${index}">${escapeHtml(slide.title)}</div><div class="slide-subtitle editable" contenteditable="true" data-field="subtitle" data-index="${index}">${escapeHtml(slide.subtitle||'')}</div></div><div class="slide-footer"><span class="slide-brand ${brandClass}">${brandMarkup}</span><span class="slide-swipe">SWIPE <span class="swipe-arrow">→</span></span></div>`;
-  else if(slide.type==='cta')inner=`<div class="slide-eyebrow">POUR ALLER PLUS LOIN</div><div><div class="slide-title editable" contenteditable="true" data-field="title" data-index="${index}">${escapeHtml(slide.title)}</div><div class="slide-body editable" contenteditable="true" data-field="body" data-index="${index}">${escapeHtml(slide.body||'')}</div></div><div class="slide-footer"><span class="slide-brand ${brandClass}">${brandMarkup}</span><span class="slide-swipe">SUIS-MOI ✦</span></div>`;
-  else inner=`<div class="slide-eyebrow">${contentIndexLabel(index)}</div><div><div class="slide-title editable" contenteditable="true" data-field="title" data-index="${index}">${escapeHtml(slide.title)}</div><div class="slide-body editable" contenteditable="true" data-field="body" data-index="${index}">${escapeHtml(slide.body||'')}</div></div><div class="slide-footer"><span class="slide-brand ${brandClass}">${brandMarkup}</span><span class="slide-swipe">SWIPE <span class="swipe-arrow">→</span></span></div>`;
+  if(slide.type==='cover')inner=`<div class="slide-eyebrow">CARROUSEL · BLOCK-BRIDGE</div><div><div class="slide-title editable" contenteditable="true" data-field="title" data-index="${index}">${slide.title||''}</div><div class="slide-subtitle editable" contenteditable="true" data-field="subtitle" data-index="${index}">${slide.subtitle||''}</div></div><div class="slide-footer"><span class="slide-brand ${brandClass}">${brandMarkup}</span><span class="slide-swipe">SWIPE <span class="swipe-arrow">→</span></span></div>`;
+  else if(slide.type==='cta')inner=`<div class="slide-eyebrow">POUR ALLER PLUS LOIN</div><div><div class="slide-title editable" contenteditable="true" data-field="title" data-index="${index}">${slide.title||''}</div><div class="slide-body editable" contenteditable="true" data-field="body" data-index="${index}">${slide.body||''}</div></div><div class="slide-footer"><span class="slide-brand ${brandClass}">${brandMarkup}</span><span class="slide-swipe">SUIS-MOI ✦</span></div>`;
+  else inner=`<div class="slide-eyebrow">${contentIndexLabel(index)}</div><div><div class="slide-title editable" contenteditable="true" data-field="title" data-index="${index}">${slide.title||''}</div><div class="slide-body editable" contenteditable="true" data-field="body" data-index="${index}">${slide.body||''}</div></div><div class="slide-footer"><span class="slide-brand ${brandClass}">${brandMarkup}</span><span class="slide-swipe">SWIPE <span class="swipe-arrow">→</span></span></div>`;
   return `<div class="slide-inner ${bgClass} ${themeClass}">${inner}</div>`;
 }
 function escapeHtml(str){const d=document.createElement('div');d.textContent=str||'';return d.innerHTML;}
@@ -449,13 +516,13 @@ function renderCarousel(){
   document.getElementById('prev-btn').disabled=currentIndex===0;document.getElementById('next-btn').disabled=currentIndex===slides.length-1;
   const deleteBtn=document.getElementById('delete-current-btn');if(deleteBtn){deleteBtn.disabled=!canDeleteSlide(currentIndex);deleteBtn.title=canDeleteSlide(currentIndex)?'Supprimer cette slide':'La couverture et la conclusion sont conservées';}
 }
-function onEditableBlur(e){const field=e.target.getAttribute('data-field');const index=parseInt(e.target.getAttribute('data-index'));slides[index][field]=e.target.textContent.trim();}
+function onEditableBlur(e){const field=e.target.getAttribute('data-field');const index=parseInt(e.target.getAttribute('data-index'));slides[index][field]=sanitizeInlineHtml(e.target.innerHTML).trim();}
 function navSlide(dir){const newIndex=currentIndex+dir;if(newIndex<0||newIndex>=slides.length)return;currentIndex=newIndex;renderCarousel();}
 function goToSlide(i){currentIndex=i;renderCarousel();}
 function moveSlide(dir){const newIndex=currentIndex+dir;if(newIndex<=0||newIndex>=slides.length-1)return;if(slides[newIndex].type==='cover'||slides[newIndex].type==='cta')return;[slides[currentIndex],slides[newIndex]]=[slides[newIndex],slides[currentIndex]];currentIndex=newIndex;renderCarousel();}
 function canDeleteSlide(index){return slides.length>3&&slides[index]?.type==='content';}
 function deleteCurrentSlide(){if(!canDeleteSlide(currentIndex)){showToast('La couverture et la conclusion sont conservées.');return;}slides.splice(currentIndex,1);currentIndex=Math.max(0,Math.min(currentIndex,slides.length-1));renderCarousel();showToast('Slide supprimée');}
-function addContentSlide(){const insertAt=slides.length-1;slides.splice(insertAt,0,{type:'content',title:'Nouvelle idée',body:'Écris ton contenu ici.'});currentIndex=insertAt;renderCarousel();showToast('Slide ajoutée');}
+function addContentSlide(){const insertAt=slides.length-1;slides.splice(insertAt,0,{type:'content',title:escapeHtml('Nouvelle idée'),body:escapeHtml('Écris ton contenu ici.')});currentIndex=insertAt;renderCarousel();showToast('Slide ajoutée');}
 async function exportSlideAsPNG(index,filenamePrefix){const stage=document.getElementById('export-stage');stage.innerHTML=`<div style="width:1080px;height:1350px;">${slideMarkup(slides[index],index)}</div>`;const target=stage.firstElementChild;const canvas=await html2canvas(target,{scale:1,backgroundColor:null,useCORS:true});const link=document.createElement('a');link.download=`${filenamePrefix}-slide-${String(index+1).padStart(2,'0')}.png`;link.href=canvas.toDataURL('image/png');link.click();stage.innerHTML='';}
 function markExportDone(){setStep(4);clearTimeout(stepRevertTimer);stepRevertTimer=setTimeout(()=>{if(slides.length)setStep(3);},2400);}
 async function exportCurrentSlide(){setStep(4);showToast('Export en cours...');await exportSlideAsPNG(currentIndex,'carrousel');showToast('Slide exportée ✓');markExportDone();}
@@ -471,14 +538,14 @@ async function renderSlideCanvas(index,scale){
   stage.innerHTML='';
   return canvas;
 }
-async function buildCarouselPdf(scale,quality){
+async function buildCarouselPdf(scale,quality,format){
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({orientation:'portrait',unit:'px',format:[PDF_PAGE_W,PDF_PAGE_H],compress:true});
   for(let i=0;i<slides.length;i++){
     const canvas=await renderSlideCanvas(i,scale);
-    const imgData=canvas.toDataURL('image/jpeg',quality);
+    const imgData=format==='PNG'?canvas.toDataURL('image/png'):canvas.toDataURL('image/jpeg',quality);
     if(i>0)pdf.addPage([PDF_PAGE_W,PDF_PAGE_H],'portrait');
-    pdf.addImage(imgData,'JPEG',0,0,PDF_PAGE_W,PDF_PAGE_H);
+    pdf.addImage(imgData,format,0,0,PDF_PAGE_W,PDF_PAGE_H);
   }
   return pdf;
 }
@@ -487,27 +554,31 @@ async function exportAllSlidesAsPDF(){
   setStep(4);
   const btn=document.getElementById('pdf-download-btn');
   if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Génération du PDF...';}
-  showToast('Génération du PDF en cours...');
+  showToast('Génération du PDF en qualité maximale...');
   try{
-    let scale=3,quality=0.95,pdf=null,blob=null;
-    for(let attempt=0;attempt<8;attempt++){
-      pdf=await buildCarouselPdf(scale,quality);
+    // On vise le maximum : rendu ×4 en PNG (sans perte). On ne dégrade que si la limite de poids est dépassée.
+    let scale=4,quality=1,format='PNG',pdf=null,blob=null;
+    for(let attempt=0;attempt<12;attempt++){
+      pdf=await buildCarouselPdf(scale,quality,format);
       blob=pdf.output('blob');
       if(blob.size<=PDF_MAX_BYTES)break;
-      if(quality>0.7){quality=Math.max(0.7,quality-0.1);}
+      if(format==='PNG'&&scale>2){scale=Math.max(2,scale-1);}
+      else if(format==='PNG'){format='JPEG';quality=0.95;scale=4;}
+      else if(quality>0.7){quality=Math.max(0.7,quality-0.1);}
       else if(scale>1.5){scale=Math.max(1.5,scale-0.5);quality=0.9;}
       else if(quality>0.4){quality=Math.max(0.4,quality-0.15);}
       else break; // on ne peut plus réduire davantage
     }
     if(blob.size>PDF_MAX_BYTES){
-      showToast(`Attention : PDF généré à ${(blob.size/1024/1024).toFixed(1)} Mo, au-dessus de la limite de 6 Mo`);
+      showToast(`Attention : PDF généré à ${(blob.size/1024/1024).toFixed(1)} Mo, au-dessus de la limite de ${(PDF_MAX_BYTES/1024/1024).toFixed(0)} Mo`);
     }else{
-      showToast(`PDF exporté ✓ (${(blob.size/1024/1024).toFixed(1)} Mo)`);
+      showToast(`PDF exporté ✓ (${(blob.size/1024/1024).toFixed(1)} Mo, qualité ${format==='PNG'?'maximale':'optimisée'})`);
     }
     const url=URL.createObjectURL(blob);
     const link=document.createElement('a');
     link.href=url;
-    link.download='carrousel.pdf';
+    const rawFilename=document.getElementById('pdf-filename')?.value||'';
+    link.download=sanitizeFilename(rawFilename)+'.pdf';
     document.body.appendChild(link);
     link.click();
     link.remove();
