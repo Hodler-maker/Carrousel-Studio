@@ -138,6 +138,11 @@
   textarea::placeholder{color:var(--text-faint);}
   textarea:focus{outline:none; border-color:rgba(255,122,47,0.5); box-shadow:0 0 0 3px rgba(255,122,47,0.12);}
 
+  .char-counter{margin-top:6px; font-size:11px; font-family:var(--font-mono); color:var(--text-faint); text-align:right; transition:color .25s ease;}
+  .char-counter.is-short{color:#b83f28;}
+  .char-counter.is-long{color:#9a5a12;}
+  .char-counter.is-good{color:#3f8a52;}
+
   .row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .field-hint{font-size:11px; color:var(--text-faint); margin-top:6px; line-height:1.4;}
 
@@ -167,6 +172,25 @@
   .error-box{margin-top:14px; padding:10px 12px; border-radius:10px; background:rgba(220,60,40,0.08); border:1px solid rgba(220,60,40,0.25); color:#b83f28; font-size:12.5px; display:none;}
 
   .hint{margin-top:16px; padding:12px 14px; border-radius:12px; background:rgba(255,181,71,0.14); border:1px solid rgba(255,181,71,0.35); font-size:12px; color:#9a5a12; line-height:1.5;}
+
+  /* progress steps widget */
+  .progress-steps{position:relative; display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; padding-top:2px;}
+  .progress-line-track{position:absolute; top:14px; left:12.5%; right:12.5%; height:2px; background:var(--border); z-index:0; border-radius:2px;}
+  .progress-line-fill{position:absolute; top:0; left:0; height:100%; width:0%; background:linear-gradient(90deg, var(--orange), var(--amber)); border-radius:2px; transition:width .55s cubic-bezier(.16,1,.3,1);}
+  .progress-step{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; text-align:center;}
+  .progress-step .dot{
+    width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--glass-strong); border:2px solid var(--border); color:var(--text-faint);
+    font-family:var(--font-mono); font-size:11px; font-weight:700; line-height:1;
+    transition:background .35s cubic-bezier(.16,1,.3,1), border-color .35s ease, color .35s ease, transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease;
+  }
+  .progress-step .dot svg{width:13px; height:13px; stroke:#fff; stroke-width:2.6;}
+  .progress-step .label{font-size:9.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em; transition:color .3s ease; max-width:70px; line-height:1.3;}
+  .progress-step.is-active .dot{background:linear-gradient(135deg, var(--orange), var(--amber)); border-color:transparent; color:#fff; box-shadow:0 4px 14px rgba(255,122,47,0.42); transform:scale(1.14);}
+  .progress-step.is-active .label{color:var(--orange-deep);}
+  .progress-step.is-done .dot{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .progress-step.is-done .label{color:var(--text-dim);}
+  @media (max-width:340px){.progress-step .label{font-size:8.5px;}}
   .support-card{margin:72px auto 0; max-width:820px; padding:28px; border-radius:22px; background:linear-gradient(145deg, rgba(255,255,255,0.78), rgba(255,181,71,0.14)); border:1px solid rgba(255,122,47,0.22); box-shadow:0 24px 60px -34px rgba(120,60,10,0.42); opacity:0; transform:translateY(22px);}
   .support-card.is-visible{animation:supportReveal .75s cubic-bezier(.16,1,.3,1) both;}
   @keyframes supportReveal{from{opacity:0; transform:translateY(22px);} to{opacity:1; transform:translateY(0);}}
@@ -227,8 +251,9 @@
     font-family:var(--font-mono); font-size:9.5px; cursor:grab;
     transition:transform .16s ease, background .16s ease, border-color .16s ease, opacity .16s ease; user-select:none;
   }
-  .slide-chip:hover{background:#fff; border-color:rgba(255,122,47,0.45); color:var(--text); transform:translateY(-1px);}
+  .slide-chip:hover{background:#fff; border-color:rgba(255,122,47,0.45); color:var(--text); transform:translateY(-4px) scale(1.1) rotate(-2deg); box-shadow:0 12px 22px -8px rgba(120,60,10,0.35); z-index:2;}
   .slide-chip:active,.slide-chip.dragging{cursor:grabbing; opacity:0.55; transform:scale(0.96);}
+  @media (prefers-reduced-motion:reduce){.slide-chip:hover{transform:none;}}
   .slide-chip.active{border-color:var(--orange); background:#fff; color:var(--orange-deep); box-shadow:0 5px 14px rgba(255,122,47,0.28);}
   .slide-chip.active .chip-label{color:var(--orange-deep); font-weight:700;}
   .slide-chip.locked{cursor:default; opacity:0.68;}
@@ -315,15 +340,36 @@
   .nav-arrow:hover{background:#fff; transform:scale(1.06);}
   .nav-arrow:disabled{opacity:0.25; cursor:default; transform:none;}
 
-  .slide-viewport{width:100%; max-width:420px; position:relative;}
+  .slide-viewport{width:100%; max-width:420px; position:relative; perspective:1400px;}
   .slide-frame{
     aspect-ratio:4/5; width:100%; border-radius:26px; overflow:hidden; position:relative;
     border:1px solid var(--border); box-shadow:0 30px 70px -20px rgba(120,60,10,0.35), 0 0 0 1px rgba(255,255,255,0.02) inset;
     animation:slideIn .45s cubic-bezier(.16,1,.3,1);
-    transition:transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease;
+    transform-style:preserve-3d; will-change:transform;
+    transition:transform .45s cubic-bezier(.16,1,.3,1), box-shadow .45s ease;
   }
-  .slide-frame:hover{transform:translateY(-6px); box-shadow:0 40px 80px -20px rgba(120,60,10,0.42);}
+  .slide-frame:not(:has(.editable:focus)):hover{
+    transform:translateY(-10px) scale(1.045) rotateX(5deg) rotateY(-6deg);
+    box-shadow:0 50px 100px -24px rgba(120,60,10,0.5);
+  }
   @keyframes slideIn{from{opacity:0; transform:translateY(14px) scale(0.98);} to{opacity:1; transform:translateY(0) scale(1);}}
+  @media (prefers-reduced-motion:reduce){.slide-frame,.slide-frame:hover{transition:none; transform:none;}}
+
+  /* smooth reveal each time a slide is (re)rendered — also gives template switches a fluid crossfade */
+  .slide-inner{animation:slideInnerReveal .5s cubic-bezier(.16,1,.3,1);}
+  @keyframes slideInnerReveal{
+    from{opacity:0; transform:scale(0.965) translateY(6px); filter:blur(4px);}
+    to{opacity:1; transform:scale(1) translateY(0); filter:blur(0);}
+  }
+  @media (prefers-reduced-motion:reduce){.slide-inner{animation:none;}}
+
+  .slide-frame.template-switching{animation:templateSwapPulse .6s cubic-bezier(.16,1,.3,1);}
+  @keyframes templateSwapPulse{
+    0%{transform:scale(1) rotateY(0deg);}
+    35%{transform:scale(0.94) rotateY(10deg); box-shadow:0 20px 50px -18px rgba(120,60,10,0.3);}
+    100%{transform:scale(1) rotateY(0deg);}
+  }
+  @media (prefers-reduced-motion:reduce){.slide-frame.template-switching{animation:none;}}
 
   .slide-inner{
     position:absolute; inset:0; padding:9% 9%; display:flex; flex-direction:column;
@@ -550,6 +596,14 @@
       <h2>Générer un carrousel</h2>
       <p class="sub">Colle ton texte (article, réflexion, actu) et laisse Carrousel Studio le transformer en slides prêtes pour LinkedIn.</p>
 
+      <div class="progress-steps" id="progress-steps" role="list" aria-label="Étapes de création du carrousel">
+        <div class="progress-line-track"><div class="progress-line-fill" id="progress-line-fill"></div></div>
+        <div class="progress-step" data-step="1" role="listitem"><span class="dot">1</span><span class="label">Coller texte</span></div>
+        <div class="progress-step" data-step="2" role="listitem"><span class="dot">2</span><span class="label">Générer</span></div>
+        <div class="progress-step" data-step="3" role="listitem"><span class="dot">3</span><span class="label">Éditer</span></div>
+        <div class="progress-step" data-step="4" role="listitem"><span class="dot">4</span><span class="label">Exporter</span></div>
+      </div>
+
       <label for="topic">Titre du carrousel (optionnel)</label>
       <input type="text" id="topic" placeholder="Ex : Le halving expliqué simplement">
 
@@ -562,7 +616,8 @@
       <p class="field-hint">Il apparaîtra en bas de chaque slide.</p>
 
       <label for="source-text">Ton texte</label>
-      <textarea id="source-text" placeholder="Colle ici ton article, ton fil de pensée ou tes notes sur le Web3, le Bitcoin, la régulation UEMOA..."></textarea>
+      <textarea id="source-text" placeholder="Colle ici ton article, ton fil de pensée ou tes notes sur le Web3, le Bitcoin, la régulation UEMOA..." oninput="updateSourceCounter(); updateProgressSteps();"></textarea>
+      <p class="char-counter" id="source-text-counter" aria-live="polite"><span id="char-count-value">0</span> caractère<span id="char-count-plural">s</span></p>
 
       <div class="row">
         <div>
@@ -740,6 +795,7 @@ let redoStack = [];
 let isRestoringState = false;
 let autosaveTimer = null;
 let autosaveQuotaWarned = false;
+let hasExported = false;
 const MAX_HISTORY = 40;
 const AUTOSAVE_KEY = 'carrousel-studio-autosave-v1';
 const CAROUSEL_WIDTH = 1080;
@@ -779,7 +835,77 @@ function updateTemplate(value){
   pushHistory();
   currentTemplate = AVAILABLE_TEMPLATES.includes(value) ? value : 'sunset';
   if(slides.length) renderCarousel();
+  const frame = document.getElementById('slide-frame');
+  if(frame){
+    frame.classList.remove('template-switching');
+    // force reflow so the animation can restart if the template is changed rapidly
+    void frame.offsetWidth;
+    frame.classList.add('template-switching');
+    frame.addEventListener('animationend', () => frame.classList.remove('template-switching'), {once:true});
+  }
   scheduleAutosave();
+}
+
+/* ---------- Compteur de caractères & progression étape par étape ---------- */
+
+function updateSourceCounter(){
+  const el = document.getElementById('source-text');
+  const counter = document.getElementById('source-text-counter');
+  if(!el || !counter) return;
+  const len = el.value.trim().length;
+  document.getElementById('char-count-value').textContent = len;
+  document.getElementById('char-count-plural').textContent = len === 1 ? '' : 's';
+  counter.classList.remove('is-short', 'is-long', 'is-good');
+  let extra = '';
+  if(len === 0){
+    // état neutre, pas de message additionnel
+  } else if(len < 40){
+    counter.classList.add('is-short');
+    extra = ` — ajoute encore ${40 - len} caractère${40 - len === 1 ? '' : 's'} au minimum`;
+  } else if(len > 6000){
+    counter.classList.add('is-long');
+    extra = ' — texte long : les slides resteront concises, pense à garder l’essentiel';
+  } else {
+    counter.classList.add('is-good');
+    extra = ' — bon niveau de détail';
+  }
+  let extraSpan = document.getElementById('char-count-extra');
+  if(!extraSpan){
+    extraSpan = document.createElement('span');
+    extraSpan.id = 'char-count-extra';
+    counter.appendChild(extraSpan);
+  }
+  extraSpan.textContent = extra;
+}
+
+function computeCurrentStep(){
+  if(hasExported) return 4;
+  if(slides.length > 0) return 3;
+  const len = (document.getElementById('source-text')?.value || '').trim().length;
+  if(len >= 40) return 2;
+  return 1;
+}
+
+function updateProgressSteps(){
+  const current = computeCurrentStep();
+  document.querySelectorAll('.progress-step').forEach(el => {
+    const step = Number(el.dataset.step);
+    const dot = el.querySelector('.dot');
+    const isDone = step < current || (step === current && step === 4 && hasExported);
+    const isActive = step === current && !isDone;
+    el.classList.toggle('is-done', isDone);
+    el.classList.toggle('is-active', isActive);
+    if(dot){
+      dot.innerHTML = isDone
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>'
+        : String(step);
+    }
+  });
+  const fill = document.getElementById('progress-line-fill');
+  if(fill){
+    const pct = ((Math.min(current, 4) - 1) / 3) * 100;
+    fill.style.width = `${pct}%`;
+  }
 }
 
 function updateFont(value){
@@ -967,6 +1093,8 @@ function restoreFromAutosave(){
   const countEl = document.getElementById('slide-count'); if(countEl) countEl.value = s.slideCount || 'auto';
   const toneEl = document.getElementById('tone'); if(toneEl) toneEl.value = s.tone || 'educatif';
   dismissAutosaveBanner();
+  updateSourceCounter();
+  updateProgressSteps();
   showToast('Session précédente restaurée ✓');
 }
 
@@ -992,6 +1120,8 @@ document.querySelectorAll('#topic, #project-name, #source-text, #slide-count, #t
   el.addEventListener('input', scheduleAutosave);
   el.addEventListener('change', scheduleAutosave);
 });
+updateSourceCounter();
+updateProgressSteps();
 
 function projectFilename(){
   const raw = document.getElementById('project-name')?.value.trim() || document.getElementById('topic')?.value.trim() || 'carrousel-studio';
@@ -1181,6 +1311,7 @@ Contraintes :
     document.getElementById('empty-state').style.display = 'none';
     document.getElementById('carousel-container').style.display = 'block';
     renderCarousel();
+    updateProgressSteps();
     const dlBtn = document.querySelector('.download-btn');
     if(dlBtn){
       dlBtn.style.animation = 'attentionPulse 1.4s ease-in-out 2';
@@ -1796,6 +1927,8 @@ async function exportSlideAsPNG(index, filenamePrefix){
 async function exportCurrentSlide(){
   showToast("Export en cours...");
   await exportSlideAsPNG(currentIndex, projectFilename());
+  hasExported = true;
+  updateProgressSteps();
   showToast("Slide exportée ✓");
 }
 
@@ -1805,6 +1938,8 @@ async function exportAllSlides(){
     await exportSlideAsPNG(i, projectFilename());
     await new Promise(r=>setTimeout(r, 250));
   }
+  hasExported = true;
+  updateProgressSteps();
   showToast("Toutes les slides ont été exportées ✓");
 }
 
@@ -1890,6 +2025,8 @@ async function exportAsPDF(){
     link.download = `${projectFilename()}.pdf`;
     link.click();
     setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    hasExported = true;
+    updateProgressSteps();
     showToast(`PDF téléchargé ✓ (${formatFileSize(blob.size)})`);
   }catch(err){
     console.error(err);
