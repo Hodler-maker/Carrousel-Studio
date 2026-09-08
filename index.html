@@ -368,6 +368,9 @@
     ppt: 'editor.html'
   };
 
+  // Clé localStorage partagée avec carrousel.html pour que le forfait choisi soit repris sur l'outil.
+  const PLAN_STORAGE_KEY = 'carrouselStudioPlan';
+
   let currentPlan = null;
   let usage = { visuels: 0, carrousels: 0, ppt: 0 };
 
@@ -376,7 +379,7 @@
     btn.addEventListener('click', () => selectPlan(btn.getAttribute('data-select')));
   });
 
-  function selectPlan(planId){
+  function applyPlanSelection(planId){
     currentPlan = planId;
     usage = { visuels: 0, carrousels: 0, ppt: 0 };
 
@@ -401,8 +404,21 @@
     });
 
     renderSimulator();
+  }
+
+  function selectPlan(planId){
+    applyPlanSelection(planId);
+    localStorage.setItem(PLAN_STORAGE_KEY, planId);
     document.getElementById('sim').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+
+  // Reprend automatiquement le forfait déjà choisi (ici ou sur l'outil carrousel), sans faire défiler la page.
+  (function restoreStoredPlan(){
+    const storedPlan = localStorage.getItem(PLAN_STORAGE_KEY);
+    if(storedPlan && PLANS[storedPlan]){
+      applyPlanSelection(storedPlan);
+    }
+  })();
 
   /* ---------- Simulator rendering ---------- */
   function renderSimulator(){
