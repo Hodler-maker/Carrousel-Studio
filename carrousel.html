@@ -116,29 +116,31 @@
 @media (prefers-reduced-motion:reduce){.editor-link,.editor-link::before,.editor-link .editor-arrow{animation:none; transition:none;}.editor-link::before{display:none;}.visual-studio-link,.visual-studio-link::before,.visual-studio-link .studio-arrow{animation:none; transition:none;}.visual-studio-link::before{display:none;}}
 
 .plan-badge{
-  display:flex; flex-direction:column; gap:6px;
+  display:flex; align-items:center; gap:10px;
   background:var(--glass-strong);
   border:1px solid var(--border);
-  border-radius:14px;
-  padding:9px 14px;
-  min-width:208px;
+  border-radius:12px;
+  padding:9px 16px;
+  box-sizing:border-box;
   box-shadow:0 8px 22px -14px rgba(25,20,13,0.3);
+  flex-wrap:wrap;
 }
 .plan-select-wrap{position:relative; display:inline-flex; align-items:center; width:max-content;}
 .plan-badge select{
   appearance:none; -webkit-appearance:none; -moz-appearance:none;
-  font-family:var(--font-display); font-size:14px; font-weight:700; color:var(--ink);
-  background:transparent; border:none; cursor:pointer; padding:2px 22px 2px 0; margin:0;
+  font-family:var(--font-display); font-size:13px; font-weight:800; color:var(--ink);
+  background:transparent; border:none; cursor:pointer; padding:0 20px 0 0; margin:0; line-height:1.2;
 }
-.plan-select-arrow{position:absolute; right:0; top:50%; transform:translateY(-50%); width:14px; height:14px; color:var(--text-faint); pointer-events:none; transition:transform .15s ease;}
+.plan-select-arrow{position:absolute; right:0; top:50%; transform:translateY(-50%); width:13px; height:13px; color:var(--text-faint); pointer-events:none; transition:color .15s ease;}
 .plan-select-wrap:hover .plan-select-arrow{color:var(--orange-deep);}
 .plan-badge select:focus-visible{outline:2px solid rgba(255,122,47,.5); outline-offset:3px; border-radius:6px;}
-.plan-badge-meta{display:flex; align-items:center; gap:7px; flex-wrap:wrap; font-family:var(--font-mono); font-size:11px; color:var(--text-dim); line-height:1.5;}
-.plan-badge-meta .plan-quota-label b{color:var(--ink);}
-.plan-badge-meta .plan-quota-label.is-full{color:var(--red); font-weight:700;}
-.plan-badge-meta .plan-upgrade-link{color:var(--orange-deep); text-decoration:none; font-weight:600; white-space:nowrap;}
-.plan-badge-meta .plan-upgrade-link:hover{text-decoration:underline;}
-@media (max-width:760px){.plan-badge{width:100%; min-width:0;}}
+.plan-badge-divider{width:1px; height:15px; background:var(--border); flex-shrink:0;}
+.plan-quota-label{font-family:var(--font-mono); font-size:11px; color:var(--text-dim); white-space:nowrap;}
+.plan-quota-label b{color:var(--ink);}
+.plan-quota-label.is-full{color:var(--red); font-weight:700;}
+.plan-upgrade-link{font-family:var(--font-mono); font-size:11px; color:var(--orange-deep); text-decoration:none; font-weight:600; white-space:nowrap;}
+.plan-upgrade-link:hover{text-decoration:underline;}
+@media (max-width:760px){.plan-badge{width:100%;}}
 
   /* layout */
   .layout{display:grid; grid-template-columns:400px 1fr; gap:24px; align-items:start;}
@@ -663,10 +665,9 @@
           </select>
           <svg class="plan-select-arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg>
         </div>
-        <div class="plan-badge-meta">
-          <span class="plan-quota-label" id="plan-quota-label"></span>
-          <a class="plan-upgrade-link" href="index.html">Changer de forfait →</a>
-        </div>
+        <span class="plan-badge-divider" aria-hidden="true"></span>
+        <span class="plan-quota-label" id="plan-quota-label"></span>
+        <a class="plan-upgrade-link" href="index.html">Changer de forfait →</a>
       </div>
       <a class="visual-studio-link" href="visuel.html"><span class="studio-arrow" aria-hidden="true">←</span> 🎨 Créer un visuel</a>
       <a class="editor-link" href="editor.html">Ouvrir l’éditeur <span class="editor-arrow" aria-hidden="true">→</span></a>
