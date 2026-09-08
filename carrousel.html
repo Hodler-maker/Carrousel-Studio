@@ -115,6 +115,14 @@
 @keyframes editorSheen{0%,45%{transform:translateX(-125%);} 70%,100%{transform:translateX(125%);}}
 @media (prefers-reduced-motion:reduce){.editor-link,.editor-link::before,.editor-link .editor-arrow{animation:none; transition:none;}.editor-link::before{display:none;}.visual-studio-link,.visual-studio-link::before,.visual-studio-link .studio-arrow{animation:none; transition:none;}.visual-studio-link::before{display:none;}}
 
+.plan-badge{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11.5px; color:var(--text-dim); background:rgba(25,20,13,0.05); border:1px solid var(--border); padding:6px 12px; border-radius:100px; flex-wrap:wrap;}
+.plan-badge select{font-family:inherit; font-size:11.5px; font-weight:700; color:var(--ink); background:transparent; border:none; cursor:pointer;}
+.plan-badge select:focus-visible{outline:2px solid rgba(255,122,47,.5); outline-offset:2px;}
+.plan-badge .plan-quota-label b{color:var(--ink);}
+.plan-badge .plan-quota-label.is-full{color:var(--red); font-weight:700;}
+.plan-badge .plan-upgrade-link{color:var(--orange-deep); text-decoration:none; font-weight:600; border-bottom:1px solid rgba(255,90,31,0.3);}
+.plan-badge .plan-upgrade-link:hover{border-bottom-color:currentColor;}
+
   /* layout */
   .layout{display:grid; grid-template-columns:400px 1fr; gap:24px; align-items:start;}
   @media (max-width:980px){.layout{grid-template-columns:1fr;}}
@@ -627,6 +635,17 @@
     </div>
 
     <div class="header-links">
+      <div class="plan-badge">
+        <label for="plan-select" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Forfait</label>
+        <select id="plan-select" onchange="setCurrentPlanId(this.value)">
+          <option value="genesis">Freemium</option>
+          <option value="node">Basique</option>
+          <option value="validator">Premium</option>
+          <option value="satoshi">Premium+</option>
+        </select>
+        <span class="plan-quota-label" id="plan-quota-label"></span>
+        <a class="plan-upgrade-link" href="index.html">Changer de forfait →</a>
+      </div>
       <a class="visual-studio-link" href="visuel.html"><span class="studio-arrow" aria-hidden="true">←</span> 🎨 Créer un visuel</a>
       <a class="editor-link" href="editor.html">Ouvrir l’éditeur <span class="editor-arrow" aria-hidden="true">→</span></a>
     </div>
@@ -869,6 +888,84 @@ const AVAILABLE_FONTS = {
   merriweather: { label:'Merriweather', family:"'Merriweather', serif" },
   'source-sans-3': { label:'Source Sans 3', family:"'Source Sans 3', sans-serif" },
 };
+
+/* ---------- Forfaits & quotas (miroir des tarifs de index.html) ---------- */
+// Ces valeurs doivent rester identiques à celles affichées et utilisées dans le simulateur de index.html.
+const PLANS = {
+  genesis:   { name:'Freemium',  carrousels:{ limit:1, period:'month' }, exportHD:false },
+  node:      { name:'Basique',   carrousels:{ limit:1, period:'week'  }, exportHD:true  },
+  validator: { name:'Premium',   carrousels:{ limit:3, period:'week'  }, exportHD:true  },
+  satoshi:   { name:'Premium+',  carrousels:{ limit:5, period:'week'  }, exportHD:true  },
+};
+const PERIOD_LABEL = { week:'cette semaine', month:'ce mois-ci' };
+const PLAN_STORAGE_KEY = 'carrouselStudioPlan';
+const USAGE_STORAGE_KEY = 'carrouselStudioUsage';
+
+function getCurrentPlanId(){
+  const stored = localStorage.getItem(PLAN_STORAGE_KEY);
+  return PLANS[stored] ? stored : 'genesis';
+}
+
+function setCurrentPlanId(id){
+  if(!PLANS[id]) return;
+  localStorage.setItem(PLAN_STORAGE_KEY, id);
+  renderPlanBadge();
+}
+
+function getISOWeekKey(date){
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${weekNo}`;
+}
+
+function getPeriodKeyFor(period){
+  const now = new Date();
+  return period === 'month' ? `${now.getFullYear()}-${now.getMonth()}` : getISOWeekKey(now);
+}
+
+function getUsageState(){
+  const planId = getCurrentPlanId();
+  const plan = PLANS[planId];
+  const periodKey = getPeriodKeyFor(plan.carrousels.period);
+  let state = null;
+  try{ state = JSON.parse(localStorage.getItem(USAGE_STORAGE_KEY) || 'null'); }catch(err){ state = null; }
+  if(!state || state.planId !== planId || state.periodKey !== periodKey){
+    state = { planId, periodKey, count:0 };
+    localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(state));
+  }
+  return state;
+}
+
+function canGenerateCarousel(){
+  const plan = PLANS[getCurrentPlanId()];
+  return getUsageState().count < plan.carrousels.limit;
+}
+
+function incrementCarouselUsage(){
+  const state = getUsageState();
+  state.count += 1;
+  localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(state));
+  renderPlanBadge();
+}
+
+function renderPlanBadge(){
+  const select = document.getElementById('plan-select');
+  const label = document.getElementById('plan-quota-label');
+  if(!select || !label) return;
+  const planId = getCurrentPlanId();
+  const plan = PLANS[planId];
+  const state = getUsageState();
+  select.value = planId;
+  const isFull = state.count >= plan.carrousels.limit;
+  label.classList.toggle('is-full', isFull);
+  label.innerHTML = `<b>${state.count}</b> / ${plan.carrousels.limit} carrousel${plan.carrousels.limit > 1 ? 's' : ''} ${PERIOD_LABEL[plan.carrousels.period]}${plan.exportHD ? '' : ' · export filigrané'}`;
+}
+
+document.addEventListener('DOMContentLoaded', renderPlanBadge);
+if(document.readyState !== 'loading') renderPlanBadge();
 
 function normalizeHandle(value){
   const handle = String(value || '').trim().replace(/\s+/g, ' ');
@@ -1339,6 +1436,12 @@ async function generateCarousel(){
     return;
   }
 
+  if(!canGenerateCarousel()){
+    const plan = PLANS[getCurrentPlanId()];
+    showError(`Limite atteinte : le forfait ${plan.name} permet ${plan.carrousels.limit} carrousel${plan.carrousels.limit > 1 ? 's' : ''} ${PERIOD_LABEL[plan.carrousels.period]}. Passe à un forfait supérieur pour continuer.`);
+    return;
+  }
+
   const btn = document.getElementById('generate-btn');
   btn.disabled = true;
   btn.classList.add('loading');
@@ -1404,6 +1507,7 @@ Contraintes :
     document.getElementById('carousel-container').style.display = 'block';
     renderCarousel();
     updateProgressSteps();
+    incrementCarouselUsage();
     const dlBtn = document.querySelector('.download-btn');
     if(dlBtn){
       dlBtn.style.animation = 'attentionPulse 1.4s ease-in-out 2';
@@ -2005,7 +2109,29 @@ async function renderSlideCanvas(index){
     logging:false,
   });
   stage.innerHTML = '';
+  if(!PLANS[getCurrentPlanId()].exportHD){
+    applyWatermark(canvas);
+  }
   return canvas;
+}
+
+function applyWatermark(canvas){
+  // Filigrane appliqué aux exports des forfaits sans "export HD" (ex: Freemium).
+  const ctx = canvas.getContext('2d');
+  if(!ctx) return;
+  const text = 'CARROUSEL STUDIO · VERSION FREEMIUM';
+  ctx.save();
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = '#19140d';
+  ctx.font = `bold ${Math.round(canvas.width * 0.045)}px Inter, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate(-Math.PI / 6);
+  for(let y = -canvas.height; y <= canvas.height; y += canvas.height / 4){
+    ctx.fillText(text, 0, y);
+  }
+  ctx.restore();
 }
 
 async function exportSlideAsPNG(index, filenamePrefix){
