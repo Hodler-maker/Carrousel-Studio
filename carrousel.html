@@ -489,13 +489,14 @@ async function exportAllSlidesAsPDF(){
   if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Génération du PDF...';}
   showToast('Génération du PDF en cours...');
   try{
-    let scale=2,quality=0.9,pdf=null,blob=null;
+    let scale=3,quality=0.95,pdf=null,blob=null;
     for(let attempt=0;attempt<8;attempt++){
       pdf=await buildCarouselPdf(scale,quality);
       blob=pdf.output('blob');
       if(blob.size<=PDF_MAX_BYTES)break;
-      if(quality>0.4){quality=Math.max(0.4,quality-0.15);}
-      else if(scale>1){scale=Math.max(1,scale-0.5);quality=0.75;}
+      if(quality>0.7){quality=Math.max(0.7,quality-0.1);}
+      else if(scale>1.5){scale=Math.max(1.5,scale-0.5);quality=0.9;}
+      else if(quality>0.4){quality=Math.max(0.4,quality-0.15);}
       else break; // on ne peut plus réduire davantage
     }
     if(blob.size>PDF_MAX_BYTES){
