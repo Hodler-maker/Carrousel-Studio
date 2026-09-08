@@ -461,7 +461,7 @@ function markExportDone(){setStep(4);clearTimeout(stepRevertTimer);stepRevertTim
 async function exportCurrentSlide(){setStep(4);showToast('Export en cours...');await exportSlideAsPNG(currentIndex,'carrousel');showToast('Slide exportée ✓');markExportDone();}
 async function exportAllSlides(){setStep(4);showToast(`Export de ${slides.length} slides...`);for(let i=0;i<slides.length;i++){await exportSlideAsPNG(i,'carrousel');await new Promise(r=>setTimeout(r,250));}showToast('Toutes les slides ont été exportées ✓');markExportDone();}
 
-const PDF_MAX_BYTES=6*1024*1024; // limite fixée à 6 Mo
+const PDF_MAX_BYTES=10*1024*1024; // limite fixée à 10 Mo
 const PDF_PAGE_W=1080, PDF_PAGE_H=1350; // format identique aux slides (4:5)
 async function renderSlideCanvas(index,scale){
   const stage=document.getElementById('export-stage');
