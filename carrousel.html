@@ -175,8 +175,26 @@
 
   /* progress steps widget */
   .progress-steps{position:relative; display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:22px; padding-top:2px;}
-  .progress-line-track{position:absolute; top:14px; left:12.5%; right:12.5%; height:2px; background:var(--border); z-index:0; border-radius:2px;}
-  .progress-line-fill{position:absolute; top:0; left:0; height:100%; width:0%; background:linear-gradient(90deg, var(--orange), var(--amber)); border-radius:2px; transition:width .55s cubic-bezier(.16,1,.3,1);}
+  .progress-line-track{position:absolute; top:14px; left:12.5%; right:12.5%; height:2px; background:var(--border); z-index:0; border-radius:2px; overflow:hidden;}
+  .progress-line-fill{
+    position:absolute; top:0; left:0; height:100%; width:0%; border-radius:2px; overflow:hidden;
+    background:linear-gradient(90deg, var(--orange), var(--amber));
+    box-shadow:0 0 0 rgba(255,122,47,0);
+    transition:width .7s cubic-bezier(.34,1.56,.64,1), box-shadow .7s ease;
+  }
+  .progress-line-fill.is-filling{box-shadow:0 0 10px 1px rgba(255,122,47,0.55);}
+  .progress-line-fill::after{
+    content:''; position:absolute; inset:0; border-radius:2px;
+    background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%);
+    background-size:60px 100%; background-repeat:no-repeat; background-position:-60px 0;
+    opacity:0;
+  }
+  .progress-line-fill.is-filling::after{opacity:1; animation:gaugeShimmer 1s ease-out;}
+  @keyframes gaugeShimmer{
+    0%{background-position:-60px 0; opacity:1;}
+    80%{opacity:1;}
+    100%{background-position:340px 0; opacity:0;}
+  }
   .progress-step{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; text-align:center;}
   .progress-step .dot{
     width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
@@ -186,10 +204,20 @@
   }
   .progress-step .dot svg{width:13px; height:13px; stroke:#fff; stroke-width:2.6;}
   .progress-step .label{font-size:9.5px; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em; transition:color .3s ease; max-width:70px; line-height:1.3;}
-  .progress-step.is-active .dot{background:linear-gradient(135deg, var(--orange), var(--amber)); border-color:transparent; color:#fff; box-shadow:0 4px 14px rgba(255,122,47,0.42); transform:scale(1.14);}
+  .progress-step.is-active .dot{
+    background:linear-gradient(135deg, var(--orange), var(--amber)); border-color:transparent; color:#fff;
+    box-shadow:0 4px 14px rgba(255,122,47,0.42); transform:scale(1.14);
+    animation:stepDotPulse 1.8s ease-in-out infinite;
+  }
   .progress-step.is-active .label{color:var(--orange-deep);}
   .progress-step.is-done .dot{background:var(--ink); border-color:var(--ink); color:#fff;}
   .progress-step.is-done .label{color:var(--text-dim);}
+  .progress-step.just-completed .dot{animation:stepDotPop .5s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes stepDotPulse{0%,100%{box-shadow:0 4px 14px rgba(255,122,47,0.42);} 50%{box-shadow:0 4px 20px 4px rgba(255,122,47,0.32);}}
+  @keyframes stepDotPop{0%{transform:scale(0.85);} 55%{transform:scale(1.25);} 100%{transform:scale(1);}}
+  @media (prefers-reduced-motion:reduce){
+    .progress-line-fill,.progress-line-fill::after,.progress-step.is-active .dot,.progress-step.just-completed .dot{animation:none;}
+  }
   @media (max-width:340px){.progress-step .label{font-size:8.5px;}}
   .support-card{margin:72px auto 0; max-width:820px; padding:28px; border-radius:22px; background:linear-gradient(145deg, rgba(255,255,255,0.78), rgba(255,181,71,0.14)); border:1px solid rgba(255,122,47,0.22); box-shadow:0 24px 60px -34px rgba(120,60,10,0.42); opacity:0; transform:translateY(22px);}
   .support-card.is-visible{animation:supportReveal .75s cubic-bezier(.16,1,.3,1) both;}
@@ -587,7 +615,6 @@
     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
       <a class="visual-studio-link" href="visuel.html"><span class="studio-arrow" aria-hidden="true">←</span> 🎨 Créer un visuel</a>
       <a class="editor-link" href="editor.html">Ouvrir l’éditeur <span class="editor-arrow" aria-hidden="true">→</span></a>
-      <div id="auth-zone"></div>
     </div>
   </header>
 
@@ -797,6 +824,7 @@ let isRestoringState = false;
 let autosaveTimer = null;
 let autosaveQuotaWarned = false;
 let hasExported = false;
+let lastComputedStep = 0;
 const MAX_HISTORY = 40;
 const AUTOSAVE_KEY = 'carrousel-studio-autosave-v1';
 const CAROUSEL_WIDTH = 1080;
@@ -889,11 +917,13 @@ function computeCurrentStep(){
 
 function updateProgressSteps(){
   const current = computeCurrentStep();
+  const advanced = current > lastComputedStep && current > 1;
   document.querySelectorAll('.progress-step').forEach(el => {
     const step = Number(el.dataset.step);
     const dot = el.querySelector('.dot');
     const isDone = step < current || (step === current && step === 4 && hasExported);
     const isActive = step === current && !isDone;
+    const wasDone = el.classList.contains('is-done');
     el.classList.toggle('is-done', isDone);
     el.classList.toggle('is-active', isActive);
     if(dot){
@@ -901,12 +931,25 @@ function updateProgressSteps(){
         ? '<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>'
         : String(step);
     }
+    if(isDone && !wasDone){
+      el.classList.remove('just-completed');
+      void el.offsetWidth;
+      el.classList.add('just-completed');
+      el.addEventListener('animationend', () => el.classList.remove('just-completed'), {once:true});
+    }
   });
   const fill = document.getElementById('progress-line-fill');
   if(fill){
     const pct = ((Math.min(current, 4) - 1) / 3) * 100;
+    if(advanced){
+      fill.classList.remove('is-filling');
+      void fill.offsetWidth;
+      fill.classList.add('is-filling');
+      fill.addEventListener('animationend', () => fill.classList.remove('is-filling'), {once:true});
+    }
     fill.style.width = `${pct}%`;
   }
+  lastComputedStep = current;
 }
 
 function updateFont(value){
@@ -2039,38 +2082,6 @@ async function exportAsPDF(){
     }
   }
 }
-  function decodeJwtPayload(token){
-  try{
-    const payload = token.split(".")[1];
-    return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-  }catch(e){
-    return null;
-  }
-}
-
-function logout(){
-  localStorage.removeItem("xbooster_token");
-  checkAuth();
-}
-
-function checkAuth(){
-  const token = localStorage.getItem("xbooster_token");
-  const zone = document.getElementById("auth-zone");
-  if(!zone) return;
-
-  if(token){
-    const payload = decodeJwtPayload(token);
-    const displayName = payload?.name || payload?.email || "membre";
-    zone.innerHTML = `
-      <span style="font-size:12.5px; color:var(--text-dim);">✓ Connecté en tant que <strong>${displayName}</strong></span>
-      <a href="#" onclick="logout(); return false;" style="font-size:12px; color:var(--orange-deep); text-decoration:underline; margin-left:8px;">Se déconnecter</a>
-    `;
-  } else {
-    const redirect = encodeURIComponent(window.location.origin + "/callback.html");
-    zone.innerHTML = `<a href="https://www.xbooster.site/api/sso/authorize?redirect_uri=${redirect}" style="font-size:12.5px; font-weight:600; color:var(--orange-deep); text-decoration:none; padding:6px 12px; border:1px solid var(--orange-deep); border-radius:100px;">Se connecter avec XBooster</a>`;
-  }
-}
-checkAuth();
 </script>
 </body>
 </html>
