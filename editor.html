@@ -223,10 +223,11 @@ async function csHandleSignOut(){
 let csUnsubscribeUserDoc = null;
 function csInitAuth(){
   window.CS.completeSignInIfLink().catch(err => console.error(err));
-  window.CS.onAuthChange((user) => {
+  window.CS.onAuthChange(async (user) => {
     csRenderAuthWidget(user);
     if(csUnsubscribeUserDoc){ csUnsubscribeUserDoc(); csUnsubscribeUserDoc = null; }
     if(user){
+      await window.CS.ensureUserDoc(user);
       csUnsubscribeUserDoc = window.CS.listenUserDoc(user.uid, (data) => {
         window.csCurrentPlanId = data.planId || 'genesis';
       });
