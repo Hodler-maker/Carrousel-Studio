@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tarifs — Carrousel Studio</title>
+<title>Accueil — Carrousel Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -133,57 +133,7 @@
   .footnote{text-align:center; margin-top:52px; font-size:13px; color:var(--text-dim);}
   .footnote a{color:var(--orange-deep); text-decoration:none; border-bottom:1px solid rgba(255,90,31,0.3);}
 
-  /* Simulator */
-  .sim{
-    margin-top:64px;
-    background:var(--glass-strong);
-    border:1px solid var(--border);
-    border-radius:24px;
-    padding:32px;
-    backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);
-  }
-  .sim-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px;}
-  .sim-head h2{font-size:19px; font-weight:700; color:var(--ink); margin-bottom:6px;}
-  .sim-head p{font-size:13.5px; color:var(--text-dim); max-width:480px; line-height:1.5;}
-  .sim-plan-tag{font-family:var(--font-mono); font-size:12px; color:var(--text-dim); background:rgba(25,20,13,0.05); border:1px solid var(--border); padding:6px 12px; border-radius:100px; white-space:nowrap;}
-  .sim-plan-tag b{color:var(--ink);}
-  .sim-reset{background:none; border:1px solid var(--border); color:var(--text-dim); font-family:inherit; font-size:12.5px; padding:6px 12px; border-radius:100px; cursor:pointer; transition:border-color .15s ease, color .15s ease;}
-  .sim-reset:hover{border-color:var(--orange); color:var(--orange-deep);}
-
-  .sim-empty{font-size:14px; color:var(--text-faint); text-align:center; padding:36px 0;}
-
-  .sim-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
-  @media (max-width:800px){.sim-grid{grid-template-columns:1fr;}}
-
-  .sim-card{background:var(--bg-2); border:1px solid var(--border-soft); border-radius:16px; padding:20px;}
-  .sim-card h3{font-size:14px; font-weight:700; color:var(--ink); margin-bottom:4px;}
-  .sim-card .sim-period{font-family:var(--font-mono); font-size:11px; color:var(--text-faint); margin-bottom:14px; display:block;}
-
-  .sim-bar{height:6px; background:var(--border); border-radius:100px; overflow:hidden; margin-bottom:10px;}
-  .sim-bar-fill{height:100%; background:linear-gradient(90deg, var(--orange-deep), var(--amber)); border-radius:100px; transition:width .3s ease;}
-  .sim-bar-fill.is-full{background:var(--red);}
-
-  .sim-count{font-size:12.5px; color:var(--text-dim); margin-bottom:14px; display:block;}
-  .sim-count b{color:var(--ink); font-weight:700;}
-
-  .sim-btn{width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:rgba(25,20,13,0.05); color:var(--ink); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s ease, border-color .15s ease;}
-  .sim-btn:hover:not(:disabled){background:rgba(255,122,47,0.12); border-color:rgba(255,122,47,0.35);}
-  .sim-btn:disabled{opacity:0.5; cursor:not-allowed;}
-  .sim-btn.is-unavailable{background:transparent;}
-
-  .sim-msg{font-size:12px; margin-top:10px; min-height:16px;}
-  .sim-msg.warn{color:var(--red);}
-  .sim-msg.ok{color:var(--green);}
-  .sim-msg.info{color:var(--text-faint);}
-
-  .sim-exports{display:flex; align-items:center; gap:8px; margin-top:20px; flex-wrap:wrap;}
-  .sim-exports span.label{font-size:12.5px; color:var(--text-dim); margin-right:4px;}
-  .export-badge{font-family:var(--font-mono); font-size:11px; padding:4px 10px; border-radius:100px; border:1px solid var(--border);}
-  .export-badge.on{color:var(--green); background:rgba(47,158,92,0.1); border-color:rgba(47,158,92,0.3);}
-  .export-badge.off{color:var(--text-faint); background:transparent;}
-
-  @media (prefers-reduced-motion:reduce){.card{transition:none;} .card:hover{transform:none;} .sim-bar-fill{transition:none;}}
+  @media (prefers-reduced-motion:reduce){.card{transition:none;} .card:hover{transform:none;}}
 
   /* ---------- Auth widget ---------- */
   .auth-bar{position:relative; z-index:2; display:flex; justify-content:flex-end; max-width:1180px; margin:0 auto; padding:20px 28px 0;}
@@ -200,13 +150,6 @@
   /* ---------- Toast ---------- */
   .cs-toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; font-family:var(--font-mono); font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:50; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);}
   .cs-toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
-
-  /* ---------- Code promo ---------- */
-  .promo-box{max-width:420px; margin:20px auto 0; display:flex; align-items:center; gap:8px; background:var(--glass-strong); border:1px solid var(--border); border-radius:12px; padding:8px; flex-wrap:wrap; justify-content:center;}
-  .promo-box input{flex:1; min-width:160px; border:none; background:transparent; font-family:var(--font-mono); font-size:12.5px; color:var(--ink); padding:6px 8px; outline:none;}
-  .promo-box button{font-family:var(--font-mono); font-size:12px; font-weight:700; color:#fff; background:var(--orange-deep); border:none; padding:9px 14px; border-radius:9px; cursor:pointer;}
-  .promo-box button:hover{filter:brightness(1.06);}
-  .promo-hint{text-align:center; font-family:var(--font-mono); font-size:11px; color:var(--text-faint); margin-top:8px;}
 </style>
 </head>
 <body>
@@ -222,7 +165,7 @@
 
 <div class="wrap">
   <div class="hero">
-    <div class="kicker">TARIFS</div>
+    <div class="kicker">ACCUEIL</div>
     <h1>Un palier pour chaque rythme de création</h1>
     <p>Carrousels, visuels et présentations générés en quelques secondes. Commence gratuitement, monte en gamme quand ton usage grandit.</p>
 
@@ -312,26 +255,6 @@
 
   </div>
 
-  <div class="promo-box">
-    <input type="text" id="promo-input" placeholder="J'ai un code promo" autocomplete="off" />
-    <button type="button" onclick="handleRedeemPromo()">Appliquer</button>
-  </div>
-  <p class="promo-hint" id="promo-hint">Connecte-toi d'abord pour appliquer un code promo à ton compte.</p>
-
-  <!-- SIMULATEUR D'UTILISATION -->
-  <div class="sim" id="sim">
-    <div class="sim-head">
-      <div>
-        <h2>Simulateur d'utilisation</h2>
-        <p>Choisis un forfait ci-dessus (y compris Freemium), puis teste ses limites en générant des visuels, des carrousels et des exports. Chaque bouton respecte exactement ce qui est écrit sur la carte.</p>
-      </div>
-      <div id="sim-plan-tag-wrap"></div>
-    </div>
-    <div id="sim-body">
-      <div class="sim-empty">Sélectionne un forfait ci-dessus pour activer le simulateur.</div>
-    </div>
-  </div>
-
   <div class="footnote">Besoin de plus de volume pour ton équipe ou ton agence ? <a href="#">Contacte-nous</a>.</div>
 </div>
 
@@ -396,18 +319,10 @@
     }
   };
 
-  // Visuel Studio (visuels), le générateur de carrousels et l'éditeur de présentations (ppt) sont trois pages distinctes du site
-  const TOOL_URLS = {
-    visuels: 'visuel.html',
-    carrousels: 'carrousel.html',
-    ppt: 'editor.html'
-  };
-
   // Clé localStorage partagée avec carrousel.html pour que le forfait choisi soit repris sur l'outil.
   const PLAN_STORAGE_KEY = 'carrouselStudioPlan';
 
   let currentPlan = null;
-  let usage = { visuels: 0, carrousels: 0, ppt: 0 };
 
   /* ---------- Plan selection ---------- */
   document.querySelectorAll('[data-select]').forEach(btn => {
@@ -416,7 +331,6 @@
 
   function applyPlanSelection(planId){
     currentPlan = planId;
-    usage = { visuels: 0, carrousels: 0, ppt: 0 };
 
     document.querySelectorAll('.card').forEach(card => {
       const id = card.getAttribute('data-plan');
@@ -437,8 +351,6 @@
         pill.remove();
       }
     });
-
-    renderSimulator();
   }
 
   async function selectPlan(planId){
@@ -452,7 +364,7 @@
       applyPlanSelection(planId);
       localStorage.setItem(PLAN_STORAGE_KEY, planId);
       window.CS.setUserPlan(csUser.uid, planId, 'self').catch(err => console.error(err));
-      document.getElementById('sim').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showToast('Forfait Freemium activé ✓');
       return;
     }
 
@@ -468,110 +380,6 @@
     }
   })();
 
-  /* ---------- Simulator rendering ---------- */
-  function renderSimulator(){
-    const wrap = document.getElementById('sim-plan-tag-wrap');
-    const body = document.getElementById('sim-body');
-
-    if(!currentPlan){
-      wrap.innerHTML = '';
-      body.innerHTML = '<div class="sim-empty">Sélectionne un forfait ci-dessus pour activer le simulateur.</div>';
-      return;
-    }
-
-    const plan = PLANS[currentPlan];
-    wrap.innerHTML = `
-      <span class="sim-plan-tag">Forfait actif : <b>${plan.name}</b></span>
-      <button type="button" class="sim-reset" id="sim-reset-btn">Réinitialiser les quotas</button>
-    `;
-    document.getElementById('sim-reset-btn').addEventListener('click', () => {
-      usage = { visuels: 0, carrousels: 0, ppt: 0 };
-      renderSimulator();
-    });
-
-    body.innerHTML = `
-      <div class="sim-grid">
-        ${simCardHTML('visuels', 'Visuels', plan.visuels)}
-        ${simCardHTML('carrousels', 'Carrousels', plan.carrousels)}
-        ${simCardHTML('ppt', 'Présentations PowerPoint', plan.ppt)}
-      </div>
-      <div class="sim-exports">
-        <span class="label">Export disponible :</span>
-        <span class="export-badge on">PDF standard</span>
-        <span class="export-badge ${plan.exportHD ? 'on' : 'off'}">${plan.exportHD ? 'HD sans filigrane' : 'HD — indisponible'}</span>
-        <span class="export-badge ${plan.brand ? 'on' : 'off'}">${plan.brand ? 'Personnalisation de marque' : 'Personnalisation de marque — indisponible'}</span>
-      </div>
-    `;
-
-    ['visuels','carrousels','ppt'].forEach(key => {
-      const btn = document.getElementById(`btn-${key}`);
-      if(btn) btn.addEventListener('click', () => attemptAction(key));
-    });
-  }
-
-  function simCardHTML(key, title, spec){
-    const limit = spec.limit;
-    const unavailable = limit === 0;
-    const used = usage[key];
-    const pct = unavailable ? 0 : (limit === Infinity ? 0 : Math.min(100, (used / limit) * 100));
-    const isFull = !unavailable && limit !== Infinity && used >= limit;
-
-    const countLabel = unavailable
-      ? 'Non inclus dans ce forfait'
-      : limit === Infinity
-        ? `<b>${used}</b> générés — illimité`
-        : `<b>${used}</b> / ${limit} utilisés`;
-
-    const btnLabel = key === 'ppt' ? 'Exporter une présentation' : `Créer un ${title === 'Carrousels' ? 'carrousel' : 'visuel'}`;
-
-    return `
-      <div class="sim-card">
-        <h3>${title}</h3>
-        <span class="sim-period">${unavailable ? 'Fonctionnalité verrouillée' : spec.period}</span>
-        ${unavailable ? '' : `
-          <div class="sim-bar"><div class="sim-bar-fill ${isFull ? 'is-full' : ''}" style="width:${limit === Infinity ? 8 : pct}%"></div></div>
-        `}
-        <span class="sim-count">${countLabel}</span>
-        <button type="button" class="sim-btn ${unavailable ? 'is-unavailable' : ''}" id="btn-${key}" ${(unavailable || isFull) ? 'disabled' : ''}>
-          ${unavailable ? 'Indisponible sur ce forfait' : btnLabel}
-        </button>
-        <div class="sim-msg" id="msg-${key}"></div>
-      </div>
-    `;
-  }
-
-  function attemptAction(key){
-    const plan = PLANS[currentPlan];
-    const spec = plan[key];
-    const msgEl = document.getElementById(`msg-${key}`);
-
-    if(spec.limit === 0){
-      msgEl.className = 'sim-msg warn';
-      msgEl.textContent = 'Cette fonctionnalité n\'est pas incluse dans ton forfait.';
-      return;
-    }
-    if(spec.limit !== Infinity && usage[key] >= spec.limit){
-      msgEl.className = 'sim-msg warn';
-      msgEl.textContent = 'Limite atteinte pour ce forfait — passe à un forfait supérieur pour continuer.';
-      return;
-    }
-
-    usage[key] += 1;
-    msgEl.className = 'sim-msg ok';
-    const noun = key === 'ppt' ? 'Présentation exportée' : key === 'carrousels' ? 'Carrousel créé' : 'Visuel créé';
-    msgEl.textContent = `${noun} ✓ — ouverture de Carrousel Studio…`;
-    renderSimulator();
-    // re-flash the message after re-render since renderSimulator wipes the DOM
-    const freshMsg = document.getElementById(`msg-${key}`);
-    if(freshMsg){
-      freshMsg.className = 'sim-msg ok';
-      freshMsg.textContent = `${noun} ✓ — ouverture de Carrousel Studio…`;
-    }
-    // Redirige réellement vers l'outil correspondant (Visuel Studio ou l'éditeur de carrousels)
-    window.open(TOOL_URLS[key], '_blank', 'noopener');
-  }
-
-  /* ---------- Toast ---------- */
   function showToast(msg){
     const t = document.getElementById('cs-toast');
     if(!t) return;
@@ -599,14 +407,6 @@
     const shortEmail = csUser.email.length > 24 ? csUser.email.slice(0, 21) + '…' : csUser.email;
     const adminLink = (window.CS && window.CS.isAdmin(csUser)) ? '<a class="auth-admin-link" href="admin.html">Admin →</a>' : '';
     el.innerHTML = `${adminLink}<span class="auth-user"><b>${escapeHtml(shortEmail)}</b><button class="auth-signout" onclick="handleSignOut()">Déconnexion</button></span>`;
-  }
-
-  function updatePromoHint(){
-    const hint = document.getElementById('promo-hint');
-    if(!hint) return;
-    hint.textContent = csUser
-      ? "Le code appliqué met à jour ton forfait immédiatement."
-      : "Connecte-toi d'abord pour appliquer un code promo à ton compte.";
   }
 
   async function handleAuthClick(){
@@ -647,23 +447,6 @@
     }
   }
 
-  async function handleRedeemPromo(){
-    const input = document.getElementById('promo-input');
-    const code = input.value.trim();
-    if(!code) return;
-    if(!csUser){
-      showToast('Connecte-toi d’abord pour appliquer un code promo.');
-      return;
-    }
-    try{
-      const planId = await window.CS.redeemPromoCode(csUser.uid, code);
-      input.value = '';
-      showToast(`Code appliqué — forfait ${PLANS[planId]?.name || planId} activé ✓`);
-    }catch(err){
-      showToast(err.message || 'Ce code promo est invalide.');
-    }
-  }
-
   function initAuth(){
   window.CS.completeSignInIfLink().then(user => {
     if(user){
@@ -691,7 +474,6 @@
         csUserData = null;
       }
       renderAuthWidget();
-      updatePromoHint();
     });
   }
 
