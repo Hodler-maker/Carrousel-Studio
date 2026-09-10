@@ -80,6 +80,16 @@ async function setUserPlan(uid, planId, source = "self") {
   });
 }
 
+// Nom/prénom saisis sur la fiche d'activation d'un forfait payant — utile
+// pour recouper avec les échanges WhatsApp côté admin.
+async function updateContactInfo(uid, { firstName, lastName }) {
+  await updateDoc(userDocRef(uid), {
+    firstName: firstName || null,
+    lastName: lastName || null,
+    updatedAt: serverTimestamp(),
+  });
+}
+
 /* ---------- Authentification (email + mot de passe) ---------- */
 
 async function signUpWithPassword(email, password) {
@@ -192,6 +202,7 @@ window.CS = {
   ensureUserDoc,
   listenUserDoc,
   setUserPlan,
+  updateContactInfo,
   signUpWithPassword,
   signInWithPassword,
   completeSignInIfLink,
