@@ -330,7 +330,6 @@ if(window.CS){ csInitAuth(); } else { window.addEventListener('cs:ready', csInit
   <script>
     (() => {
       'use strict';
-      const OWNER_ACCESS_KEY = 'CHANGE-MOI-CLE-SECRETE'; // même clé que sur carrousel.html
       function isOwnerUnlocked(){return localStorage.getItem('cs_owner_unlocked')==='true';}
       function getServerOwnerKey(){return localStorage.getItem('cs_owner_server_key')||'';}
       function checkOwnerAccessFromUrl(){
