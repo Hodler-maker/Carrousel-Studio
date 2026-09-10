@@ -636,10 +636,15 @@
   }
 
   function initAuth(){
-    window.CS.completeSignInIfLink().catch(err => {
-      console.error(err);
-      showToast('La connexion a échoué, redemande un lien.');
-    });
+  window.CS.completeSignInIfLink().then(user => {
+    if(user){
+      showToast('Connecté ✓ Redirection vers l’outil...');
+      setTimeout(() => { window.location.href = 'visuel.html'; }, 900);
+    }
+  }).catch(err => {
+    console.error(err);
+    showToast('La connexion a échoué, redemande un lien.');
+  });
 
     window.CS.onAuthChange(async (user) => {
       csUser = user;
