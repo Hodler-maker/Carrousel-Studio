@@ -243,8 +243,7 @@
       <div class="tier-tagline">Pour découvrir l'outil et poster ta première création.</div>
       <div class="price"><span class="amount">0</span><span class="period">FCFA</span></div>
       <div class="price-note">Aucune carte bancaire requise — teste-le directement dans le simulateur ci-dessous</div>
-      <a href="visuel.html" class="cta ghost">Commencer gratuitement</a>
-      <a href="carrousel.html" class="cta ghost" style="margin-top:8px;font-size:14px;padding-top:10px;padding-bottom:10px;">Créer mon carrousel offert →</a>
+      <a href="carrousel.html" class="cta ghost">Commencer gratuitement</a>
       <ul class="features">
         <li>1 visuel par semaine sur Visuel Studio</li>
         <li>1 carrousel offert par mois</li>
@@ -442,13 +441,23 @@
     renderSimulator();
   }
 
-  function selectPlan(planId){
-    applyPlanSelection(planId);
-    localStorage.setItem(PLAN_STORAGE_KEY, planId);
-    if(csUser){
-      window.CS.setUserPlan(csUser.uid, planId, 'self').catch(err => console.error(err));
+  async function selectPlan(planId){
+    if(!csUser){
+      showToast('Connecte-toi d’abord pour choisir un forfait.');
+      await handleAuthClick();
+      if(!csUser) return; // connexion annulée ou échouée
     }
-    document.getElementById('sim').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    if(planId === 'genesis'){
+      applyPlanSelection(planId);
+      localStorage.setItem(PLAN_STORAGE_KEY, planId);
+      window.CS.setUserPlan(csUser.uid, planId, 'self').catch(err => console.error(err));
+      document.getElementById('sim').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+
+    // Forfait payant : direction la fiche d'activation (contact + code WhatsApp).
+    window.location.href = `activation.html?plan=${encodeURIComponent(planId)}`;
   }
 
   // Reprend automatiquement le forfait déjà choisi (ici ou sur l'outil carrousel), sans faire défiler la page.
