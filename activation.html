@@ -246,9 +246,12 @@
   }
 
   function csInitAuth(){
-    window.CS.onAuthChange((user) => {
+    window.CS.onAuthChange(async (user) => {
       csUser = user;
       renderAuthWidget(user);
+      if(user){
+        await window.CS.ensureUserDoc(user);
+      }
       updateAccessState(user);
     });
   }
