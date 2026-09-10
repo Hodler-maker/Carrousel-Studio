@@ -218,6 +218,7 @@ async function csHandleSignOut(){
   try{
     await window.CS.signOutUser();
     csShowToast('Déconnecté.');
+    setTimeout(() => { window.location.href = 'index.html'; }, 600);
   }catch(err){ console.error(err); }
 }
 let csUnsubscribeUserDoc = null;
