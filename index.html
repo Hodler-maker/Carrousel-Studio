@@ -143,6 +143,27 @@
   .auth-user{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; color:var(--text-dim); background:var(--glass-strong); border:1px solid var(--border); padding:8px 12px; border-radius:12px; box-sizing:border-box;}
   .auth-user b{color:var(--ink); font-weight:700;}
   .auth-user .auth-signout{font-family:inherit; font-size:11px; color:var(--orange-deep); background:none; border:none; cursor:pointer; font-weight:600; padding:0;}
+
+  /* ---------- Modal de connexion ---------- */
+  .auth-modal-overlay{position:fixed; inset:0; z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(25,20,13,0.45); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); opacity:0; visibility:hidden; transition:opacity .25s ease, visibility .25s;}
+  .auth-modal-overlay.is-open{opacity:1; visibility:visible;}
+  .auth-modal{position:relative; width:100%; max-width:380px; background:#fffdf9; border-radius:24px; padding:32px 28px 28px; box-shadow:0 30px 70px rgba(25,20,13,0.35); transform:scale(0.94) translateY(8px); opacity:0; transition:transform .3s cubic-bezier(.2,.9,.3,1.3), opacity .25s ease;}
+  .auth-modal-overlay.is-open .auth-modal{transform:scale(1) translateY(0); opacity:1;}
+  .auth-modal::before{content:''; position:absolute; inset:-1px; z-index:-1; border-radius:25px; padding:1px; background:linear-gradient(135deg, var(--orange-deep), var(--amber), transparent 60%); -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:0.6;}
+  .auth-modal-glow{position:absolute; top:-60px; left:50%; transform:translateX(-50%); width:180px; height:100px; background:radial-gradient(circle, rgba(255,122,47,0.35), transparent 70%); filter:blur(20px); pointer-events:none; z-index:-1;}
+  .auth-modal-close{position:absolute; top:16px; right:16px; width:28px; height:28px; border-radius:50%; border:none; background:rgba(25,20,13,0.06); color:var(--text-dim); font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s ease, color .15s ease;}
+  .auth-modal-close:hover{background:rgba(25,20,13,0.12); color:var(--ink);}
+  .auth-modal-icon{width:44px; height:44px; border-radius:14px; background:linear-gradient(135deg, var(--orange-deep), var(--orange) 55%, var(--amber)); display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:16px; box-shadow:0 10px 24px rgba(255,122,47,0.35);}
+  .auth-modal h2{font-size:20px; font-weight:700; color:var(--ink); margin-bottom:6px; letter-spacing:-0.01em;}
+  .auth-modal p.hint{font-size:13px; color:var(--text-dim); line-height:1.5; margin-bottom:22px;}
+  .auth-modal .field{margin-bottom:14px;}
+  .auth-modal .field label{display:block; font-size:11.5px; font-weight:700; color:var(--text-dim); margin-bottom:6px; font-family:var(--font-mono);}
+  .auth-modal .field input{width:100%; font-family:inherit; font-size:14px; padding:11px 13px; border-radius:12px; border:1px solid var(--border); background:#faf6ef; color:var(--ink); transition:border-color .15s ease, background .15s ease;}
+  .auth-modal .field input:focus{outline:none; border-color:var(--orange-deep); background:#fff;}
+  .auth-modal-error{font-size:12.5px; color:var(--red); min-height:16px; margin-bottom:8px;}
+  .auth-modal-submit{width:100%; margin-top:6px; font-family:inherit; font-size:14.5px; font-weight:700; color:#fff; background:linear-gradient(135deg, var(--orange-deep), var(--orange) 55%, var(--amber)); border:none; padding:13px 18px; border-radius:14px; cursor:pointer; box-shadow:0 12px 26px rgba(255,122,47,0.32); transition:transform .15s ease, opacity .15s ease;}
+  .auth-modal-submit:hover:not(:disabled){transform:translateY(-1px);}
+  .auth-modal-submit:disabled{opacity:0.6; cursor:default;}
   .auth-user .auth-signout:hover{text-decoration:underline;}
   .auth-admin-link{font-family:var(--font-mono); font-size:11px; color:var(--orange-deep); text-decoration:none; font-weight:700; white-space:nowrap; background:var(--glass-strong); border:1px solid var(--border); padding:9px 14px; border-radius:12px;}
   .auth-admin-link:hover{text-decoration:underline;}
@@ -257,6 +278,26 @@
   </div>
 
   <div class="footnote">Besoin de plus de volume pour ton équipe ou ton agence ? <a href="#">Contacte-nous</a>.</div>
+</div>
+
+<div class="auth-modal-overlay" id="auth-modal-overlay" onclick="if(event.target === this) closeAuthModal();">
+  <div class="auth-modal">
+    <div class="auth-modal-glow"></div>
+    <button type="button" class="auth-modal-close" onclick="closeAuthModal()" aria-label="Fermer">✕</button>
+    <div class="auth-modal-icon">✨</div>
+    <h2>Connexion</h2>
+    <p class="hint">Entre ton email et un mot de passe. Pas encore de compte ? Il sera créé automatiquement.</p>
+    <div class="field">
+      <label for="auth-modal-email">Email</label>
+      <input type="email" id="auth-modal-email" placeholder="toi@exemple.com" autocomplete="email" onkeydown="if(event.key==='Enter') document.getElementById('auth-modal-password').focus();">
+    </div>
+    <div class="field">
+      <label for="auth-modal-password">Mot de passe (6 caractères min.)</label>
+      <input type="password" id="auth-modal-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitAuthModal();">
+    </div>
+    <div class="auth-modal-error" id="auth-modal-error"></div>
+    <button type="button" class="auth-modal-submit" id="auth-modal-submit" onclick="submitAuthModal()">Continuer</button>
+  </div>
 </div>
 
 <script>
@@ -420,11 +461,51 @@
     el.innerHTML = `${adminLink}<span class="auth-user"><b>${escapeHtml(shortEmail)}</b><button class="auth-signout" onclick="handleSignOut()">Déconnexion</button></span>`;
   }
 
-  async function handleAuthClick(){
-    const email = window.prompt("Ton email :");
-    if(!email) return;
-    const password = window.prompt("Ton mot de passe (6 caractères min.) :");
-    if(!password) return;
+  let _authModalResolve = null;
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      const overlay = document.getElementById('auth-modal-overlay');
+      if(overlay && overlay.classList.contains('is-open')) closeAuthModal();
+    }
+  });
+
+  function handleAuthClick(){
+    return new Promise((resolve) => {
+      _authModalResolve = resolve;
+      openAuthModal();
+    });
+  }
+
+  function openAuthModal(){
+    const overlay = document.getElementById('auth-modal-overlay');
+    document.getElementById('auth-modal-email').value = '';
+    document.getElementById('auth-modal-password').value = '';
+    document.getElementById('auth-modal-error').textContent = '';
+    overlay.classList.add('is-open');
+    setTimeout(() => document.getElementById('auth-modal-email').focus(), 60);
+  }
+
+  function closeAuthModal(){
+    const overlay = document.getElementById('auth-modal-overlay');
+    overlay.classList.remove('is-open');
+    if(_authModalResolve){ _authModalResolve(); _authModalResolve = null; }
+  }
+
+  async function submitAuthModal(){
+    const email = document.getElementById('auth-modal-email').value.trim();
+    const password = document.getElementById('auth-modal-password').value;
+    const errorEl = document.getElementById('auth-modal-error');
+    const btn = document.getElementById('auth-modal-submit');
+    errorEl.textContent = '';
+
+    if(!email || !password){
+      errorEl.textContent = 'Renseigne ton email et ton mot de passe.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Connexion...';
     try{
       try{
         await window.CS.signInWithPassword(email, password);
@@ -443,9 +524,14 @@
         }
       }
       showToast('Connecté ✓');
+      document.getElementById('auth-modal-overlay').classList.remove('is-open');
+      if(_authModalResolve){ _authModalResolve(); _authModalResolve = null; }
     }catch(err){
       console.error(err);
-      showToast(err.message || "Connexion impossible, réessaie.");
+      errorEl.textContent = err.message || "Connexion impossible, réessaie.";
+    }finally{
+      btn.disabled = false;
+      btn.textContent = 'Continuer';
     }
   }
 
