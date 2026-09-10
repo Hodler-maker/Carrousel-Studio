@@ -202,14 +202,31 @@ function csRenderAuthWidget(user){
   el.innerHTML = `<span style="display:flex; align-items:center; gap:8px; color:#7c7060; background:rgba(255,255,255,0.88); border:1px solid rgba(25,20,13,0.09); padding:8px 12px; border-radius:12px;"><b style="color:#19140d;">${shortEmail}</b><button onclick="csHandleSignOut()" style="font-family:inherit; font-size:11px; color:#ff5a1f; background:none; border:none; cursor:pointer; font-weight:600; padding:0;">Déconnexion</button></span>`;
 }
 async function csHandleAuthClick(){
-  const email = window.prompt("Ton email pour recevoir un lien de connexion :");
+  const email = window.prompt("Ton email :");
   if(!email) return;
+  const password = window.prompt("Ton mot de passe (6 caractères min.) :");
+  if(!password) return;
   try{
-    await window.CS.sendMagicLink(email);
-    csShowToast('Lien envoyé — vérifie ta boîte mail.');
+    try{
+      await window.CS.signInWithPassword(email, password);
+    }catch(err){
+      if(err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found'){
+        try{
+          await window.CS.signUpWithPassword(email, password);
+        }catch(signUpErr){
+          if(signUpErr.code === 'auth/email-already-in-use'){
+            throw new Error('Mot de passe incorrect.');
+          }
+          throw signUpErr;
+        }
+      }else{
+        throw err;
+      }
+    }
+    csShowToast('Connecté ✓');
   }catch(err){
     console.error(err);
-    csShowToast("Impossible d'envoyer le lien, réessaie.");
+    csShowToast(err.message || "Connexion impossible, réessaie.");
   }
 }
 async function csHandleSignOut(){
