@@ -4,7 +4,7 @@ Carrousel Studio est un générateur de carrousels LinkedIn avec un éditeur loc
 
 ## Utilisation
 
-Ouvre `index.html` pour générer un carrousel avec Gemini, ou ouvre `editor.html` pour créer une présentation locale. Dans l’éditeur, tu peux ajouter des slides, du texte et des formes, déplacer ou redimensionner les objets, modifier leurs propriétés, relier deux objets et exporter une slide en SVG ou en PNG.
+Ouvre `carrousel.html` pour générer un carrousel avec Gemini, ou ouvre `editor.html` pour créer une présentation locale. Dans l’éditeur, tu peux ajouter des slides, du texte et des formes, déplacer ou redimensionner les objets, modifier leurs propriétés, relier deux objets et exporter une slide en SVG ou en PNG.
 
 L’exemple fourni est explicitement nommé « Exemple — à supprimer ». Le bouton **Nouvelle présentation** permet de repartir d’un document vide, tandis que **Charger l’exemple** restaure les données de démonstration.
 
