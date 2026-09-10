@@ -158,6 +158,54 @@
   </style>
 </head>
 <body>
+  <script type="module" src="firebase-shared.js"></script>
+<div id="cs-auth-bar" style="position:fixed; top:14px; right:14px; z-index:1000; display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono', monospace; font-size:11.5px;">
+  <div id="cs-auth-widget"></div>
+</div>
+<div id="cs-toast" style="position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:#19140d; color:#fff; font-family:'JetBrains Mono', monospace; font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:1000; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);"></div>
+<script>
+function csShowToast(msg){
+  const t = document.getElementById('cs-toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(window._csAuthToastTimer);
+  window._csAuthToastTimer = setTimeout(() => { t.style.opacity = '0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 3200);
+}
+function csRenderAuthWidget(user){
+  const el = document.getElementById('cs-auth-widget');
+  if(!el) return;
+  if(!user){
+    el.innerHTML = '<button onclick="csHandleAuthClick()" style="font-family:inherit; font-size:11.5px; font-weight:700; color:#19140d; background:rgba(255,255,255,0.88); border:1px solid rgba(25,20,13,0.09); padding:9px 14px; border-radius:12px; cursor:pointer;">Se connecter</button>';
+    return;
+  }
+  const shortEmail = user.email.length > 22 ? user.email.slice(0, 19) + '…' : user.email;
+  el.innerHTML = `<span style="display:flex; align-items:center; gap:8px; color:#7c7060; background:rgba(255,255,255,0.88); border:1px solid rgba(25,20,13,0.09); padding:8px 12px; border-radius:12px;"><b style="color:#19140d;">${shortEmail}</b><button onclick="csHandleSignOut()" style="font-family:inherit; font-size:11px; color:#ff5a1f; background:none; border:none; cursor:pointer; font-weight:600; padding:0;">Déconnexion</button></span>`;
+}
+async function csHandleAuthClick(){
+  const email = window.prompt("Ton email pour recevoir un lien de connexion :");
+  if(!email) return;
+  try{
+    await window.CS.sendMagicLink(email);
+    csShowToast('Lien envoyé — vérifie ta boîte mail.');
+  }catch(err){
+    console.error(err);
+    csShowToast("Impossible d'envoyer le lien, réessaie.");
+  }
+}
+async function csHandleSignOut(){
+  try{
+    await window.CS.signOutUser();
+    csShowToast('Déconnecté.');
+  }catch(err){ console.error(err); }
+}
+function csInitAuth(){
+  window.CS.completeSignInIfLink().catch(err => console.error(err));
+  window.CS.onAuthChange((user) => { csRenderAuthWidget(user); });
+}
+if(window.CS){ csInitAuth(); } else { window.addEventListener('cs:ready', csInitAuth, { once:true }); }
+</script>
   <div id="quota-lock-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,8,0.92);color:#fff;align-items:center;justify-content:center;text-align:center;padding:32px;font-family:Inter,system-ui,sans-serif;">
     <div style="max-width:420px;">
       <h2 style="margin:0 0 12px;font-size:22px;">L’export PowerPoint n’est pas inclus dans ton forfait</h2>
