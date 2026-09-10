@@ -213,6 +213,7 @@
     try{
       await window.CS.signOutUser();
       showToast('Déconnecté.');
+      setTimeout(() => { window.location.href = 'index.html'; }, 600);
     }catch(err){ console.error(err); }
   }
 
