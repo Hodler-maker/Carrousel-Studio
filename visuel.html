@@ -173,12 +173,30 @@ animation:frameIn .45s cubic-bezier(.16,1,.3,1);
 @media (prefers-reduced-motion:no-preference){.firefly{animation:fireflyFloat var(--duration) ease-in-out var(--delay) infinite;}}
 @keyframes fireflyFloat{0%,100%{opacity:.06; transform:translate3d(0,10px,0) scale(.72);} 32%{opacity:.62; transform:translate3d(16px,-12px,0) scale(1);} 58%{opacity:.2; transform:translate3d(-12px,-32px,0) scale(.82);} 78%{opacity:.75; transform:translate3d(9px,-48px,0) scale(.92);}}
 @media (prefers-reduced-motion:reduce){.firefly{opacity:.1;}}
+/* Petit menu de statut de forfait (badge + compteurs) */
+.plan-menu{position:relative;}
+.plan-menu-btn{display:inline-flex; align-items:center; gap:6px; font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700; color:#fff; background:linear-gradient(135deg, #ff5a1f, #ff7a2f 55%, #ffb547); border:none; padding:8px 12px; border-radius:100px; cursor:pointer; box-shadow:0 6px 16px rgba(255,122,47,.3);}
+.plan-menu-btn .chev{font-size:9px; transition:transform .15s ease;}
+.plan-menu.is-open .plan-menu-btn .chev{transform:rotate(180deg);}
+.plan-menu-panel{position:absolute; top:calc(100% + 8px); right:0; width:230px; background:#fff; border:1px solid rgba(25,20,13,.1); border-radius:14px; box-shadow:0 16px 40px rgba(25,20,13,.18); padding:14px; opacity:0; visibility:hidden; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease, visibility .15s;}
+.plan-menu.is-open .plan-menu-panel{opacity:1; visibility:visible; transform:translateY(0);}
+.plan-menu-row{margin-bottom:10px;}
+.plan-menu-row:last-child{margin-bottom:0;}
+.plan-menu-row .row-label{display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#19140d; margin-bottom:5px;}
+.plan-menu-row .row-count{font-weight:400; color:#7c7060;}
+.plan-menu-bar{height:5px; background:rgba(25,20,13,.08); border-radius:100px; overflow:hidden;}
+.plan-menu-bar-fill{height:100%; background:linear-gradient(90deg, #ff5a1f, #ffb547); border-radius:100px;}
+.plan-menu-bar-fill.is-full{background:#d94b3a;}
+.plan-menu-row.is-locked .row-label{color:#ada08c;}
+.plan-menu-link{display:block; text-align:center; margin-top:12px; font-family:'JetBrains Mono', monospace; font-size:10.5px; color:#7c7060; text-decoration:none; padding-top:10px; border-top:1px solid rgba(25,20,13,.08);}
+.plan-menu-link:hover{color:#ff5a1f;}
 </style>
 </head>
 <body>
 <script type="module" src="firebase-shared.js"></script>
 <script src="quota.js"></script>
 <div id="cs-auth-bar" style="position:fixed; top:14px; right:14px; z-index:1000; display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono', monospace; font-size:11.5px;">
+  <div id="cs-plan-menu"></div>
   <div id="cs-auth-widget"></div>
 </div>
 <div id="cs-toast" style="position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:#19140d; color:#fff; font-family:'JetBrains Mono', monospace; font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:1000; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);"></div>
@@ -237,23 +255,77 @@ async function csHandleSignOut(){
     setTimeout(() => { window.location.href = 'index.html'; }, 600);
   }catch(err){ console.error(err); }
 }
+let csUser = null;
 let csUnsubscribeUserDoc = null;
 function csInitAuth(){
   window.CS.completeSignInIfLink().catch(err => console.error(err));
   window.CS.onAuthChange(async (user) => {
+    csUser = user;
     csRenderAuthWidget(user);
     if(csUnsubscribeUserDoc){ csUnsubscribeUserDoc(); csUnsubscribeUserDoc = null; }
     if(user){
       await window.CS.ensureUserDoc(user);
       csUnsubscribeUserDoc = window.CS.listenUserDoc(user.uid, (data) => {
         window.csCurrentPlanId = data.planId || 'genesis';
+        renderPlanMenu(true);
       });
     }else{
       window.csCurrentPlanId = 'genesis';
+      renderPlanMenu(false);
     }
   });
 }
 if(window.CS){ csInitAuth(); } else { window.addEventListener('cs:ready', csInitAuth, { once:true }); }
+
+function planMenuRowHTML(label, status){
+  if(status.unlimited){
+    return `<div class="plan-menu-row"><div class="row-label">${label} <span class="row-count">Illimité ✓</span></div></div>`;
+  }
+  if(status.limit === 0){
+    return `<div class="plan-menu-row is-locked"><div class="row-label">${label} <span class="row-count">Non inclus</span></div></div>`;
+  }
+  const pct = Math.min(100, Math.round((status.used / status.limit) * 100));
+  const isFull = status.remaining <= 0;
+  return `
+    <div class="plan-menu-row">
+      <div class="row-label">${label} <span class="row-count">${status.remaining}/${status.limit} · ${status.period}</span></div>
+      <div class="plan-menu-bar"><div class="plan-menu-bar-fill ${isFull ? 'is-full' : ''}" style="width:${pct}%;"></div></div>
+    </div>`;
+}
+
+function togglePlanMenu(){
+  const el = document.getElementById('cs-plan-menu');
+  const menu = el.querySelector('.plan-menu');
+  if(menu) menu.classList.toggle('is-open');
+}
+
+document.addEventListener('click', (e) => {
+  const el = document.getElementById('cs-plan-menu');
+  if(el && !el.contains(e.target)){
+    const menu = el.querySelector('.plan-menu');
+    if(menu) menu.classList.remove('is-open');
+  }
+});
+
+function renderPlanMenu(loggedIn){
+  const el = document.getElementById('cs-plan-menu');
+  if(!el) return;
+  if(!loggedIn || typeof CSQuota === 'undefined'){
+    el.innerHTML = '';
+    return;
+  }
+  const summary = CSQuota.getSummary();
+  el.innerHTML = `
+    <div class="plan-menu">
+      <button type="button" class="plan-menu-btn" onclick="togglePlanMenu()">${escapeHtml(summary.planName)} <span class="chev">▾</span></button>
+      <div class="plan-menu-panel">
+        ${planMenuRowHTML('Visuels', summary.visuels)}
+        ${planMenuRowHTML('Carrousels', summary.carrousels)}
+        ${planMenuRowHTML('PowerPoint', summary.ppt)}
+        <a class="plan-menu-link" href="index.html">Gérer mon forfait →</a>
+      </div>
+    </div>`;
+}
 </script>
   <div class="orb orb-1" aria-hidden="true"></div>
 <div class="orb orb-2" aria-hidden="true"></div>
@@ -706,7 +778,7 @@ async function exportVisual(){
     link.download = `visuel-studio-${namePart}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-    if(typeof CSQuota !== 'undefined'){ CSQuota.recordVisuelExport(); }
+    if(typeof CSQuota !== 'undefined'){ CSQuota.recordVisuelExport(); renderPlanMenu(!!csUser); }
     showToast('Visuel exporté ✓');
   }catch(err){
     console.error(err);
