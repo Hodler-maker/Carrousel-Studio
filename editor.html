@@ -155,11 +155,29 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
+    /* Petit menu de statut de forfait (badge + compteurs) */
+    .plan-menu{position:relative;}
+    .plan-menu-btn{display:inline-flex; align-items:center; gap:6px; font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:700; color:#fff; background:linear-gradient(135deg, #ff5a1f, #ff7a2f 55%, #ffb547); border:none; padding:8px 12px; border-radius:100px; cursor:pointer; box-shadow:0 6px 16px rgba(255,122,47,.3);}
+    .plan-menu-btn .chev{font-size:9px; transition:transform .15s ease;}
+    .plan-menu.is-open .plan-menu-btn .chev{transform:rotate(180deg);}
+    .plan-menu-panel{position:absolute; top:calc(100% + 8px); right:0; width:230px; background:#fff; border:1px solid rgba(25,20,13,.1); border-radius:14px; box-shadow:0 16px 40px rgba(25,20,13,.18); padding:14px; opacity:0; visibility:hidden; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease, visibility .15s;}
+    .plan-menu.is-open .plan-menu-panel{opacity:1; visibility:visible; transform:translateY(0);}
+    .plan-menu-row{margin-bottom:10px;}
+    .plan-menu-row:last-child{margin-bottom:0;}
+    .plan-menu-row .row-label{display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#19140d; margin-bottom:5px;}
+    .plan-menu-row .row-count{font-weight:400; color:#7c7060;}
+    .plan-menu-bar{height:5px; background:rgba(25,20,13,.08); border-radius:100px; overflow:hidden;}
+    .plan-menu-bar-fill{height:100%; background:linear-gradient(90deg, #ff5a1f, #ffb547); border-radius:100px;}
+    .plan-menu-bar-fill.is-full{background:#d94b3a;}
+    .plan-menu-row.is-locked .row-label{color:#ada08c;}
+    .plan-menu-link{display:block; text-align:center; margin-top:12px; font-family:'JetBrains Mono', monospace; font-size:10.5px; color:#7c7060; text-decoration:none; padding-top:10px; border-top:1px solid rgba(25,20,13,.08);}
+    .plan-menu-link:hover{color:#ff5a1f;}
   </style>
 </head>
 <body>
   <script type="module" src="firebase-shared.js"></script>
 <div id="cs-auth-bar" style="position:fixed; top:14px; right:14px; z-index:1000; display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono', monospace; font-size:11.5px;">
+  <div id="cs-plan-menu"></div>
   <div id="cs-auth-widget"></div>
 </div>
 <div id="cs-toast" style="position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:#19140d; color:#fff; font-family:'JetBrains Mono', monospace; font-size:12.5px; padding:12px 18px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:1000; max-width:min(420px, calc(100vw - 40px)); text-align:center; box-shadow:0 14px 34px rgba(25,20,13,0.3);"></div>
@@ -221,23 +239,77 @@ async function csHandleSignOut(){
     setTimeout(() => { window.location.href = 'index.html'; }, 600);
   }catch(err){ console.error(err); }
 }
+let csUser = null;
 let csUnsubscribeUserDoc = null;
 function csInitAuth(){
   window.CS.completeSignInIfLink().catch(err => console.error(err));
   window.CS.onAuthChange(async (user) => {
+    csUser = user;
     csRenderAuthWidget(user);
     if(csUnsubscribeUserDoc){ csUnsubscribeUserDoc(); csUnsubscribeUserDoc = null; }
     if(user){
       await window.CS.ensureUserDoc(user);
       csUnsubscribeUserDoc = window.CS.listenUserDoc(user.uid, (data) => {
         window.csCurrentPlanId = data.planId || 'genesis';
+        renderPlanMenu(true);
       });
     }else{
       window.csCurrentPlanId = 'genesis';
+      renderPlanMenu(false);
     }
   });
 }
 if(window.CS){ csInitAuth(); } else { window.addEventListener('cs:ready', csInitAuth, { once:true }); }
+
+function planMenuRowHTML(label, status){
+  if(status.unlimited){
+    return `<div class="plan-menu-row"><div class="row-label">${label} <span class="row-count">Illimité ✓</span></div></div>`;
+  }
+  if(status.limit === 0){
+    return `<div class="plan-menu-row is-locked"><div class="row-label">${label} <span class="row-count">Non inclus</span></div></div>`;
+  }
+  const pct = Math.min(100, Math.round((status.used / status.limit) * 100));
+  const isFull = status.remaining <= 0;
+  return `
+    <div class="plan-menu-row">
+      <div class="row-label">${label} <span class="row-count">${status.remaining}/${status.limit} · ${status.period}</span></div>
+      <div class="plan-menu-bar"><div class="plan-menu-bar-fill ${isFull ? 'is-full' : ''}" style="width:${pct}%;"></div></div>
+    </div>`;
+}
+
+function togglePlanMenu(){
+  const el = document.getElementById('cs-plan-menu');
+  const menu = el.querySelector('.plan-menu');
+  if(menu) menu.classList.toggle('is-open');
+}
+
+document.addEventListener('click', (e) => {
+  const el = document.getElementById('cs-plan-menu');
+  if(el && !el.contains(e.target)){
+    const menu = el.querySelector('.plan-menu');
+    if(menu) menu.classList.remove('is-open');
+  }
+});
+
+function renderPlanMenu(loggedIn){
+  const el = document.getElementById('cs-plan-menu');
+  if(!el) return;
+  if(!loggedIn || typeof CSQuota === 'undefined'){
+    el.innerHTML = '';
+    return;
+  }
+  const summary = CSQuota.getSummary();
+  el.innerHTML = `
+    <div class="plan-menu">
+      <button type="button" class="plan-menu-btn" onclick="togglePlanMenu()">${escapeHtml(summary.planName)} <span class="chev">▾</span></button>
+      <div class="plan-menu-panel">
+        ${planMenuRowHTML('Visuels', summary.visuels)}
+        ${planMenuRowHTML('Carrousels', summary.carrousels)}
+        ${planMenuRowHTML('PowerPoint', summary.ppt)}
+        <a class="plan-menu-link" href="index.html">Gérer mon forfait →</a>
+      </div>
+    </div>`;
+}
 </script>
   <div id="quota-lock-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,8,0.92);color:#fff;align-items:center;justify-content:center;text-align:center;padding:32px;font-family:Inter,system-ui,sans-serif;">
     <div style="max-width:420px;">
@@ -589,8 +661,8 @@ if(window.CS){ csInitAuth(); } else { window.addEventListener('cs:ready', csInit
       function exportJson() { const data = JSON.stringify(state.presentation, null, 2); download((state.presentation.title || 'presentation').replace(/[^a-z0-9_-]+/gi, '-').toLowerCase() + '.json', new Blob([data], { type: 'application/json' })); toast('Sauvegarde JSON téléchargée.'); }
       function svgForSlide(slide) { const lines = slide.objects.filter(obj => obj.type === 'connector'); const map = new Map(slide.objects.map(obj => [obj.id, obj])); let body = `<rect width="${SURFACE_W}" height="${SURFACE_H}" fill="${slide.background}"/>`; body += '<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#ff7a2f"/></marker></defs>'; lines.forEach(line => { const a = map.get(line.from), b = map.get(line.to); if (a && b) body += `<line x1="${a.x + a.w/2}" y1="${a.y + a.h/2}" x2="${b.x + b.w/2}" y2="${b.y + b.h/2}" stroke="#ff7a2f" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)"/>`; }); slide.objects.filter(obj => obj.type !== 'connector').forEach(obj => { if (obj.type === 'image') { body += `<rect x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}" rx="${obj.radius}" fill="#ffffff" fill-opacity="0.3"/>`; body += `<image href="${escapeXml(obj.src)}" x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}" preserveAspectRatio="xMidYMid meet"/>`; return; } const fill = obj.type === 'rect' ? obj.fill : 'transparent'; body += `<rect x="${obj.x}" y="${obj.y}" width="${obj.w}" height="${obj.h}" rx="${obj.radius}" fill="${fill}"/>`; if (obj.text) { const lines = obj.text.split('\n'); lines.forEach((line, index) => { body += `<text x="${obj.x + 8}" y="${obj.y + obj.fontSize + 5 + index * obj.fontSize * 1.15}" fill="${obj.color}" font-family="Inter,Arial,sans-serif" font-size="${obj.fontSize}" font-weight="${obj.bold ? 800 : 500}">${escapeXml(line)}</text>`; }); } }); return `<svg xmlns="http://www.w3.org/2000/svg" width="${SURFACE_W}" height="${SURFACE_H}" viewBox="0 0 ${SURFACE_W} ${SURFACE_H}">${body}</svg>`; }
       function exportFilename() { const raw = state.presentation?.title || 'presentation'; const normalized = safeText(raw, 100).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase(); return (normalized || 'presentation').slice(0, 70); }
-      function exportSvg() { const check = isOwnerUnlocked() ? {allowed:true} : CSQuota.canExportPowerPoint(); if (!check.allowed) { showQuotaLock(check.message); return; } const slide = currentSlide(); if (!slide) return; download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.svg`, new Blob([svgForSlide(slide)], { type: 'image/svg+xml' })); if(!isOwnerUnlocked()){ CSQuota.recordPowerPointExport(); } toast('Export SVG terminé.'); }
-      function exportPng() { const check = isOwnerUnlocked() ? {allowed:true} : CSQuota.canExportPowerPoint(); if (!check.allowed) { showQuotaLock(check.message); return; } const slide = currentSlide(); if (!slide) return; const svg = svgForSlide(slide); const image = new Image(); image.onload = () => { const canvas = document.createElement('canvas'); canvas.width = SURFACE_W * 2; canvas.height = SURFACE_H * 2; const ctx = canvas.getContext('2d'); ctx.scale(2, 2); ctx.drawImage(image, 0, 0, SURFACE_W, SURFACE_H); canvas.toBlob(blob => { if (blob) { download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.png`, blob); if(!isOwnerUnlocked()){ CSQuota.recordPowerPointExport(); } toast('Export PNG terminé.'); } else toast('Export PNG impossible.', true); }, 'image/png'); }; image.onerror = () => toast('Impossible de générer le PNG.', true); image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
+      function exportSvg() { const check = isOwnerUnlocked() ? {allowed:true} : CSQuota.canExportPowerPoint(); if (!check.allowed) { showQuotaLock(check.message); return; } const slide = currentSlide(); if (!slide) return; download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.svg`, new Blob([svgForSlide(slide)], { type: 'image/svg+xml' })); if(!isOwnerUnlocked()){ CSQuota.recordPowerPointExport(); renderPlanMenu(!!csUser); } toast('Export SVG terminé.'); }
+      function exportPng() { const check = isOwnerUnlocked() ? {allowed:true} : CSQuota.canExportPowerPoint(); if (!check.allowed) { showQuotaLock(check.message); return; } const slide = currentSlide(); if (!slide) return; const svg = svgForSlide(slide); const image = new Image(); image.onload = () => { const canvas = document.createElement('canvas'); canvas.width = SURFACE_W * 2; canvas.height = SURFACE_H * 2; const ctx = canvas.getContext('2d'); ctx.scale(2, 2); ctx.drawImage(image, 0, 0, SURFACE_W, SURFACE_H); canvas.toBlob(blob => { if (blob) { download(`${exportFilename()}-slide-${String(state.selectedSlide + 1).padStart(2, '0')}.png`, blob); if(!isOwnerUnlocked()){ CSQuota.recordPowerPointExport(); renderPlanMenu(!!csUser); } toast('Export PNG terminé.'); } else toast('Export PNG impossible.', true); }, 'image/png'); }; image.onerror = () => toast('Impossible de générer le PNG.', true); image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
 
       // Verrouillage plein écran quand le quota Freemium est épuisé (voir quota.js)
       function showQuotaLock(message) {
