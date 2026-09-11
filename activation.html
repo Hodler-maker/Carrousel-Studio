@@ -239,7 +239,7 @@
       await window.CS.updateContactInfo(csUser.uid, { firstName: prenom, lastName: nom });
       const planId = await window.CS.redeemPromoCode(csUser.uid, code);
       showToast(`Forfait ${PLAN_NAMES[planId] || planId} activé ✓ Redirection...`);
-      setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+      setTimeout(() => { window.location.href = 'carrousel.html'; }, 1200);
     }catch(err){
       console.error(err);
       showToast(err.message || 'Code invalide, vérifie et réessaie.');
