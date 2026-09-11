@@ -645,10 +645,12 @@ async function csHandleSignOut(){
     setTimeout(() => { window.location.href = 'index.html'; }, 600);
   }catch(err){ console.error(err); }
 }
+let csUser = null;
 let csUnsubscribeUserDoc = null;
 function csInitAuth(){
   window.CS.completeSignInIfLink().catch(err => console.error(err));
   window.CS.onAuthChange(async (user) => {
+    csUser = user;
     csRenderAuthWidget(user);
     if(csUnsubscribeUserDoc){ csUnsubscribeUserDoc(); csUnsubscribeUserDoc = null; }
     if(user){
@@ -1509,7 +1511,7 @@ Contraintes :
     (parsed.slides || []).forEach(s => slides.push({type:'content', title: escapeHtml(s.title), body: escapeHtml(s.body)}));
     slides.push({type:'cta', title: escapeHtml(parsed.cta.title), body: escapeHtml(parsed.cta.body)});
 
-    if(typeof CSQuota !== 'undefined'){ CSQuota.recordCarrouselUsed(); }
+    if(typeof CSQuota !== 'undefined'){ CSQuota.recordCarrouselUsed(); renderPlanMenu(!!csUser); }
 
     currentIndex = 0;
     document.getElementById('empty-state').style.display = 'none';
