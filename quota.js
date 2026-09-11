@@ -39,10 +39,16 @@
   // Le vrai forfait Firestore de l'utilisateur connecté, positionné par
   // chaque page via window.csCurrentPlanId. 'genesis' par défaut (déconnecté
   // ou pas encore résolu = traité comme Freemium).
+  // undefined = pas encore résolu (une page vient de charger et le vrai
+  // forfait Firestore n'est pas encore arrivé). Ne PAS confondre avec
+  // 'genesis' confirmé, sinon un utilisateur payant qui clique très vite
+  // après avoir ouvert la page se voit appliquer par erreur les limites
+  // Freemium. Chaque page positionne explicitement 'genesis' quand elle sait
+  // avec certitude que la personne n'est pas connectée.
   function getPlanId() {
-    if (typeof global.csCurrentPlanId === 'string' && PLAN_LIMITS[global.csCurrentPlanId]) {
-      return global.csCurrentPlanId;
-    }
+    const v = global.csCurrentPlanId;
+    if (v === undefined) return undefined;
+    if (typeof v === 'string' && PLAN_LIMITS[v]) return v;
     return 'genesis';
   }
 
@@ -74,6 +80,14 @@
 
   function statusFor(key) {
     const planId = getPlanId();
+
+    if (planId === undefined) {
+      return {
+        allowed: false, used: 0, limit: 0, remaining: 0, unlimited: false, period: null, pending: true,
+        message: "Vérification de ton forfait en cours — patiente une seconde et réessaie."
+      };
+    }
+
     const spec = PLAN_LIMITS[planId][key];
 
     if (!spec || spec.limit === 0) {
@@ -101,6 +115,7 @@
 
   function record(key) {
     const planId = getPlanId();
+    if (planId === undefined) return; // forfait pas encore connu, rien à compter
     const spec = PLAN_LIMITS[planId][key];
     if (!spec || spec.limit === 0 || spec.limit === Infinity) return;
     const entry = getEntry(key, spec.period);
@@ -113,8 +128,8 @@
   function getSummary() {
     const planId = getPlanId();
     return {
-      planId,
-      planName: PLAN_NAMES[planId],
+      planId: planId === undefined ? 'pending' : planId,
+      planName: planId === undefined ? '…' : PLAN_NAMES[planId],
       visuels: statusFor('visuels'),
       carrousels: statusFor('carrousels'),
       ppt: statusFor('ppt'),
