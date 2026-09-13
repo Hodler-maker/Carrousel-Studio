@@ -107,7 +107,7 @@ tbody td::before{content:attr(data-label); display:block; font-family:var(--font
       </div>
     </div>
     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-      <a class="home-link" href="index.html">← Retour au site</a>
+      <a class="home-link" href="accueil.html">← Retour au site</a>
       <div class="auth-widget" id="auth-widget">
         <button class="auth-btn" onclick="handleAuthClick()">Se connecter</button>
       </div>
@@ -250,7 +250,7 @@ async function handleSignOut(){
   try{
     await window.CS.signOutUser();
     showToast('Déconnecté.');
-    setTimeout(() => { window.location.href = 'index.html'; }, 600);
+    setTimeout(() => { window.location.href = 'accueil.html'; }, 600);
   }catch(err){
     console.error(err);
   }
