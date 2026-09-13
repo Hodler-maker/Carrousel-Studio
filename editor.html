@@ -236,7 +236,7 @@ async function csHandleSignOut(){
   try{
     await window.CS.signOutUser();
     csShowToast('Déconnecté.');
-    setTimeout(() => { window.location.href = 'index.html'; }, 600);
+    setTimeout(() => { window.location.href = 'accueil.html'; }, 600);
   }catch(err){ console.error(err); }
 }
 let csUser = null;
@@ -306,7 +306,7 @@ function renderPlanMenu(loggedIn){
         ${planMenuRowHTML('Visuels', summary.visuels)}
         ${planMenuRowHTML('Carrousels', summary.carrousels)}
         ${planMenuRowHTML('PowerPoint', summary.ppt)}
-        <a class="plan-menu-link" href="index.html">Gérer mon forfait →</a>
+        <a class="plan-menu-link" href="accueil.html">Gérer mon forfait →</a>
       </div>
     </div>`;
 }
@@ -315,7 +315,7 @@ function renderPlanMenu(loggedIn){
     <div style="max-width:420px;">
       <h2 style="margin:0 0 12px;font-size:22px;">L’export PowerPoint n’est pas inclus dans ton forfait</h2>
       <p id="quota-lock-message" style="margin:0 0 24px;opacity:.85;line-height:1.5;">Le forfait Freemium n’inclut pas l’accès à l’éditeur de présentations. Passe au forfait Premium ou Premium+ pour l’utiliser. Pour ton carrousel gratuit, rends-toi sur Carrousel Studio.</p>
-      <a href="index.html" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#ff7a2f;color:#fff;text-decoration:none;font-weight:600;">Voir les forfaits</a>
+      <a href="accueil.html" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#ff7a2f;color:#fff;text-decoration:none;font-weight:600;">Voir les forfaits</a>
     </div>
   </div>
   <div class="app-shell">
