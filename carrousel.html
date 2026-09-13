@@ -642,7 +642,7 @@ async function csHandleSignOut(){
   try{
     await window.CS.signOutUser();
     csShowToast('Déconnecté.');
-    setTimeout(() => { window.location.href = 'index.html'; }, 600);
+    setTimeout(() => { window.location.href = 'accueil.html'; }, 600);
   }catch(err){ console.error(err); }
 }
 let csUser = null;
@@ -713,7 +713,7 @@ function renderPlanMenu(loggedIn){
         ${planMenuRowHTML('Visuels', summary.visuels)}
         ${planMenuRowHTML('Carrousels', summary.carrousels)}
         ${planMenuRowHTML('PowerPoint', summary.ppt)}
-        <a class="plan-menu-link" href="index.html">Gérer mon forfait →</a>
+        <a class="plan-menu-link" href="accueil.html">Gérer mon forfait →</a>
       </div>
     </div>`;
 }
@@ -736,7 +736,7 @@ function renderPlanMenu(loggedIn){
       </div>
     </div>
     <div class="header-links">
-      <a class="home-link" href="index.html">← Accueil</a>
+      <a class="home-link" href="accueil.html">← Accueil</a>
       <a class="visual-studio-link" href="visuel.html"><span class="studio-arrow" aria-hidden="true">←</span> 🎨 Créer un visuel</a>
       <a class="editor-link" href="editor.html">Ouvrir l’éditeur <span class="editor-arrow" aria-hidden="true">→</span></a>
     </div>
