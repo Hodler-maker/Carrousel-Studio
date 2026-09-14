@@ -14,6 +14,12 @@
  * editor.html, visuel.html, index.html) à partir du vrai forfait Firestore
  * de l'utilisateur connecté. Ce fichier lit cette valeur pour appliquer les
  * bonnes limites.
+ *
+ * Cas particulier : le compte admin (voir firebase-shared.js / ADMIN_EMAIL)
+ * doit avoir un accès illimité, quel que soit son planId Firestore. Chaque
+ * page est responsable de positionner window.csCurrentPlanId = 'admin'
+ * quand window.CS.isAdmin(user) est vrai (avant d'appliquer le planId
+ * Firestore normal) — voir le plan 'admin' ci-dessous.
  */
 (function (global) {
   const STORAGE_KEY = 'cs_usage_v2';
@@ -25,9 +31,12 @@
     node:      { visuels: { limit: 1,        period: 'day'   }, carrousels: { limit: 1, period: 'week'  }, ppt: { limit: 0, period: null } },
     validator: { visuels: { limit: Infinity, period: null    }, carrousels: { limit: 3, period: 'week'  }, ppt: { limit: 1, period: 'month' } },
     satoshi:   { visuels: { limit: Infinity, period: null    }, carrousels: { limit: 5, period: 'week'  }, ppt: { limit: 2, period: 'week'  } },
+    // Compte admin (hodler1206@gmail.com) : aucune limite, sur aucune
+    // fonctionnalité. Voir isAdmin() dans firebase-shared.js.
+    admin:     { visuels: { limit: Infinity, period: null    }, carrousels: { limit: Infinity, period: null }, ppt: { limit: Infinity, period: null } },
   };
 
-  const PLAN_NAMES = { genesis: 'Freemium', node: 'Basique', validator: 'Premium', satoshi: 'Premium+' };
+  const PLAN_NAMES = { genesis: 'Freemium', node: 'Basique', validator: 'Premium', satoshi: 'Premium+', admin: 'Admin' };
 
   const PERIOD_MS = {
     day: 24 * 60 * 60 * 1000,
@@ -44,7 +53,8 @@
   // 'genesis' confirmé, sinon un utilisateur payant qui clique très vite
   // après avoir ouvert la page se voit appliquer par erreur les limites
   // Freemium. Chaque page positionne explicitement 'genesis' quand elle sait
-  // avec certitude que la personne n'est pas connectée.
+  // avec certitude que la personne n'est pas connectée, et 'admin' quand
+  // window.CS.isAdmin(user) est vrai.
   function getPlanId() {
     const v = global.csCurrentPlanId;
     if (v === undefined) return undefined;
