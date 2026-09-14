@@ -656,7 +656,7 @@ function csInitAuth(){
     if(user){
       await window.CS.ensureUserDoc(user);
       csUnsubscribeUserDoc = window.CS.listenUserDoc(user.uid, (data) => {
-        window.csCurrentPlanId = data.planId || 'genesis';
+        window.csCurrentPlanId = window.CS.isAdmin(user) ? 'admin' : (data.planId || 'genesis');
         renderPlanMenu(true);
       });
     }else{
