@@ -26,8 +26,8 @@
     --border:rgba(25,20,13,0.09);
     --border-soft:rgba(25,20,13,0.05);
     --text:#1c160f;
-    --text-dim:#7c7060;
-    --text-faint:#ada08c;
+    --text-dim:#6e6350;
+    --text-faint:#756748;
     --radius:20px;
     --font-display:'Inter', sans-serif;
     --font-body:'Inter', sans-serif;
@@ -35,6 +35,15 @@
     --font-mono:'JetBrains Mono', monospace;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
+  /* Focus clavier visible et cohérent sur tous les éléments interactifs */
+  a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible,
+  textarea:focus-visible, [tabindex]:focus-visible, .menu-item:focus-visible,
+  .emoji-btn:focus-visible, .toolbar-btn:focus-visible, .nav-arrow:focus-visible,
+  .home-link:focus-visible, .plan-menu-btn:focus-visible{
+    outline:3px solid rgba(255,122,47,.55);
+    outline-offset:2px;
+    border-radius:8px;
+  }
   html,body{height:100%;}
   body{
     background:var(--bg);
@@ -122,12 +131,12 @@ header .header-links{grid-column:2; justify-self:center; display:flex; align-ite
 .plan-menu-row{margin-bottom:10px;}
 .plan-menu-row:last-child{margin-bottom:0;}
 .plan-menu-row .row-label{display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:#19140d; margin-bottom:5px;}
-.plan-menu-row .row-count{font-weight:400; color:#7c7060;}
+.plan-menu-row .row-count{font-weight:400; color:#6e6350;}
 .plan-menu-bar{height:5px; background:rgba(25,20,13,.08); border-radius:100px; overflow:hidden;}
 .plan-menu-bar-fill{height:100%; background:linear-gradient(90deg, var(--orange-deep), var(--amber)); border-radius:100px;}
 .plan-menu-bar-fill.is-full{background:#d94b3a;}
-.plan-menu-row.is-locked .row-label{color:#ada08c;}
-.plan-menu-link{display:block; text-align:center; margin-top:12px; font-family:'JetBrains Mono', monospace; font-size:10.5px; color:#7c7060; text-decoration:none; padding-top:10px; border-top:1px solid rgba(25,20,13,.08);}
+.plan-menu-row.is-locked .row-label{color:#756748;}
+.plan-menu-link{display:block; text-align:center; margin-top:12px; font-family:'JetBrains Mono', monospace; font-size:10.5px; color:#6e6350; text-decoration:none; padding-top:10px; border-top:1px solid rgba(25,20,13,.08);}
 .plan-menu-link:hover{color:var(--orange-deep);}
 @keyframes editorSheen{0%,45%{transform:translateX(-125%);} 70%,100%{transform:translateX(125%);}}
 @media (prefers-reduced-motion:reduce){.editor-link,.editor-link::before,.editor-link .editor-arrow{animation:none; transition:none;}.editor-link::before{display:none;}.visual-studio-link,.visual-studio-link::before,.visual-studio-link .studio-arrow{animation:none; transition:none;}.visual-studio-link::before{display:none;}}
@@ -493,6 +502,49 @@ background:radial-gradient(circle at 82% 12%, rgba(255,222,76,0.28), transparent
 .slide-inner.theme-yellow-black.type-cta .slide-body{color:rgba(255,253,242,0.82);}
 .slide-inner.theme-yellow-black.type-cover .slide-footer,
 .slide-inner.theme-yellow-black.type-content .slide-footer{border-top-color:rgba(17,17,15,0.18);}
+/* Templates futuristes / tech */
+.slide-inner.theme-cyber-neon.type-cover{
+background:radial-gradient(circle at 85% 8%, rgba(255,0,229,0.32), transparent 42%), radial-gradient(circle at 10% 100%, rgba(0,240,255,0.28), transparent 55%), linear-gradient(150deg, #10131c 0%, #0a0e17 100%); color:#f5f5f7;
+}
+.slide-inner.theme-cyber-neon.type-content{
+background:linear-gradient(175deg, #f5fdff 0%, #dff7fb 100%); color:#0a0e17;
+}
+.slide-inner.theme-cyber-neon.type-cta{
+background:radial-gradient(circle at 80% 15%, rgba(0,240,255,0.3), transparent 50%), radial-gradient(circle at 5% 95%, rgba(255,0,229,0.22), transparent 45%), linear-gradient(160deg, #0a0e17 0%, #05070c 100%); color:#f5f5f7;
+}
+.slide-inner.theme-cyber-neon.type-cover .slide-eyebrow,
+.slide-inner.theme-cyber-neon.type-cta .slide-eyebrow{color:#00f0ff;}
+.slide-inner.theme-cyber-neon.type-content .slide-eyebrow{color:#b3009f;}
+.slide-inner.theme-cyber-neon.type-content .slide-body{color:#33505a;}
+.slide-inner.theme-cyber-neon.type-cta .slide-body{color:rgba(245,245,247,0.82);}
+.slide-inner.theme-circuit-gold.type-cover{
+background:radial-gradient(circle at 88% 8%, rgba(245,183,0,0.3), transparent 42%), radial-gradient(circle at 8% 100%, rgba(61,90,255,0.22), transparent 55%), linear-gradient(150deg, #1a1a14 0%, #0d0d0f 100%); color:#ffffff;
+}
+.slide-inner.theme-circuit-gold.type-content{
+background:linear-gradient(175deg, #fffdf5 0%, #f4ecd8 100%); color:#171713;
+}
+.slide-inner.theme-circuit-gold.type-cta{
+background:radial-gradient(circle at 80% 12%, rgba(245,183,0,0.28), transparent 45%), linear-gradient(160deg, #0d0d0f 0%, #050505 100%); color:#ffffff;
+}
+.slide-inner.theme-circuit-gold.type-cover .slide-eyebrow,
+.slide-inner.theme-circuit-gold.type-cta .slide-eyebrow{color:#f5b700;}
+.slide-inner.theme-circuit-gold.type-content .slide-eyebrow{color:#765605;}
+.slide-inner.theme-circuit-gold.type-content .slide-body{color:#5c5334;}
+.slide-inner.theme-circuit-gold.type-cta .slide-body{color:rgba(255,255,255,0.82);}
+.slide-inner.theme-quantum-blue.type-cover{
+background:radial-gradient(circle at 85% 10%, rgba(176,38,255,0.3), transparent 42%), radial-gradient(circle at 10% 100%, rgba(0,184,255,0.3), transparent 55%), linear-gradient(150deg, #0d1830 0%, #050a18 100%); color:#dce8f5;
+}
+.slide-inner.theme-quantum-blue.type-content{
+background:linear-gradient(175deg, #f2f9ff 0%, #dbeeff 100%); color:#0d1830;
+}
+.slide-inner.theme-quantum-blue.type-cta{
+background:radial-gradient(circle at 80% 15%, rgba(0,184,255,0.28), transparent 48%), linear-gradient(160deg, #050a18 0%, #02040c 100%); color:#dce8f5;
+}
+.slide-inner.theme-quantum-blue.type-cover .slide-eyebrow,
+.slide-inner.theme-quantum-blue.type-cta .slide-eyebrow{color:#00b8ff;}
+.slide-inner.theme-quantum-blue.type-content .slide-eyebrow{color:#7b2fd6;}
+.slide-inner.theme-quantum-blue.type-content .slide-body{color:#28395a;}
+.slide-inner.theme-quantum-blue.type-cta .slide-body{color:rgba(220,232,245,0.82);}
 /* Hiérarchie typographique pour les images PNG 1080 × 1350 */
 #export-stage .slide-inner{padding:8% 8%;}
 #export-stage .slide-eyebrow{font-size:18px;}
@@ -608,7 +660,7 @@ function csRenderAuthWidget(user){
     return;
   }
   const shortEmail = user.email.length > 22 ? user.email.slice(0, 19) + '…' : user.email;
-  el.innerHTML = `<span style="display:flex; align-items:center; gap:8px; color:#7c7060; background:rgba(255,255,255,0.88); border:1px solid rgba(25,20,13,0.09); padding:8px 12px; border-radius:12px;"><b style="color:#19140d;">${escapeHtml(shortEmail)}</b><button onclick="csHandleSignOut()" style="font-family:inherit; font-size:11px; color:#ff5a1f; background:none; border:none; cursor:pointer; font-weight:600; padding:0;">Déconnexion</button></span>`;
+  el.innerHTML = `<span style="display:flex; align-items:center; gap:8px; color:#6e6350; background:rgba(255,255,255,0.88); border:1px solid rgba(25,20,13,0.09); padding:8px 12px; border-radius:12px;"><b style="color:#19140d;">${escapeHtml(shortEmail)}</b><button onclick="csHandleSignOut()" style="font-family:inherit; font-size:11px; color:#ff5a1f; background:none; border:none; cursor:pointer; font-weight:600; padding:0;">Déconnexion</button></span>`;
 }
 async function csHandleAuthClick(){
   const email = window.prompt("Ton email :");
@@ -807,6 +859,9 @@ function renderPlanMenu(loggedIn){
         <option value="midnight">Midnight — bleu nuit</option>
         <option value="signal">Signal — violet</option>
         <option value="yellow-black">Jaune &amp; Noir — contrasté</option>
+        <option value="cyber-neon">Cyber Néon — tech futuriste</option>
+        <option value="circuit-gold">Circuit Gold — crypto premium</option>
+        <option value="quantum-blue">Quantum Blue — data/blockchain</option>
       </select>
 
       <label for="font-family">Police des slides</label>
@@ -958,7 +1013,7 @@ const CAROUSEL_HEIGHT = 1350;
 const MAX_CAROUSEL_IMAGE_BYTES = 3 * 1024 * 1024;
 const MAX_CAROUSEL_IMAGE_DATA_LENGTH = 4500000;
 
-const AVAILABLE_TEMPLATES = ['sunset', 'editorial', 'midnight', 'signal', 'yellow-black'];
+const AVAILABLE_TEMPLATES = ['sunset', 'editorial', 'midnight', 'signal', 'yellow-black', 'cyber-neon', 'circuit-gold', 'quantum-blue'];
 const AVAILABLE_FONTS = {
   inter: { label:'Inter', family:"'Inter', sans-serif" },
   roboto: { label:'Roboto', family:"'Roboto', sans-serif" },
