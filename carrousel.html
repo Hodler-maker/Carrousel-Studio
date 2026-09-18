@@ -580,17 +580,18 @@ radial-gradient(circle at 80% 15%, rgba(0,184,255,0.28), transparent 48%), linea
 .slide-inner.theme-quantum-blue.type-content .slide-eyebrow{color:#7b2fd6;}
 .slide-inner.theme-quantum-blue.type-content .slide-body{color:#28395a;}
 .slide-inner.theme-quantum-blue.type-cta .slide-body{color:rgba(220,232,245,0.82);}
-/* Hiérarchie typographique pour les images PNG 1080 × 1350 */
+/* Hiérarchie typographique pour les images PNG 1080 × 1350 (échelle ×2.571 vs l'aperçu 420px, pour un rendu fidèle au site) */
 #export-stage .slide-inner{padding:8% 8%;}
-#export-stage .slide-eyebrow{font-size:18px;}
-#export-stage .type-cover .slide-title{font-size:52px;}
-#export-stage .type-content .slide-title{font-size:40px; margin-top:20px;}
-#export-stage .type-cta .slide-title{font-size:46px;}
-#export-stage .slide-subtitle{font-size:25px; margin-top:20px;}
-#export-stage .slide-body{font-size:27px; line-height:1.45; margin-top:22px;}
-#export-stage .slide-footer{padding-top:22px;}
+#export-stage .slide-eyebrow{font-size:31px;}
+#export-stage .slide-eyebrow::before{width:41px;}
+#export-stage .type-cover .slide-title{font-size:87px;}
+#export-stage .type-content .slide-title{font-size:59px; margin-top:36px;}
+#export-stage .type-cta .slide-title{font-size:67px;}
+#export-stage .slide-subtitle{font-size:36px; margin-top:36px;}
+#export-stage .slide-body{font-size:37px; line-height:1.6; margin-top:41px;}
+#export-stage .slide-footer{padding-top:41px;}
 #export-stage .slide-brand,
-#export-stage .slide-swipe{font-size:16px;}
+#export-stage .slide-swipe{font-size:27px;}
 .slide-brand-empty{visibility:hidden;}
 .slide-eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.85; margin-bottom:auto; display:flex; align-items:center; gap:8px;}
 .type-cover .slide-eyebrow{color:rgba(255,255,255,0.9);}
@@ -1842,10 +1843,14 @@ function fitEditableText(el){
   el.style.fontSize = `${baseSize}px`;
   el.classList.remove('text-fitted', 'text-overflow-warning');
 
-  const minSize = el.classList.contains('slide-body') ? 17 : 22;
+  // Les tailles minimales sont définies pour l'aperçu (carte ~420px) ; on les met à l'échelle
+  // pour l'export haute résolution (1080px) et les vignettes, afin de garder les mêmes proportions.
+  const slideInner = el.closest('.slide-inner');
+  const scale = slideInner ? (slideInner.getBoundingClientRect().width || 420) / 420 : 1;
+  const minSize = (el.classList.contains('slide-body') ? 17 : 22) * scale;
   let size = baseSize;
   while(size > minSize && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)){
-    size -= 1;
+    size -= Math.max(scale, 0.25);
     el.style.fontSize = `${size}px`;
   }
   if(size < baseSize) el.classList.add('text-fitted');
