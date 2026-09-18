@@ -384,6 +384,22 @@ box-shadow:0 8px 22px rgba(255,122,47,0.35); transition:transform .15s ease, box
 @keyframes bounceDown{0%,100%{transform:translateY(0);} 50%{transform:translateY(3px);}}
 @keyframes attentionPulse{0%,100%{box-shadow:0 8px 22px rgba(255,122,47,0.35);} 50%{box-shadow:0 8px 32px rgba(255,122,47,0.7);}}
 .carousel-stage{position:relative; display:flex; align-items:center; justify-content:center; gap:16px;}
+.stage-with-tools{display:flex; align-items:center; justify-content:center; gap:22px; flex-wrap:wrap;}
+.slide-color-tool{display:flex; flex-direction:column; align-items:center; gap:8px; flex-shrink:0; background:var(--glass-strong); border:1px solid var(--border); border-radius:16px; padding:12px 14px; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);}
+.slide-color-label{font-size:10.5px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em; text-align:center;}
+.slide-color-tool input[type="color"]{width:44px; height:44px; min-width:44px; min-height:44px; border:2px solid var(--border); border-radius:12px; cursor:pointer; background:none; padding:2px; -webkit-appearance:none; appearance:none;}
+.slide-color-tool input[type="color"]::-webkit-color-swatch-wrapper{padding:2px; border-radius:9px;}
+.slide-color-tool input[type="color"]::-webkit-color-swatch{border:none; border-radius:8px;}
+.slide-color-tool input[type="color"]::-moz-color-swatch{border:none; border-radius:8px;}
+.slide-color-tool input[type="color"]:hover{border-color:var(--orange-deep);}
+.slide-color-reset{width:44px; height:44px; min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.6); color:var(--text); cursor:pointer; transition:background .15s ease, color .15s ease, border-color .15s ease;}
+.slide-color-reset:hover{background:#fff; color:var(--orange-deep); border-color:var(--orange-deep);}
+.slide-color-reset:disabled{opacity:0.35; cursor:default; background:rgba(255,255,255,0.6); color:var(--text);}
+@media (max-width:620px){
+.stage-with-tools{gap:14px;}
+.slide-color-tool{flex-direction:row; padding:8px 12px;}
+.slide-color-label{writing-mode:horizontal-tb;}
+}
 .nav-arrow{
 width:44px; height:44px; min-width:44px; min-height:44px; border-radius:50%; background:var(--glass-strong); border:1px solid var(--border);
 color:var(--text); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center;
@@ -504,13 +520,19 @@ background:radial-gradient(circle at 82% 12%, rgba(255,222,76,0.28), transparent
 .slide-inner.theme-yellow-black.type-content .slide-footer{border-top-color:rgba(17,17,15,0.18);}
 /* Templates futuristes / tech */
 .slide-inner.theme-cyber-neon.type-cover{
-background:radial-gradient(circle at 85% 8%, rgba(255,0,229,0.32), transparent 42%), radial-gradient(circle at 10% 100%, rgba(0,240,255,0.28), transparent 55%), linear-gradient(150deg, #10131c 0%, #0a0e17 100%); color:#f5f5f7;
+background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='white' stroke-opacity='0.09' stroke-width='1'%3E%3Cline x1='10' y1='10' x2='60' y2='40'/%3E%3Cline x1='60' y1='40' x2='110' y2='10'/%3E%3Cline x1='60' y1='40' x2='60' y2='100'/%3E%3Cline x1='60' y1='100' x2='10' y2='110'/%3E%3Cline x1='60' y1='100' x2='110' y2='110'/%3E%3C/g%3E%3Cg fill='white' fill-opacity='0.16'%3E%3Ccircle cx='10' cy='10' r='3'/%3E%3Ccircle cx='60' cy='40' r='3.5'/%3E%3Ccircle cx='110' cy='10' r='3'/%3E%3Ccircle cx='60' cy='100' r='3.5'/%3E%3Ccircle cx='10' cy='110' r='3'/%3E%3Ccircle cx='110' cy='110' r='3'/%3E%3C/g%3E%3C/svg%3E") 0 0/120px 120px repeat,
+radial-gradient(circle at 85% 8%, rgba(255,0,229,0.32), transparent 42%), radial-gradient(circle at 10% 100%, rgba(0,240,255,0.28), transparent 55%), linear-gradient(150deg, #10131c 0%, #0a0e17 100%); color:#f5f5f7;
 }
 .slide-inner.theme-cyber-neon.type-content{
-background:linear-gradient(175deg, #f5fdff 0%, #dff7fb 100%); color:#0a0e17;
+background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%23171713' stroke-opacity='0.07' stroke-width='1'%3E%3Cline x1='10' y1='10' x2='60' y2='40'/%3E%3Cline x1='60' y1='40' x2='110' y2='10'/%3E%3Cline x1='60' y1='40' x2='60' y2='100'/%3E%3Cline x1='60' y1='100' x2='10' y2='110'/%3E%3Cline x1='60' y1='100' x2='110' y2='110'/%3E%3C/g%3E%3Cg fill='%23171713' fill-opacity='0.12'%3E%3Ccircle cx='10' cy='10' r='3'/%3E%3Ccircle cx='60' cy='40' r='3.5'/%3E%3Ccircle cx='110' cy='10' r='3'/%3E%3Ccircle cx='60' cy='100' r='3.5'/%3E%3Ccircle cx='10' cy='110' r='3'/%3E%3Ccircle cx='110' cy='110' r='3'/%3E%3C/g%3E%3C/svg%3E") 0 0/120px 120px repeat,
+linear-gradient(175deg, #f5fdff 0%, #dff7fb 100%); color:#0a0e17;
 }
 .slide-inner.theme-cyber-neon.type-cta{
-background:radial-gradient(circle at 80% 15%, rgba(0,240,255,0.3), transparent 50%), radial-gradient(circle at 5% 95%, rgba(255,0,229,0.22), transparent 45%), linear-gradient(160deg, #0a0e17 0%, #05070c 100%); color:#f5f5f7;
+background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='white' stroke-opacity='0.09' stroke-width='1'%3E%3Cline x1='10' y1='10' x2='60' y2='40'/%3E%3Cline x1='60' y1='40' x2='110' y2='10'/%3E%3Cline x1='60' y1='40' x2='60' y2='100'/%3E%3Cline x1='60' y1='100' x2='10' y2='110'/%3E%3Cline x1='60' y1='100' x2='110' y2='110'/%3E%3C/g%3E%3Cg fill='white' fill-opacity='0.16'%3E%3Ccircle cx='10' cy='10' r='3'/%3E%3Ccircle cx='60' cy='40' r='3.5'/%3E%3Ccircle cx='110' cy='10' r='3'/%3E%3Ccircle cx='60' cy='100' r='3.5'/%3E%3Ccircle cx='10' cy='110' r='3'/%3E%3Ccircle cx='110' cy='110' r='3'/%3E%3C/g%3E%3C/svg%3E") 0 0/120px 120px repeat,
+radial-gradient(circle at 80% 15%, rgba(0,240,255,0.3), transparent 50%), radial-gradient(circle at 5% 95%, rgba(255,0,229,0.22), transparent 45%), linear-gradient(160deg, #0a0e17 0%, #05070c 100%); color:#f5f5f7;
 }
 .slide-inner.theme-cyber-neon.type-cover .slide-eyebrow,
 .slide-inner.theme-cyber-neon.type-cta .slide-eyebrow{color:#00f0ff;}
@@ -518,13 +540,19 @@ background:radial-gradient(circle at 80% 15%, rgba(0,240,255,0.3), transparent 5
 .slide-inner.theme-cyber-neon.type-content .slide-body{color:#33505a;}
 .slide-inner.theme-cyber-neon.type-cta .slide-body{color:rgba(245,245,247,0.82);}
 .slide-inner.theme-circuit-gold.type-cover{
-background:radial-gradient(circle at 88% 8%, rgba(245,183,0,0.3), transparent 42%), radial-gradient(circle at 8% 100%, rgba(61,90,255,0.22), transparent 55%), linear-gradient(150deg, #1a1a14 0%, #0d0d0f 100%); color:#ffffff;
+background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cg fill='none' stroke='white' stroke-opacity='0.08' stroke-width='1.2'%3E%3Cpath d='M10 10H50V50H90'/%3E%3Cpath d='M10 90H30V60H70V30H90'/%3E%3C/g%3E%3Cg fill='white' fill-opacity='0.14'%3E%3Ccircle cx='10' cy='10' r='2.5'/%3E%3Ccircle cx='50' cy='50' r='2.5'/%3E%3Ccircle cx='90' cy='50' r='2.5'/%3E%3Ccircle cx='10' cy='90' r='2.5'/%3E%3Ccircle cx='90' cy='30' r='2.5'/%3E%3C/g%3E%3C/svg%3E") 0 0/100px 100px repeat,
+radial-gradient(circle at 88% 8%, rgba(245,183,0,0.3), transparent 42%), radial-gradient(circle at 8% 100%, rgba(61,90,255,0.22), transparent 55%), linear-gradient(150deg, #1a1a14 0%, #0d0d0f 100%); color:#ffffff;
 }
 .slide-inner.theme-circuit-gold.type-content{
-background:linear-gradient(175deg, #fffdf5 0%, #f4ecd8 100%); color:#171713;
+background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cg fill='none' stroke='%23171713' stroke-opacity='0.06' stroke-width='1.2'%3E%3Cpath d='M10 10H50V50H90'/%3E%3Cpath d='M10 90H30V60H70V30H90'/%3E%3C/g%3E%3Cg fill='%23171713' fill-opacity='0.1'%3E%3Ccircle cx='10' cy='10' r='2.5'/%3E%3Ccircle cx='50' cy='50' r='2.5'/%3E%3Ccircle cx='90' cy='50' r='2.5'/%3E%3Ccircle cx='10' cy='90' r='2.5'/%3E%3Ccircle cx='90' cy='30' r='2.5'/%3E%3C/g%3E%3C/svg%3E") 0 0/100px 100px repeat,
+linear-gradient(175deg, #fffdf5 0%, #f4ecd8 100%); color:#171713;
 }
 .slide-inner.theme-circuit-gold.type-cta{
-background:radial-gradient(circle at 80% 12%, rgba(245,183,0,0.28), transparent 45%), linear-gradient(160deg, #0d0d0f 0%, #050505 100%); color:#ffffff;
+background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cg fill='none' stroke='white' stroke-opacity='0.08' stroke-width='1.2'%3E%3Cpath d='M10 10H50V50H90'/%3E%3Cpath d='M10 90H30V60H70V30H90'/%3E%3C/g%3E%3Cg fill='white' fill-opacity='0.14'%3E%3Ccircle cx='10' cy='10' r='2.5'/%3E%3Ccircle cx='50' cy='50' r='2.5'/%3E%3Ccircle cx='90' cy='50' r='2.5'/%3E%3Ccircle cx='10' cy='90' r='2.5'/%3E%3Ccircle cx='90' cy='30' r='2.5'/%3E%3C/g%3E%3C/svg%3E") 0 0/100px 100px repeat,
+radial-gradient(circle at 80% 12%, rgba(245,183,0,0.28), transparent 45%), linear-gradient(160deg, #0d0d0f 0%, #050505 100%); color:#ffffff;
 }
 .slide-inner.theme-circuit-gold.type-cover .slide-eyebrow,
 .slide-inner.theme-circuit-gold.type-cta .slide-eyebrow{color:#f5b700;}
@@ -532,13 +560,19 @@ background:radial-gradient(circle at 80% 12%, rgba(245,183,0,0.28), transparent 
 .slide-inner.theme-circuit-gold.type-content .slide-body{color:#5c5334;}
 .slide-inner.theme-circuit-gold.type-cta .slide-body{color:rgba(255,255,255,0.82);}
 .slide-inner.theme-quantum-blue.type-cover{
-background:radial-gradient(circle at 85% 10%, rgba(176,38,255,0.3), transparent 42%), radial-gradient(circle at 10% 100%, rgba(0,184,255,0.3), transparent 55%), linear-gradient(150deg, #0d1830 0%, #050a18 100%); color:#dce8f5;
+background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='104'%3E%3Cg fill='none' stroke='white' stroke-opacity='0.08' stroke-width='1'%3E%3Cpath d='M30 0L60 17.3V52L30 69.3L0 52V17.3Z'/%3E%3Cpath d='M30 69.3V104M0 52L0 86.7L30 104M60 52L60 86.7L30 104'/%3E%3C/g%3E%3C/svg%3E") 0 0/60px 104px repeat,
+radial-gradient(circle at 85% 10%, rgba(176,38,255,0.3), transparent 42%), radial-gradient(circle at 10% 100%, rgba(0,184,255,0.3), transparent 55%), linear-gradient(150deg, #0d1830 0%, #050a18 100%); color:#dce8f5;
 }
 .slide-inner.theme-quantum-blue.type-content{
-background:linear-gradient(175deg, #f2f9ff 0%, #dbeeff 100%); color:#0d1830;
+background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='104'%3E%3Cg fill='none' stroke='%23171713' stroke-opacity='0.07' stroke-width='1'%3E%3Cpath d='M30 0L60 17.3V52L30 69.3L0 52V17.3Z'/%3E%3Cpath d='M30 69.3V104M0 52L0 86.7L30 104M60 52L60 86.7L30 104'/%3E%3C/g%3E%3C/svg%3E") 0 0/60px 104px repeat,
+linear-gradient(175deg, #f2f9ff 0%, #dbeeff 100%); color:#0d1830;
 }
 .slide-inner.theme-quantum-blue.type-cta{
-background:radial-gradient(circle at 80% 15%, rgba(0,184,255,0.28), transparent 48%), linear-gradient(160deg, #050a18 0%, #02040c 100%); color:#dce8f5;
+background:
+url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='104'%3E%3Cg fill='none' stroke='white' stroke-opacity='0.08' stroke-width='1'%3E%3Cpath d='M30 0L60 17.3V52L30 69.3L0 52V17.3Z'/%3E%3Cpath d='M30 69.3V104M0 52L0 86.7L30 104M60 52L60 86.7L30 104'/%3E%3C/g%3E%3C/svg%3E") 0 0/60px 104px repeat,
+radial-gradient(circle at 80% 15%, rgba(0,184,255,0.28), transparent 48%), linear-gradient(160deg, #050a18 0%, #02040c 100%); color:#dce8f5;
 }
 .slide-inner.theme-quantum-blue.type-cover .slide-eyebrow,
 .slide-inner.theme-quantum-blue.type-cta .slide-eyebrow{color:#00b8ff;}
@@ -859,9 +893,9 @@ function renderPlanMenu(loggedIn){
         <option value="midnight">Midnight — bleu nuit</option>
         <option value="signal">Signal — violet</option>
         <option value="yellow-black">Jaune &amp; Noir — contrasté</option>
-        <option value="cyber-neon">Cyber Néon — tech futuriste</option>
-        <option value="circuit-gold">Circuit Gold — crypto premium</option>
-        <option value="quantum-blue">Quantum Blue — data/blockchain</option>
+        <option value="cyber-neon">Cyber Néon — réseau blockchain</option>
+        <option value="circuit-gold">Circuit Gold — circuits crypto</option>
+        <option value="quantum-blue">Quantum Blue — grille hexagonale</option>
       </select>
 
       <label for="font-family">Police des slides</label>
@@ -934,12 +968,21 @@ function renderPlanMenu(loggedIn){
           </div>
         </div>
 
-        <div class="carousel-stage">
-          <button class="nav-arrow" id="prev-btn" onclick="navSlide(-1)" aria-label="Slide précédente" title="Slide précédente"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg></button>
-          <div class="slide-viewport">
-            <div class="slide-frame" id="slide-frame"></div>
+        <div class="stage-with-tools">
+          <div class="carousel-stage">
+            <button class="nav-arrow" id="prev-btn" onclick="navSlide(-1)" aria-label="Slide précédente" title="Slide précédente"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg></button>
+            <div class="slide-viewport">
+              <div class="slide-frame" id="slide-frame"></div>
+            </div>
+            <button class="nav-arrow" id="next-btn" onclick="navSlide(1)" aria-label="Slide suivante" title="Slide suivante"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></button>
           </div>
-          <button class="nav-arrow" id="next-btn" onclick="navSlide(1)" aria-label="Slide suivante" title="Slide suivante"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></button>
+          <div class="slide-color-tool" title="Couleur de fond de cette slide">
+            <label for="slide-color-input" class="slide-color-label">Couleur du fond</label>
+            <input type="color" id="slide-color-input" value="#ff7a2f" oninput="setSlideCustomColor(this.value)" aria-label="Choisir une couleur de fond pour cette slide">
+            <button type="button" class="slide-color-reset" id="slide-color-reset-btn" onclick="resetSlideCustomColor()" title="Revenir à la couleur du thème" aria-label="Revenir à la couleur du thème">
+              <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg>
+            </button>
+          </div>
         </div>
 
         <div class="thumbnail-strip">
@@ -1053,6 +1096,24 @@ function updateTemplate(value){
     frame.classList.add('template-switching');
     frame.addEventListener('animationend', () => frame.classList.remove('template-switching'), {once:true});
   }
+  scheduleAutosave();
+}
+
+/* ---------- Couleur de fond personnalisée pour la slide courante ---------- */
+
+function setSlideCustomColor(value){
+  if(!slides[currentIndex]) return;
+  pushHistory();
+  slides[currentIndex].customBg = value;
+  renderCarousel();
+  scheduleAutosave();
+}
+
+function resetSlideCustomColor(){
+  if(!slides[currentIndex] || !slides[currentIndex].customBg) return;
+  pushHistory();
+  delete slides[currentIndex].customBg;
+  renderCarousel();
   scheduleAutosave();
 }
 
@@ -1704,7 +1765,7 @@ function slideMarkup(slide, index, includeImageSelection = true){
         <span class="slide-swipe">SWIPE <span class="swipe-arrow"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h15"></path><path d="m14 6 6 6-6 6"></path></svg></span></span>
       </div>`;
   }
-  return `<div class="slide-inner ${bgClass} ${themeClass}">${imageMarkup(slide, index, includeImageSelection)}${inner}</div>`;
+  return `<div class="slide-inner ${bgClass} ${themeClass}"${slide.customBg ? ` style="background:${escapeHtml(slide.customBg)};"` : ''}>${imageMarkup(slide, index, includeImageSelection)}${inner}</div>`;
 }
 
 function escapeHtml(str){
@@ -1850,6 +1911,14 @@ function renderCarousel(){
   }
   updateHistoryButtons();
   scheduleAutosave();
+
+  const colorInput = document.getElementById('slide-color-input');
+  const colorResetBtn = document.getElementById('slide-color-reset-btn');
+  const customBg = slides[currentIndex]?.customBg;
+  if(colorInput){
+    colorInput.value = /^#[0-9a-f]{6}$/i.test(customBg || '') ? customBg : '#ff7a2f';
+  }
+  if(colorResetBtn) colorResetBtn.disabled = !customBg;
 }
 
 function onEditableInput(e){
